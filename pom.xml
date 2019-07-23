@@ -13,6 +13,9 @@
     <artifactId>sandglass</artifactId>
     <packaging>pom</packaging>
     <version>0.0.1-SNAPSHOT</version>
+    <modules>
+        <module>sandglass-api</module>
+    </modules>
 
     <properties>
         <!--============================== All Plugins START ==============================-->
