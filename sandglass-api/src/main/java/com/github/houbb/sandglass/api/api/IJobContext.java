@@ -5,6 +5,4 @@ package com.github.houbb.sandglass.api.api;
  * @since 0.0.1
  */
 public interface IJobContext {
-
-
 }

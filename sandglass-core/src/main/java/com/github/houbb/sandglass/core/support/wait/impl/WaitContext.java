@@ -26,6 +26,12 @@ public class WaitContext implements IWaitContext {
      */
     private long maxMills;
 
+    /**
+     * 指定的时间间隔
+     * @since 0.0.1
+     */
+    private long interval;
+
     public static WaitContext newInstance() {
         return new WaitContext();
     }
@@ -37,6 +43,16 @@ public class WaitContext implements IWaitContext {
 
     public WaitContext currentTimes(int currentTimes) {
         this.currentTimes = currentTimes;
+        return this;
+    }
+
+    @Override
+    public long interval() {
+        return interval;
+    }
+
+    public WaitContext interval(long interval) {
+        this.interval = interval;
         return this;
     }
 

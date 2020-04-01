@@ -4,7 +4,7 @@ import com.github.houbb.sandglass.api.api.IJob;
 
 /**
  * @author binbin.hou
- * @since 1.0.0
+ * @since 0.0.1
  */
 public final class SandGlassHelper {
 
@@ -13,7 +13,6 @@ public final class SandGlassHelper {
     // 默认执行次数：1次==>停止策略
     // 默认间隔时间：1min==>等待策略
     // 默认任务调度器：最简单的单线程==》线程池
-
     /**
      * 执行任务
      * @param job 任务

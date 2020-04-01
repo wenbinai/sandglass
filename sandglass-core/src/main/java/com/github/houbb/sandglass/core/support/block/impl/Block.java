@@ -23,7 +23,7 @@ public class Block implements IBlock {
     @Override
     public void block(final ITime time) {
         try {
-            time.unit().sleep(time.time());
+            time.unit().sleep(time.interval());
         } catch (InterruptedException e) {
             //restore status
             Thread.currentThread().interrupt();
