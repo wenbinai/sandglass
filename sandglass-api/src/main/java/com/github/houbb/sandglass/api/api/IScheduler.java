@@ -1,4 +1,4 @@
-package com.github.houbb.sandglass.api.core;
+package com.github.houbb.sandglass.api.api;
 
 /**
  * 任务调度
@@ -33,10 +33,19 @@ package com.github.houbb.sandglass.api.core;
  *
  * 相关信息的获取
  * （1）获取当前执行的 jobs
- * （2）获取当前 Trigger
+ * （2）获取当前 ITrigger
  *
  * @author binbin.hou
- * @since 1.0.0
+ * @since 0.0.1
  */
-public interface Scheduler {
+public interface IScheduler {
+
+    /**
+     * 执行任务
+     * @param job 任务
+     * @param trigger 触发器
+     * @since 0.0.1
+     */
+    void schedule(final IJob job, final ITrigger trigger);
+
 }

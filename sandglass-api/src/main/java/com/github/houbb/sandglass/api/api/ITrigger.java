@@ -1,4 +1,4 @@
-package com.github.houbb.sandglass.api.core;
+package com.github.houbb.sandglass.api.api;
 
 import java.util.Date;
 
@@ -8,9 +8,9 @@ import java.util.Date;
  * （2）间隔策略
  * （3）重复次数
  * @author binbin.hou
- * @since 1.0.0
+ * @since 0.0.1
  */
-public interface Trigger {
+public interface ITrigger {
 
     /**
      * 开始时间
@@ -35,5 +35,12 @@ public interface Trigger {
      * @return 下一次时间
      */
     Date nextTime();
+
+    /**
+     * 触发次数
+     * @return 次数
+     * @since 0.0.1
+     */
+    int times();
 
 }
