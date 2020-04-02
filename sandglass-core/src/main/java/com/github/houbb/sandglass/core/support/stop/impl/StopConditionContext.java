@@ -6,7 +6,7 @@ import java.util.Date;
 
 /**
  * @author binbin.hou
- * @since 1.0.0
+ * @since 0.0.1
  */
 public class StopConditionContext implements IStopConditionContext {
 
@@ -21,6 +21,12 @@ public class StopConditionContext implements IStopConditionContext {
      * @since 0.0.1
      */
     private Date stopTime;
+
+    /**
+     * 执行的次数统计
+     * @since 0.0.1
+     */
+    private int count;
 
     public static StopConditionContext newInstance() {
         return new StopConditionContext();
@@ -43,6 +49,16 @@ public class StopConditionContext implements IStopConditionContext {
 
     public StopConditionContext stopTime(Date stopTime) {
         this.stopTime = stopTime;
+        return this;
+    }
+
+    @Override
+    public int count() {
+        return count;
+    }
+
+    public StopConditionContext count(int count) {
+        this.count = count;
         return this;
     }
 }

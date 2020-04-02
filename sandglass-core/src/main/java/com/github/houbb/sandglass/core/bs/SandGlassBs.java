@@ -6,8 +6,6 @@ package com.github.houbb.sandglass.core.bs;
  */
 public final class SandGlassBs {
 
-
-
     private SandGlassBs(){}
 
     /**

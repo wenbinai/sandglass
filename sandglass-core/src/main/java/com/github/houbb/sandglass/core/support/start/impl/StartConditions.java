@@ -5,7 +5,7 @@ import com.github.houbb.sandglass.core.support.start.IStartCondition;
 
 /**
  * @author binbin.hou
- * @since 1.0.0
+ * @since 0.0.1
  */
 public final class StartConditions {
 

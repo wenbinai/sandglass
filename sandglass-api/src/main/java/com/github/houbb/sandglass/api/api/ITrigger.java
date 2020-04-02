@@ -10,6 +10,7 @@ import java.util.Date;
  * @author binbin.hou
  * @since 0.0.1
  */
+@Deprecated
 public interface ITrigger {
 
     /**

@@ -13,7 +13,7 @@ import java.util.Date;
  * 2. 如果不是，则判断时间是否大于等于指定的时间。
  *
  * @author binbin.hou
- * @since 1.0.0
+ * @since 0.0.1
  */
 @ThreadSafe
 public class StartCondition implements IStartCondition {

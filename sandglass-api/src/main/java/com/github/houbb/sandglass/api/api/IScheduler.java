@@ -42,10 +42,9 @@ public interface IScheduler {
 
     /**
      * 执行任务
-     * @param job 任务
-     * @param trigger 触发器
+     * @param context 上下文
      * @since 0.0.1
      */
-    void schedule(final IJob job, final ITrigger trigger);
+    void schedule(final ISchedulerContext context);
 
 }

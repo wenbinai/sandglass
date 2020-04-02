@@ -4,7 +4,7 @@ import java.util.Date;
 
 /**
  * @author binbin.hou
- * @since 1.0.0
+ * @since 0.0.1
  */
 public interface IStopConditionContext {
 
@@ -21,5 +21,12 @@ public interface IStopConditionContext {
      * @since 0.0.1
      */
     Date stopTime();
+
+    /**
+     * 执行的次数统计
+     * @return 次数
+     * @since 0.0.1
+     */
+    int count();
 
 }

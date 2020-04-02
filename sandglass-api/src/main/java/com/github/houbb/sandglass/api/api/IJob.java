@@ -10,8 +10,8 @@ public interface IJob {
     /**
      * 执行任务
      * @param context 上下文
-     * @return 执行结果
+     * @since 0.0.1
      */
-    Object execute(final IJobContext context);
+    void execute(final IJobContext context);
 
 }

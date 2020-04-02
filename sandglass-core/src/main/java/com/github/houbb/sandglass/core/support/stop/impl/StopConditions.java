@@ -2,14 +2,9 @@ package com.github.houbb.sandglass.core.support.stop.impl;
 
 import com.github.houbb.heaven.support.instance.impl.Instances;
 import com.github.houbb.sandglass.core.support.stop.IStopCondition;
-import com.github.houbb.sandglass.core.support.stop.IStopConditionContext;
-
-import java.util.Date;
 
 /**
- * 默认停止条件
- * 1. 如果永远执行，直接返回 false
- * 2. 如果当前时间大于等于结束时间，返回 true。
+ * 停止条件工具类
  * @author binbin.hou
  * @since 0.0.1
  */
@@ -18,12 +13,21 @@ public final class StopConditions {
     private StopConditions(){}
 
     /**
-     * 默认实现
+     * 按照日期时间
      * @return 实现
      * @since 0.0.1
      */
-    public static IStopCondition defaults() {
-        return Instances.singleton(StopCondition.class);
+    public static IStopCondition date() {
+        return Instances.singleton(StopConditionDate.class);
+    }
+
+    /**
+     * 按照次数
+     * @return 实现
+     * @since 0.0.1
+     */
+    public static IStopCondition count() {
+        return Instances.singleton(StopConditionCount.class);
     }
 
 }
