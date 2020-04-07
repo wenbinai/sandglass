@@ -1,7 +1,5 @@
 package com.github.houbb.sandglass.core.support.stop;
 
-import com.github.houbb.sandglass.core.support.start.IStartConditionContext;
-
 /**
  * @author binbin.hou
  * @since 0.0.1
