@@ -10,6 +10,8 @@ import com.github.houbb.sandglass.core.bs.SandGlassBs;
  */
 public final class SandGlassHelper {
 
+    private SandGlassHelper(){}
+
     //1. 核心的代码：job
     // 默认开始时间：now==》触发时机
     // 默认执行次数：3次==>停止策略
