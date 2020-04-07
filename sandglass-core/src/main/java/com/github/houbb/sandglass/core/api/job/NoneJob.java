@@ -11,11 +11,10 @@ import com.github.houbb.sandglass.api.api.IJobContext;
  * @since 0.0.1
  */
 @ThreadSafe
-public class CurrentDateJob implements IJob {
+public class NoneJob implements IJob {
 
     @Override
     public void execute(IJobContext context) {
-        System.out.println("Current Time: " + DateUtil.getCurrentTimeStampStr());
     }
 
 }

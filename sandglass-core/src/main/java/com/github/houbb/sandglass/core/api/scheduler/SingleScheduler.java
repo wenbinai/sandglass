@@ -1,21 +1,21 @@
 package com.github.houbb.sandglass.core.api.scheduler;
 
 import com.github.houbb.heaven.annotation.ThreadSafe;
-import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.IScheduler;
 import com.github.houbb.sandglass.api.api.ISchedulerContext;
-import com.github.houbb.sandglass.api.api.ITrigger;
 import com.github.houbb.sandglass.core.api.job.JobContext;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
+ * 1. 异常处理
+ * 2. callback 或者是 listener
  * @author binbin.hou
  * @since 1.0.0
  */
 @ThreadSafe
-public class Scheduler implements IScheduler {
+public class SingleScheduler implements IScheduler {
 
     /**
      * 线程池
@@ -27,18 +27,11 @@ public class Scheduler implements IScheduler {
 
     @Override
     public void schedule(final ISchedulerContext context) {
-        //1. 可以循环一次，直接获取其中的信息。
-
-        //1. 开始时间
-
-        //2. 是否停止
-
-        //3. 执行次数
-
         // 任务执行
         SERVICE.execute(new Runnable() {
             @Override
             public void run() {
+                //TODO: 这里的上下文暂时写死为空
                 JobContext jobContext = JobContext.newInstance();
                 context.job().execute(jobContext);
             }
