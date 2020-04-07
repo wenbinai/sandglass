@@ -88,6 +88,10 @@ public class MainLoopThread extends Thread {
                         // 立刻执行，后期添加次数
                         executeTask(task);
                     } else {
+                        // 这里可以不做长时间等待，直接等待一段时间后，放入队列。
+                        // 避免有新的任务加入，时间消耗比以前的还要短。
+                        // 时间可以加一个范围，比如 5ms 以内的等待后直接执行。
+                        // 时间太长的还是建议放回队列，然后重新获取。
                         long startMills = startCondition.startMills();
                         long currentMills = System.currentTimeMillis();
                         long waitMills = startMills - currentMills;
