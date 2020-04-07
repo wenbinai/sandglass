@@ -21,6 +21,7 @@ public final class StartConditions {
      *
      * @param date 日期
      * @since 0.0.1
+     * @return 实现
      */
     public static IStartCondition at(final Date date) {
         return new StartConditionAt(date);
@@ -31,6 +32,7 @@ public final class StartConditions {
      *
      * @param startMills 开始时间
      * @since 0.0.1
+     * @return 实现
      */
     public static IStartCondition at(final long startMills) {
         return new StartConditionAt(startMills);
@@ -60,8 +62,8 @@ public final class StartConditions {
 
     /**
      * 立刻开始
-     * @return 实现
      * @since 0.0.1
+     * @return 实现
      */
     public static IStartCondition rightNow() {
         return Instances.singleton(StartConditionRightNow.class);
