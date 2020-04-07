@@ -3,7 +3,6 @@ package com.github.houbb.sandglass.core.support.start.impl;
 import com.github.houbb.heaven.annotation.ThreadSafe;
 import com.github.houbb.sandglass.core.support.start.IStartCondition;
 
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -18,14 +17,13 @@ public class StartConditionAfter implements IStartCondition {
      * 间隔时间
      * @since 0.0.1
      */
-    private final Date startTime;
+    private final long startMills;
 
     public StartConditionAfter(long time, TimeUnit unit) {
         long currentMills = System.currentTimeMillis();
         long afterMills = unit.toMillis(time);
 
-        long actualMills = currentMills + afterMills;
-        startTime = new Date(actualMills);
+        startMills = currentMills + afterMills;
     }
 
     public StartConditionAfter(long time) {
@@ -40,8 +38,13 @@ public class StartConditionAfter implements IStartCondition {
      */
     @Override
     public boolean condition() {
-        Date currentTime = new Date();
-        return currentTime.compareTo(startTime) >= 0;
+        long currentMills = System.currentTimeMillis();
+        return currentMills - startMills >= 0;
+    }
+
+    @Override
+    public long startMills() {
+        return this.startMills;
     }
 
 }

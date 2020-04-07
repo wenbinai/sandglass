@@ -7,10 +7,10 @@ package com.github.houbb.sandglass.core.core;
 public interface ISandGlass {
 
     /**
-     * 执行
+     * 提交一个任务
      * @param context 上下文
      * @since 0.0.1
      */
-    void execute(final ISandGlassContext context);
+    void commit(final ISandGlassContext context);
 
 }

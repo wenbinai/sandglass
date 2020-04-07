@@ -22,4 +22,9 @@ public class StartConditionRightNow implements IStartCondition {
         return true;
     }
 
+    @Override
+    public long startMills() {
+        return System.currentTimeMillis();
+    }
+
 }

@@ -13,4 +13,11 @@ public interface IStartCondition {
      */
     boolean condition();
 
+    /**
+     * 开始时间
+     * @return 开始时间
+     * @since 0.0.1
+     */
+    long startMills();
+
 }

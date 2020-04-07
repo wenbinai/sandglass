@@ -1,9 +1,11 @@
 package com.github.houbb.sandglass.core.core.impl;
 
 import com.github.houbb.heaven.annotation.NotThreadSafe;
+import com.github.houbb.sandglass.api.api.IIdentify;
 import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.IScheduler;
 import com.github.houbb.sandglass.core.core.ISandGlassContext;
+import com.github.houbb.sandglass.core.support.start.IStartCondition;
 
 /**
  * @author binbin.hou
@@ -33,6 +35,19 @@ public class SandGlassContext implements ISandGlassContext {
      */
     private IScheduler scheduler;
 
+    /**
+     * 开始条件
+     * @since 0.0.1
+     */
+    private IStartCondition startCondition;
+
+    /**
+     * 任务标识
+     *
+     * @since 0.0.1
+     */
+    private IIdentify identify;
+
     @Override
     public IJob job() {
         return job;
@@ -50,6 +65,26 @@ public class SandGlassContext implements ISandGlassContext {
 
     public SandGlassContext scheduler(IScheduler scheduler) {
         this.scheduler = scheduler;
+        return this;
+    }
+
+    @Override
+    public IStartCondition startCondition() {
+        return startCondition;
+    }
+
+    public SandGlassContext startCondition(IStartCondition startCondition) {
+        this.startCondition = startCondition;
+        return this;
+    }
+
+    @Override
+    public IIdentify identify() {
+        return identify;
+    }
+
+    public SandGlassContext identify(IIdentify identify) {
+        this.identify = identify;
         return this;
     }
 }

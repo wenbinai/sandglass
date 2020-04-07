@@ -27,6 +27,16 @@ public final class StartConditions {
     }
 
     /**
+     * 根据时间来确定
+     *
+     * @param startMills 开始时间
+     * @since 0.0.1
+     */
+    public static IStartCondition at(final long startMills) {
+        return new StartConditionAt(startMills);
+    }
+
+    /**
      * 指定时间之后
      * @param time 时间
      * @param unit 单位
