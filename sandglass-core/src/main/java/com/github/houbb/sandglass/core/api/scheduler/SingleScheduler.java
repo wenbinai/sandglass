@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
  * 1. 异常处理
  * 2. callback 或者是 listener
  * @author binbin.hou
- * @since 1.0.0
+ * @since 0.0.1
  */
 @ThreadSafe
 public class SingleScheduler implements IScheduler {

@@ -1,8 +1,6 @@
 # SandGlass
 
-⏳ 是一款为 java 设计的时间任务调度工具。
-
-[SandGlass](https://github.com/houbb/sandglass) 是简易版本的 tomcat 实现。。
+⏳ [SandGlass](https://github.com/houbb/sandglass) 是一款为 java 设计的时间任务调度工具。
 
 [![Build Status](https://travis-ci.com/houbb/sandglass.svg?branch=master)](https://travis-ci.com/houbb/sandglass)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.houbb/sandglass/badge.svg)](http://mvnrepository.com/artifact/com.github.houbb/sandglass)
@@ -43,10 +41,10 @@ Current Time: 20200407201944523
 
 # Road-Map
 
-[] stop condition
+- [ ] stop condition
 
-[] interval strategy
+- [ ] interval strategy
 
-[] scheduler thread pool
+- [ ] scheduler thread pool
 
 

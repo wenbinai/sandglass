@@ -7,7 +7,7 @@ import com.github.houbb.sandglass.api.api.IIdentify;
 /**
  * uuid 32 位
  * @author binbin.hou
- * @since 1.0.0
+ * @since 0.0.1
  */
 @ThreadSafe
 public class UUID32Identify implements IIdentify {
