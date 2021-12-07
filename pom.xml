@@ -12,7 +12,7 @@
     <groupId>com.github.houbb</groupId>
     <artifactId>sandglass</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.2</version>
     <modules>
         <module>sandglass-api</module>
         <module>sandglass-core</module>
@@ -41,6 +41,7 @@
         <id.version>0.0.6</id.version>
         <lock.version>0.0.2</lock.version>
         <log-integration.version>1.1.8</log-integration.version>
+        <cron.version>1.0.0</cron.version>
 
         <!--============================== OTHER ==============================-->
         <junit.version>4.12</junit.version>
@@ -75,7 +76,11 @@
                 <artifactId>timer-core</artifactId>
                 <version>${timer.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.github.houbb</groupId>
+                <artifactId>cron</artifactId>
+                <version>${cron.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.github.houbb</groupId>
                 <artifactId>id-api</artifactId>

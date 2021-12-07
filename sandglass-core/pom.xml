@@ -5,7 +5,7 @@
     <parent>
         <artifactId>sandglass</artifactId>
         <groupId>com.github.houbb</groupId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -32,6 +32,16 @@
         <dependency>
             <groupId>com.github.houbb</groupId>
             <artifactId>lock-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.houbb</groupId>
+            <artifactId>timer-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.houbb</groupId>
+            <artifactId>cron</artifactId>
         </dependency>
 
     </dependencies>

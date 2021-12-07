@@ -1,20 +1,23 @@
 package com.github.houbb.sandglass.core.bs;
 
-import com.github.houbb.heaven.support.instance.impl.Instances;
 import com.github.houbb.heaven.util.common.ArgUtil;
-import com.github.houbb.sandglass.api.api.IJob;
-import com.github.houbb.sandglass.api.api.IScheduler;
-import com.github.houbb.sandglass.core.api.job.Jobs;
-import com.github.houbb.sandglass.core.api.scheduler.Schedulers;
-import com.github.houbb.sandglass.core.core.ISandGlass;
-import com.github.houbb.sandglass.core.core.impl.SandGlass;
-import com.github.houbb.sandglass.core.core.impl.SandGlassContext;
-import com.github.houbb.sandglass.core.support.start.IStartCondition;
-import com.github.houbb.sandglass.core.support.start.impl.StartConditions;
+import com.github.houbb.lock.api.core.ILock;
+import com.github.houbb.lock.redis.core.LockSpinRe;
+import com.github.houbb.sandglass.api.api.*;
+import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
+import com.github.houbb.sandglass.core.api.scheduler.DefaultScheduler;
+import com.github.houbb.sandglass.core.support.manager.JobManager;
+import com.github.houbb.sandglass.core.support.manager.TriggerManager;
+import com.github.houbb.sandglass.core.support.queue.JobTriggerQueue;
+import com.github.houbb.sandglass.core.support.thread.WorkerThreadPool;
+import com.github.houbb.timer.api.ITimer;
+import com.github.houbb.timer.core.timer.SystemTimer;
 
 /**
+ * 引导类
+ *
  * @author binbin.hou
- * @since 0.0.1
+ * @since 0.0.2
  */
 public final class SandGlassBs {
 
@@ -30,80 +33,136 @@ public final class SandGlassBs {
     }
 
     /**
-     * 核心实现类
-     * @since 0.0.1
+     * 工作线程池
+     * @since 0.0.2
      */
-    private final ISandGlass sandGlass = Instances.singleton(SandGlass.class);
+    private IWorkerThreadPool workerThreadPool = new WorkerThreadPool();
 
     /**
-     * 任务调度类
-     * @since 0.0.1
+     * 任务管理类
+     * @since 0.0.2
      */
-    private IScheduler scheduler = Schedulers.defaults();
+    private IJobManager jobManager = new JobManager();
 
     /**
-     * 任务
-     * @since 0.0.1
+     * 触发器管理类
+     * @since 0.0.2
      */
-    private IJob job = Jobs.date();
+    private ITriggerManager triggerManager = new TriggerManager();
 
     /**
-     * 开始条件
-     * @since 0.0.1
+     * 时钟
+     * @since 0.0.2
      */
-    private IStartCondition startCondition = StartConditions.rightNow();
+    private ITimer timer = SystemTimer.getInstance();
 
     /**
-     * 设置任务调度实现类
-     * @param scheduler 任务调度
+     * 触发锁
+     * @since 0.0.2
+     */
+    private ILock triggerLock = new LockSpinRe();
+
+    /**
+     * 任务锁
+     * @since 0.0.2
+     */
+    private ILock jobLock = new LockSpinRe();
+
+    /**
+     * 任务调度队列
+     * @since 0.0.2
+     */
+    private IJobTriggerQueue jobTriggerQueue = new JobTriggerQueue();
+
+    /**
+     * 调度核心
+     * @since 0.0.2
+     */
+    private IScheduler scheduler = null;
+
+    public SandGlassBs workerThreadPool(IWorkerThreadPool workerThreadPool) {
+        ArgUtil.notNull(workerThreadPool, "workerThreadPool");
+
+        this.workerThreadPool = workerThreadPool;
+        return this;
+    }
+
+    public SandGlassBs jobManager(IJobManager jobManager) {
+        ArgUtil.notNull(jobManager, "jobManager");
+
+        this.jobManager = jobManager;
+        return this;
+    }
+
+    public SandGlassBs triggerManager(ITriggerManager triggerManager) {
+        ArgUtil.notNull(triggerManager, "triggerManager");
+
+        this.triggerManager = triggerManager;
+        return this;
+    }
+
+    public SandGlassBs timer(ITimer timer) {
+        ArgUtil.notNull(timer, "timer");
+
+        this.timer = timer;
+        return this;
+    }
+
+    public SandGlassBs triggerLock(ILock triggerLock) {
+        ArgUtil.notNull(triggerLock, "triggerLock");
+
+        this.triggerLock = triggerLock;
+        return this;
+    }
+
+    public SandGlassBs jobLock(ILock jobLock) {
+        ArgUtil.notNull(jobLock, "jobLock");
+
+        this.jobLock = jobLock;
+        return this;
+    }
+
+    public SandGlassBs jobTriggerQueue(IJobTriggerQueue jobTriggerQueue) {
+        ArgUtil.notNull(jobTriggerQueue, "jobTriggerQueue");
+
+        this.jobTriggerQueue = jobTriggerQueue;
+        return this;
+    }
+
+    /**
+     * 线程启动
      * @return this
-     * @since 0.0.1
+     * @since 0.0.2
      */
-    public SandGlassBs scheduler(IScheduler scheduler) {
+    public SandGlassBs start() {
+        DefaultScheduler defaultScheduler = new DefaultScheduler();
+        defaultScheduler.jobLock(jobLock)
+                .jobManager(jobManager)
+                .jobTriggerQueue(jobTriggerQueue)
+                .timer(timer)
+                .workerThreadPool(workerThreadPool)
+                .triggerLock(triggerLock)
+                .triggerManager(triggerManager);
+
+        this.scheduler = defaultScheduler;
+        this.scheduler.start();
+
+        return this;
+    }
+
+    /**
+     * 任务调度
+     * @param job 任务
+     * @param trigger 触发器
+     * @return this
+     * @since 0.0.2
+     */
+    public SandGlassBs schedule(final IJob job, final ITrigger trigger) {
         ArgUtil.notNull(scheduler, "scheduler");
 
-        this.scheduler = scheduler;
+        this.scheduler.schedule(job, trigger);
+
         return this;
-    }
-
-    /**
-     * 设置任务实现类
-     * @param job 任务
-     * @return this
-     * @since 0.0.1
-     */
-    public SandGlassBs job(IJob job) {
-        ArgUtil.notNull(job, "job");
-
-        this.job = job;
-        return this;
-    }
-
-    /**
-     * 设置开始条件
-     * @param startCondition 开始条件
-     * @return this
-     * @since 0.0.1
-     */
-    public SandGlassBs startCondition(IStartCondition startCondition) {
-        ArgUtil.notNull(startCondition, "startCondition");
-
-        this.startCondition = startCondition;
-        return this;
-    }
-
-    /**
-     * 提交任务
-     * @since 0.0.1
-     */
-    public void commit() {
-        SandGlassContext context = SandGlassContext.newInstance()
-                .scheduler(scheduler)
-                .job(job)
-                .startCondition(startCondition)
-                .identify(identify);
-
-        this.sandGlass.commit(context);
     }
 
 }

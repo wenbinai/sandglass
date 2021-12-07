@@ -26,25 +26,67 @@
 ### 测试代码
 
 ```java
-SandGlassHelper.commit();
+//1.1 定义任务
+IJob job = new AbstractJob() {
+    @Override
+    protected void doExecute(IJobContext context) {
+        LOG.info("HELLO");
+    }
+};
 
-TimeUnit.SECONDS.sleep(2);
+//1.2 定义触发器
+ITrigger trigger = new CronTrigger("*/5 * * * * ?");
+
+//2. 执行
+SandGlassHelper.schedule(job, trigger);
 ```
-
-默认提交一个打印日期的任务，等待时间是为了让异步进程执行完成。
 
 ### 日志输出
 
+根据 cron 表达式，5s 执行一次任务。
+
 ```
-Current Time: 20200407201944523
+[INFO] [2021-12-07 21:47:40.008] [pool-1-thread-1] [c.g.h.s.c.u.SandGlassHelperTest.doExecute] - HELLO
+[INFO] [2021-12-07 21:47:45.003] [pool-1-thread-2] [c.g.h.s.c.u.SandGlassHelperTest.doExecute] - HELLO
+[INFO] [2021-12-07 21:47:50.005] [pool-1-thread-3] [c.g.h.s.c.u.SandGlassHelperTest.doExecute] - HELLO
 ```
 
 # Road-Map
 
-- [ ] stop condition
+- [ ] simpleTrigger
 
-- [ ] interval strategy
+丰富 trigger 策略
 
-- [ ] scheduler thread pool
+- [ ] lock 优化
+
+默认添加无锁机制，优化 lock 实现
+
+redis 分布式锁单独作为一个模块。
+
+- [ ] 数据的持久化
+
+任务异步执行的结果，监听器，持久化。
+
+- [ ] builder
+
+让构建代码更加优雅
+
+- [ ] 调度的管理
+
+pause
+
+resume
+
+- [ ] MIS-FIRE 处理
+
+后续优化
+
+- [ ] spring 整合
+
+- [ ] springboot 整合
+
+- [ ] 分布式任务调度中心
+
+- [ ] DAG 有向图任务编排
 
 

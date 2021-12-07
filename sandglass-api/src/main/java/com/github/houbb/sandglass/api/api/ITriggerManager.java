@@ -1,6 +1,6 @@
 package com.github.houbb.sandglass.api.api;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * 指定时：
@@ -39,7 +39,7 @@ public interface ITriggerManager {
      * @since 0.0.2
      * @return 列表
      */
-    List<ITrigger> list();
+    Collection<ITrigger> list();
 
     /**
      * 详情

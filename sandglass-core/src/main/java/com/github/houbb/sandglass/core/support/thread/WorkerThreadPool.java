@@ -1,10 +1,15 @@
 package com.github.houbb.sandglass.core.support.thread;
 
+import com.github.houbb.log.integration.core.Log;
+import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.IJobContext;
 import com.github.houbb.sandglass.api.api.IWorkerThreadPool;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 执行者线程池
@@ -13,6 +18,8 @@ import java.util.concurrent.*;
  * @since 0.0.2
  */
 public class WorkerThreadPool implements IWorkerThreadPool {
+
+    private static final Log LOG = LogFactory.getLog(WorkerThreadPool.class);
 
     private final ExecutorService executorService;
 
@@ -42,7 +49,7 @@ public class WorkerThreadPool implements IWorkerThreadPool {
                     // 任务开始后
                 } catch (Exception exception) {
                     // 任务异常
-                    exception.printStackTrace();
+                    LOG.error("任务执行异常", exception);
                 }
             }
         });

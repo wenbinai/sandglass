@@ -1,6 +1,5 @@
 package com.github.houbb.sandglass.api.api;
 
-import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.timer.api.ITimer;
 
 /**
@@ -50,9 +49,10 @@ public interface ITrigger {
 
     /**
      * 下一次时间
+     * @
      * @return 下一次时间
      */
-    long nextTime();
+    long nextTime(long timeAfter);
 
     /**
      * 优先级

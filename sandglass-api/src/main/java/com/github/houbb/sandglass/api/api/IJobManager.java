@@ -1,5 +1,6 @@
 package com.github.houbb.sandglass.api.api;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -37,7 +38,7 @@ public interface IJobManager {
      * @since 0.0.2
      * @return 列表
      */
-    List<IJob> list();
+    Collection<IJob> list();
 
     /**
      * 详情

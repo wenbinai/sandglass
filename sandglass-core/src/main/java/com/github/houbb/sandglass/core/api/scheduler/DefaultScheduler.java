@@ -1,25 +1,24 @@
 package com.github.houbb.sandglass.core.api.scheduler;
 
-import com.github.houbb.heaven.annotation.ThreadSafe;
+import com.github.houbb.heaven.annotation.NotThreadSafe;
 import com.github.houbb.heaven.util.common.ArgUtil;
-import com.github.houbb.heaven.util.lang.StringUtil;
-import com.github.houbb.heaven.util.util.DateUtil;
-import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.lock.api.core.ILock;
+import com.github.houbb.lock.redis.core.LockSpinRe;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
-import com.github.houbb.sandglass.core.api.job.JobContext;
-import com.github.houbb.sandglass.core.exception.SandGlassException;
+import com.github.houbb.sandglass.core.support.manager.JobManager;
+import com.github.houbb.sandglass.core.support.manager.TriggerManager;
+import com.github.houbb.sandglass.core.support.queue.JobTriggerQueue;
+import com.github.houbb.sandglass.core.support.thread.MainThreadLoop;
+import com.github.houbb.sandglass.core.support.thread.WorkerThreadPool;
 import com.github.houbb.timer.api.ITimer;
+import com.github.houbb.timer.core.timer.SystemTimer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 1. 异常处理
@@ -27,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  * @author binbin.hou
  * @since 0.0.1
  */
-@ThreadSafe
+@NotThreadSafe
 public class DefaultScheduler implements IScheduler {
 
     private static final Log LOG = LogFactory.getLog(DefaultScheduler.class);
@@ -42,52 +41,59 @@ public class DefaultScheduler implements IScheduler {
      * 工作线程池
      * @since 0.0.2
      */
-    private IWorkerThreadPool workerThreadPool;
+    private IWorkerThreadPool workerThreadPool = new WorkerThreadPool();
 
     /**
      * 任务管理类
      * @since 0.0.2
      */
-    protected IJobManager jobManager;
+    protected IJobManager jobManager = new JobManager();
 
     /**
      * 触发器管理类
      * @since 0.0.2
      */
-    protected ITriggerManager triggerManager;
+    protected ITriggerManager triggerManager = new TriggerManager();
 
     /**
      * 时钟
      * @since 0.0.2
      */
-    protected ITimer timer;
+    protected ITimer timer = SystemTimer.getInstance();
 
     /**
      * 触发锁
      * @since 0.0.2
      */
-    protected ILock triggerLock;
+    protected ILock triggerLock = new LockSpinRe();
 
     /**
      * 任务锁
      * @since 0.0.2
      */
-    protected ILock jobLock;
+    protected ILock jobLock = new LockSpinRe();
 
     /**
      * 任务调度队列
      * @since 0.0.2
      */
-    protected IJobTriggerQueue jobTriggerQueue;
+    protected IJobTriggerQueue jobTriggerQueue = new JobTriggerQueue();
 
     /**
-     * 任务触发器 map
+     * 单个任务
      * @since 0.0.2
      */
-    protected final Map<String,String> jobTriggerMap;
+    private final ExecutorService executorService;
+
+    /**
+     * 调度主线程
+     * @since 0.0.2
+     */
+    private final MainThreadLoop mainThreadLoop;
 
     public DefaultScheduler() {
-        jobTriggerMap = new HashMap<>();
+        executorService = Executors.newSingleThreadExecutor();
+        mainThreadLoop = new MainThreadLoop();
     }
 
     @Override
@@ -147,185 +153,66 @@ public class DefaultScheduler implements IScheduler {
     }
 
     @Override
-    public void start() {
-        paramCheck();
+    public synchronized void start() {
+        if(startFlag) {
+            return;
+        }
 
         this.startFlag = true;
 
-        while (startFlag) {
-            String triggerLockKey = buildTriggerLockKey();
-            String jobLockKey = "";
-            try {
-                //0. 获取 trigger lock，便于后期分布式拓展
-                boolean triggerLock = this.triggerLock.tryLock(60, TimeUnit.SECONDS,triggerLockKey);
-                if(!triggerLock) {
-                    LOG.info("trigger lock 获取失败");
-                    // 获取锁失败
-                    continue;
-                }
+        mainThreadLoop.jobLock(jobLock);
+        mainThreadLoop.jobManager(jobManager);
+        mainThreadLoop.jobTriggerQueue(jobTriggerQueue);
 
-                //1. 如果 acquireLock 成功，从 trigger queue 中获取最新的一个
-                JobTriggerDto jobTriggerDto = this.jobTriggerQueue.take();
-                // 释放锁
-                this.triggerLock.unlock(triggerLockKey);
-                if(jobTriggerDto == null) {
-                    LOG.info("jobTriggerDto 信息为空");
-                    continue;
-                }
+        mainThreadLoop.triggerLock(triggerLock);
+        mainThreadLoop.triggerManager(triggerManager);
 
-                //2. while 等待任务执行时间
-                this.loopWaitUntilFiredTime(jobTriggerDto.nextTime());
+        mainThreadLoop.timer(timer);
+        mainThreadLoop.workerThreadPool(workerThreadPool);
+        mainThreadLoop.startFlag(true);
 
-                //3. 获取 trigger 对应的 job。更新 trigger 的执行状态。获取 nextTime 到 queue 中
-                //3.1 job 加锁
-                jobLockKey = buildJobLockKey(jobTriggerDto);
-                boolean jobLock = this.jobLock.tryLock(60, TimeUnit.SECONDS,jobLockKey);
-                if(!jobLock) {
-                    LOG.info("job lock 获取失败");
-                    // 获取锁失败
-                    continue;
-                }
+        //在主线程关闭后无需手动关闭守护线程，因为会自动关闭，避免了麻烦，Java垃圾回收线程就是一个典型的守护线程，
+        //简单粗暴的可以理解为所有为线程服务而不涉及资源的线程都能设置为守护线程。
+//        mainThreadLoop.setDaemon(true);
 
-                //3.2 更新 trigger & job 的状态
-                this.handleJobAndTrigger(jobTriggerDto);
-
-                //3.3 使用 worker-thread 执行任务(这里还需要获取锁吗？)
-                IJob job = jobManager.detail(jobTriggerDto.jobId());
-                IJobContext jobContext = buildJobContext(job, jobTriggerDto);
-                workerThreadPool.commit(job, jobContext);
-
-                //3.4 释放锁
-                this.jobLock.unlock(jobLockKey);
-            } catch (InterruptedException e) {
-                // TODO: 添加对应的异常处理监听类
-                LOG.error("中断异常 ", e);
-            } finally {
-                this.triggerLock.unlock(triggerLockKey);
-                this.jobLock.unlock(jobLockKey);
-            }
-        }
-    }
-
-    /**
-     * 构建任务执行的上下文
-     * @param job 任务
-     * @param jobTriggerDto 临时对象
-     * @return 结果
-     * @since 0.0.2
-     */
-    private IJobContext buildJobContext(IJob job, JobTriggerDto jobTriggerDto) {
-        String traceId = IdHelper.uuid32();
-        long firedTime = timer.time();
-
-        JobContext jobContext = new JobContext();
-        jobContext.dataMap(job.dataMap());
-        jobContext.traceId(traceId);
-        jobContext.firedTime(firedTime);
-        jobContext.jobManager(this.jobManager);
-        jobContext.triggerManager(this.triggerManager);
-
-        return jobContext;
-    }
-
-    /**
-     * 处理任务的状态
-     * @param jobTriggerDto 状态
-     * @since 0.0.2
-     */
-    protected void handleJobAndTrigger(JobTriggerDto jobTriggerDto) {
-        LOG.warn("更新任务和触发器的状态 {}", jobTriggerDto.toString());
-        // 更新对应的状态
-
-        // 存放下一次的执行时间
-        IJob job = jobManager.detail(jobTriggerDto.jobId());
-        ITrigger trigger = triggerManager.detail(jobTriggerDto.triggerId());
-
-        JobTriggerDto newDto = buildJobTriggerDto(job, trigger);
-        this.jobTriggerQueue.put(newDto);
-    }
-
-    /**
-     * 循环等待
-     * @param nextTime 下一次触发时间
-     * @since 0.0.2
-     */
-    private void loopWaitUntilFiredTime(long nextTime) {
-        try {
-            long currentTime = timer.time();
-            while (currentTime > nextTime) {
-                // sleep 一下，避免 cpu 飙升
-                TimeUnit.MILLISECONDS.sleep(1);
-
-                currentTime = timer.time();
-            }
-        } catch (InterruptedException e) {
-            //TODO: 循环等待异常
-
-            LOG.warn("循环等待被中断", e);
-            throw new SandGlassException(e);
-        }
-    }
-
-    /**
-     * 构建 trigger 锁对应的 key
-     * @return 结果
-     * @since 0.0.2
-     */
-    protected String buildTriggerLockKey() {
-        return "trigger-lock-" + DateUtil.getCurrentTimeStampStr();
-    }
-
-    /**
-     * 构建任务锁 key
-     * @param jobTriggerDto 任务信息
-     * @return 结果
-     * @since 0.0.2
-     */
-    protected String buildJobLockKey(JobTriggerDto jobTriggerDto) {
-        List<String> list = new ArrayList<>();
-        list.add(jobTriggerDto.jobId());
-        list.add(jobTriggerDto.triggerId());
-        list.add(jobTriggerDto.order()+"");
-        list.add(jobTriggerDto.nextTime()+"");
-
-        return StringUtil.join(list, ":");
-    }
-
-    private void paramCheck() {
-        ArgUtil.notNull(jobManager, "jobManager");
-        ArgUtil.notNull(triggerManager, "triggerManager");
-        ArgUtil.notNull(jobTriggerQueue, "jobTriggerQueue");
-        ArgUtil.notNull(timer, "timer");
+        // 异步执行
+        executorService.submit(mainThreadLoop);
     }
 
     @Override
     public void shutdown() {
         this.startFlag = false;
+        mainThreadLoop.startFlag(startFlag);
     }
 
     @Override
     public void schedule(IJob job, ITrigger trigger) {
-        ArgUtil.notNull(job, "job");
-        ArgUtil.notNull(trigger, "trigger");
+        this.paramCheck(job, trigger);
 
         this.jobManager.add(job);
         this.triggerManager.add(trigger);
 
-        // 添加对应的 map
-        jobTriggerMap.put(job.id(), trigger.id());
-
         // 把 trigger.nextTime + jobId triggerId 放入到调度队列中
-        JobTriggerDto triggerDto = buildJobTriggerDto(job, trigger);
+        JobTriggerDto triggerDto = buildJobTriggerDto(job, trigger, trigger.startTime());
         jobTriggerQueue.put(triggerDto);
     }
 
-    private JobTriggerDto buildJobTriggerDto(IJob job, ITrigger trigger) {
+    void paramCheck(IJob job, ITrigger trigger) {
+        ArgUtil.notNull(job, "job");
+        ArgUtil.notNull(trigger, "trigger");
+
+        ArgUtil.notEmpty(job.id(), "job.id");
+        ArgUtil.notEmpty(trigger.id(), "trigger.id");
+    }
+
+    private JobTriggerDto buildJobTriggerDto(IJob job, ITrigger trigger,
+                                             long timeAfter) {
         JobTriggerDto dto = new JobTriggerDto();
         dto.jobId(job.id());
         dto.triggerId(trigger.id());
         dto.order(trigger.order());
 
-        long nextTime = trigger.nextTime();
+        long nextTime = trigger.nextTime(timeAfter);
         dto.nextTime(nextTime);
 
         return dto;

@@ -21,13 +21,4 @@ public final class Jobs {
         return Instances.singleton(NoneJob.class);
     }
 
-    /**
-     * 当前时间
-     * @return 实现
-     * @since 0.0.1
-     */
-    public static IJob date() {
-        return Instances.singleton(DateJob.class);
-    }
-
 }

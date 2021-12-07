@@ -18,9 +18,15 @@ public abstract class AbstractJob implements IJob {
 
     protected String id;
 
-    protected String remark = "";
+    protected String remark;
 
-    protected Map<String, String> dataMap = new HashMap<>();
+    protected Map<String, String> dataMap;
+
+    public AbstractJob() {
+        this.id = IdHelper.uuid32();
+        this.remark = "";
+        this.dataMap = new HashMap<>();
+    }
 
     public AbstractJob id(String id) {
         this.id = id;
@@ -44,12 +50,12 @@ public abstract class AbstractJob implements IJob {
 
     @Override
     public String id() {
-        return IdHelper.uuid32();
+        return this.id;
     }
 
     @Override
     public String remark() {
-        return "";
+        return this.remark;
     }
 
     @Override
