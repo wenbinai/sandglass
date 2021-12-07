@@ -49,7 +49,7 @@ public interface ITrigger {
 
     /**
      * 下一次时间
-     * @
+     * @param timeAfter 指定时间之后
      * @return 下一次时间
      */
     long nextTime(long timeAfter);
