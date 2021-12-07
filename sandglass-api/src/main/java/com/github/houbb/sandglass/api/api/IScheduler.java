@@ -1,5 +1,9 @@
 package com.github.houbb.sandglass.api.api;
 
+import com.github.houbb.lock.api.core.ILock;
+import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
+import com.github.houbb.timer.api.ITimer;
+
 /**
  * 任务调度
  *
@@ -41,10 +45,79 @@ package com.github.houbb.sandglass.api.api;
 public interface IScheduler {
 
     /**
-     * 执行任务
-     * @param context 上下文
-     * @since 0.0.1
+     * 工作线程
+     * @param workerThreadPool 线程
+     * @return this
+     * @since 0.0.2
      */
-    void schedule(final ISchedulerContext context);
+    IScheduler workerThreadPool(IWorkerThreadPool workerThreadPool);
+
+    /**
+     * 设置 trigger 锁
+     * @param lock 锁
+     * @return this
+     * @since 0.0.2
+     */
+    IScheduler triggerLock(final ILock lock);
+
+    /**
+     * 设置 job 锁
+     * @param lock 锁
+     * @return this
+     * @since 0.0.2
+     */
+    IScheduler jobLock(final ILock lock);
+
+    /**
+     * 任务管理类
+     * @param jobManager 设置任务管理类
+     * @return 管理类
+     * @since 0.0.2
+     */
+    IScheduler jobManager(IJobManager jobManager);
+
+    /**
+     * 触发器管理类
+     * @param triggerManager 设置触发管理类
+     * @return 管理类
+     * @since 0.0.2
+     */
+    IScheduler triggerManager(ITriggerManager triggerManager);
+
+    /**
+     * 时间算法
+     * @param timer 任务
+     * @return 结果
+     * @since 0.0.2
+     */
+    IScheduler timer(final ITimer timer);
+
+    /**
+     * 设置任务触发队列
+     * @param jobTriggerQueue 任务触发队列
+     * @return 实现
+     * @since 0.0.2
+     */
+    IScheduler jobTriggerQueue(final IJobTriggerQueue jobTriggerQueue);
+
+    /**
+     * 执行任务调度
+     * @since 0.0.2
+     */
+    void start();
+
+    /**
+     * 执行任务调度
+     * @since 0.0.2
+     */
+    void shutdown();
+
+    /**
+     * 任务调度
+     * @param job 任务
+     * @param trigger 触发器
+     * @since 0.0.2
+     */
+    void schedule(final IJob job, final ITrigger trigger);
 
 }

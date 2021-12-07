@@ -2,10 +2,8 @@ package com.github.houbb.sandglass.core.bs;
 
 import com.github.houbb.heaven.support.instance.impl.Instances;
 import com.github.houbb.heaven.util.common.ArgUtil;
-import com.github.houbb.sandglass.api.api.IIdentify;
 import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.IScheduler;
-import com.github.houbb.sandglass.core.api.identify.Identifies;
 import com.github.houbb.sandglass.core.api.job.Jobs;
 import com.github.houbb.sandglass.core.api.scheduler.Schedulers;
 import com.github.houbb.sandglass.core.core.ISandGlass;
@@ -38,16 +36,10 @@ public final class SandGlassBs {
     private final ISandGlass sandGlass = Instances.singleton(SandGlass.class);
 
     /**
-     * 32 位标识
-     * @since 0.0.1
-     */
-    private final IIdentify identify = Identifies.uuid32();
-
-    /**
      * 任务调度类
      * @since 0.0.1
      */
-    private IScheduler scheduler = Schedulers.single();
+    private IScheduler scheduler = Schedulers.defaults();
 
     /**
      * 任务

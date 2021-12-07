@@ -1,6 +1,7 @@
 package com.github.houbb.sandglass.api.api;
 
-import java.util.Date;
+import com.github.houbb.lock.api.core.ILock;
+import com.github.houbb.timer.api.ITimer;
 
 /**
  * 指定时：
@@ -10,38 +11,56 @@ import java.util.Date;
  * @author binbin.hou
  * @since 0.0.1
  */
-@Deprecated
 public interface ITrigger {
+
+    /**
+     * 设置时间实现
+     * @param timer 时间策略
+     * @return 结果
+     * @since 0.0.2
+     */
+    ITrigger timer(final ITimer timer);
+
+    /**
+     * 唯一标识
+     * @return 标识
+     * @since 0.0.2
+     */
+    String id();
+
+    /**
+     * 备注
+     * @return 备注
+     * @since 0.0.2
+     */
+    String remark();
 
     /**
      * 开始时间
      * @return 开始时间
+     * @since 0.0.2
      */
-    Date startTime();
+    long startTime();
 
     /**
      * 结束时间
      * @return 结束时间
      */
-    Date endTime();
-
-    /**
-     * 上一次时间
-     * @return 上一次时间
-     */
-    Date previousTime();
+    long endTime();
 
     /**
      * 下一次时间
      * @return 下一次时间
      */
-    Date nextTime();
+    long nextTime();
 
     /**
-     * 触发次数
-     * @return 次数
-     * @since 0.0.1
+     * 优先级
+     *
+     * ps: 越小优先级越高
+     * @return 优先级
+     * @since 0.0.2
      */
-    int times();
+    int order();
 
 }

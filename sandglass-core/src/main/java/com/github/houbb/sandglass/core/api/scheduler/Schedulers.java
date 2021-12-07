@@ -16,8 +16,8 @@ public final class Schedulers {
      * @return 单个线程
      * @since 0.0.1
      */
-    public static IScheduler single() {
-        return Instances.singleton(SingleScheduler.class);
+    public static IScheduler defaults() {
+        return Instances.singleton(DefaultScheduler.class);
     }
 
 }

@@ -1,6 +1,5 @@
 package com.github.houbb.sandglass.core.core;
 
-import com.github.houbb.sandglass.api.api.IIdentify;
 import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.IScheduler;
 import com.github.houbb.sandglass.core.support.start.IStartCondition;

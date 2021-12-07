@@ -2,7 +2,6 @@ package com.github.houbb.sandglass.core.api.job;
 
 import com.github.houbb.heaven.annotation.ThreadSafe;
 import com.github.houbb.heaven.util.util.DateUtil;
-import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.IJobContext;
 
 /**
@@ -11,10 +10,10 @@ import com.github.houbb.sandglass.api.api.IJobContext;
  * @since 0.0.1
  */
 @ThreadSafe
-public class DateJob implements IJob {
+public class DateJob extends AbstractJob {
 
     @Override
-    public void execute(IJobContext context) {
+    protected void doExecute(IJobContext context) {
         System.out.println("Current Time: " + DateUtil.getCurrentTimeStampStr());
     }
 

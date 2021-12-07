@@ -23,6 +23,17 @@
             <groupId>com.github.houbb</groupId>
             <artifactId>heaven</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.houbb</groupId>
+            <artifactId>id-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.houbb</groupId>
+            <artifactId>lock-core</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>
