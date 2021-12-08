@@ -28,24 +28,6 @@ public class JobContext implements IJobContext {
      */
     private Map<String, String> dataMap;
 
-    /**
-     * 触发时间
-     * @since 0.0.2
-     */
-    private long firedTime;
-
-    /**
-     * 任务管理类
-     * @since 0.0.2
-     */
-    private IJobManager jobManager;
-
-    /**
-     * 触发器管理类
-     * @since 0.0.2
-     */
-    private ITriggerManager triggerManager;
-
     public static JobContext newInstance() {
         return new JobContext();
     }
@@ -70,33 +52,4 @@ public class JobContext implements IJobContext {
         return this;
     }
 
-    @Override
-    public long firedTime() {
-        return firedTime;
-    }
-
-    public JobContext firedTime(long firedTime) {
-        this.firedTime = firedTime;
-        return this;
-    }
-
-    @Override
-    public IJobManager jobManager() {
-        return jobManager;
-    }
-
-    public JobContext jobManager(IJobManager jobManager) {
-        this.jobManager = jobManager;
-        return this;
-    }
-
-    @Override
-    public ITriggerManager triggerManager() {
-        return triggerManager;
-    }
-
-    public JobContext triggerManager(ITriggerManager triggerManager) {
-        this.triggerManager = triggerManager;
-        return this;
-    }
 }

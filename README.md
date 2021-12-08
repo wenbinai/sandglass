@@ -51,13 +51,36 @@ SandGlassHelper.schedule(job, trigger);
 [INFO] [2021-12-07 21:47:50.005] [pool-1-thread-3] [c.g.h.s.c.u.SandGlassHelperTest.doExecute] - HELLO
 ```
 
+# Trigger 触发器
+
+## cron
+
+通过 cron 表达式创建 trigger，可以通过方法：
+
+```java
+Triggers.cron(String id, String cronExpression);
+Triggers.cron(String cronExpression);
+```
+
+## period
+
+通过指定时间间隔创建 trigger，使用方法：
+
+```java
+ITrigger period(long period);
+ITrigger period(long period, TimeUnit timeUnit);
+ITrigger period(String id, long period, TimeUnit timeUnit);
+```
+
 # Road-Map
 
-- [ ] simpleTrigger
+- [x] trigger 接口优化
+
+- [x] simpleTrigger
 
 丰富 trigger 策略
 
-- [ ] lock 优化
+- [x] lock 优化
 
 默认添加无锁机制，优化 lock 实现
 
@@ -67,15 +90,13 @@ redis 分布式锁单独作为一个模块。
 
 任务异步执行的结果，监听器，持久化。
 
-- [ ] builder
-
-让构建代码更加优雅
-
 - [ ] 调度的管理
 
 pause
 
 resume
+
+- [ ] trigger & job 的任务更新
 
 - [ ] MIS-FIRE 处理
 

@@ -2,10 +2,10 @@ package com.github.houbb.sandglass.core.bs;
 
 import com.github.houbb.heaven.util.common.ArgUtil;
 import com.github.houbb.lock.api.core.ILock;
-import com.github.houbb.lock.redis.core.LockSpinRe;
+import com.github.houbb.lock.redis.core.Locks;
 import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
-import com.github.houbb.sandglass.core.api.scheduler.DefaultScheduler;
+import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
 import com.github.houbb.sandglass.core.support.manager.JobManager;
 import com.github.houbb.sandglass.core.support.manager.TriggerManager;
 import com.github.houbb.sandglass.core.support.queue.JobTriggerQueue;
@@ -60,13 +60,13 @@ public final class SandGlassBs {
      * 触发锁
      * @since 0.0.2
      */
-    private ILock triggerLock = new LockSpinRe();
+    private ILock triggerLock = Locks.none();
 
     /**
      * 任务锁
      * @since 0.0.2
      */
-    private ILock jobLock = new LockSpinRe();
+    private ILock jobLock = Locks.none();
 
     /**
      * 任务调度队列
@@ -135,8 +135,8 @@ public final class SandGlassBs {
      * @since 0.0.2
      */
     public SandGlassBs start() {
-        DefaultScheduler defaultScheduler = new DefaultScheduler();
-        defaultScheduler.jobLock(jobLock)
+        Scheduler scheduler = new Scheduler();
+        scheduler.jobLock(jobLock)
                 .jobManager(jobManager)
                 .jobTriggerQueue(jobTriggerQueue)
                 .timer(timer)
@@ -144,7 +144,7 @@ public final class SandGlassBs {
                 .triggerLock(triggerLock)
                 .triggerManager(triggerManager);
 
-        this.scheduler = defaultScheduler;
+        this.scheduler = scheduler;
         this.scheduler.start();
 
         return this;

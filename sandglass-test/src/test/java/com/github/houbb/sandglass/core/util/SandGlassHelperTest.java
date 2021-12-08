@@ -6,10 +6,7 @@ import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.IJobContext;
 import com.github.houbb.sandglass.api.api.ITrigger;
 import com.github.houbb.sandglass.core.api.job.AbstractJob;
-import com.github.houbb.sandglass.core.api.scheduler.DefaultScheduler;
 import com.github.houbb.sandglass.core.support.trigger.CronTrigger;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author binbin.hou

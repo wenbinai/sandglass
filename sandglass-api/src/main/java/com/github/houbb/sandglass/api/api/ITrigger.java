@@ -13,12 +13,11 @@ import com.github.houbb.timer.api.ITimer;
 public interface ITrigger {
 
     /**
-     * 设置时间实现
-     * @param timer 时间策略
-     * @return 结果
-     * @since 0.0.2
+     * 下一次时间
+     * @param context 上下文
+     * @return 下一次时间
      */
-    ITrigger timer(final ITimer timer);
+    long nextTime(ITriggerContext context);
 
     /**
      * 唯一标识
@@ -46,13 +45,6 @@ public interface ITrigger {
      * @return 结束时间
      */
     long endTime();
-
-    /**
-     * 下一次时间
-     * @param timeAfter 指定时间之后
-     * @return 下一次时间
-     */
-    long nextTime(long timeAfter);
 
     /**
      * 优先级

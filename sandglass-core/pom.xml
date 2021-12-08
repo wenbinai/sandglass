@@ -5,7 +5,7 @@
     <parent>
         <artifactId>sandglass</artifactId>
         <groupId>com.github.houbb</groupId>
-        <version>0.0.2</version>
+        <version>0.0.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -42,6 +42,11 @@
         <dependency>
             <groupId>com.github.houbb</groupId>
             <artifactId>cron</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.houbb</groupId>
+            <artifactId>log-integration</artifactId>
         </dependency>
 
     </dependencies>

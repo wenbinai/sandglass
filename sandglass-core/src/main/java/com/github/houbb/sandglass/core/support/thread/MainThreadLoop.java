@@ -5,18 +5,20 @@ import com.github.houbb.heaven.util.lang.StringUtil;
 import com.github.houbb.heaven.util.util.DateUtil;
 import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.lock.api.core.ILock;
-import com.github.houbb.lock.redis.core.LockSpinRe;
+import com.github.houbb.lock.redis.core.Locks;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
 import com.github.houbb.sandglass.core.api.job.JobContext;
-import com.github.houbb.sandglass.core.api.scheduler.DefaultScheduler;
+import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
+import com.github.houbb.sandglass.core.api.scheduler.TriggerContext;
 import com.github.houbb.sandglass.core.exception.SandGlassException;
 import com.github.houbb.sandglass.core.support.manager.JobManager;
 import com.github.houbb.sandglass.core.support.manager.TriggerManager;
 import com.github.houbb.sandglass.core.support.queue.JobTriggerQueue;
+import com.github.houbb.sandglass.core.util.InnerTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
 
@@ -30,7 +32,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class MainThreadLoop extends Thread {
 
-    private static final Log LOG = LogFactory.getLog(DefaultScheduler.class);
+    private static final Log LOG = LogFactory.getLog(Scheduler.class);
 
     /**
      * 是否启动标识
@@ -66,13 +68,13 @@ public class MainThreadLoop extends Thread {
      * 触发锁
      * @since 0.0.2
      */
-    protected ILock triggerLock = new LockSpinRe();
+    protected ILock triggerLock = Locks.none();
 
     /**
      * 任务锁
      * @since 0.0.2
      */
-    protected ILock jobLock = new LockSpinRe();
+    protected ILock jobLock = Locks.none();
 
     /**
      * 任务调度队列
@@ -162,12 +164,16 @@ public class MainThreadLoop extends Thread {
                 }
 
                 //3.2 更新 trigger & job 的状态
-                this.handleJobAndTrigger(jobTriggerDto);
+                WorkerThreadPoolContext workerThreadPoolContext = WorkerThreadPoolContext
+                        .newInstance()
+                        .preJobTriggerDto(jobTriggerDto)
+                        .jobTriggerQueue(this.jobTriggerQueue)
+                        .jobManager(jobManager)
+                        .triggerManager(triggerManager)
+                        .timer(timer);
 
                 //3.3 使用 worker-thread 执行任务(这里还需要获取锁吗？)
-                IJob job = jobManager.detail(jobTriggerDto.jobId());
-                IJobContext jobContext = buildJobContext(job, jobTriggerDto);
-                workerThreadPool.commit(job, jobContext);
+                workerThreadPool.commit(workerThreadPoolContext);
 
                 //3.4 释放锁
                 this.jobLock.unlock(jobLockKey);
@@ -216,25 +222,23 @@ public class MainThreadLoop extends Thread {
         LOG.debug("更新任务和触发器的状态 {}", jobTriggerDto.toString());
         // 更新对应的状态
 
-        // 存放下一次的执行时间
-        IJob job = jobManager.detail(jobTriggerDto.jobId());
         ITrigger trigger = triggerManager.detail(jobTriggerDto.triggerId());
 
-        JobTriggerDto newDto = buildJobTriggerDto(job, trigger, jobTriggerDto.nextTime());
+        // 结束时间判断
+        if(InnerTriggerHelper.hasMeetEndTime(timer, trigger)) {
+            return;
+        }
+
+        // 存放下一次的执行时间
+        IJob job = jobManager.detail(jobTriggerDto.jobId());
+        ITriggerContext triggerContext = TriggerContext.newInstance()
+                .lastScheduleTime(jobTriggerDto.nextTime())
+                .timer(timer);
+        JobTriggerDto newDto = InnerTriggerHelper.buildJobTriggerDto(job, trigger, triggerContext);
+
+        // 任务应该什么时候放入队列？
+        // 真正完成的时候，还是开始处理的时候？
         this.jobTriggerQueue.put(newDto);
-    }
-
-    private JobTriggerDto buildJobTriggerDto(IJob job, ITrigger trigger,
-                                             long timeAfter) {
-        JobTriggerDto dto = new JobTriggerDto();
-        dto.jobId(job.id());
-        dto.triggerId(trigger.id());
-        dto.order(trigger.order());
-
-        long nextTime = trigger.nextTime(timeAfter);
-        dto.nextTime(nextTime);
-
-        return dto;
     }
 
     /**
@@ -260,27 +264,6 @@ public class MainThreadLoop extends Thread {
         list.add(jobTriggerDto.nextTime()+"");
 
         return StringUtil.join(list, ":");
-    }
-
-    /**
-     * 构建任务执行的上下文
-     * @param job 任务
-     * @param jobTriggerDto 临时对象
-     * @return 结果
-     * @since 0.0.2
-     */
-    private IJobContext buildJobContext(IJob job, JobTriggerDto jobTriggerDto) {
-        String traceId = IdHelper.uuid32();
-        long firedTime = timer.time();
-
-        JobContext jobContext = new JobContext();
-        jobContext.dataMap(job.dataMap());
-        jobContext.traceId(traceId);
-        jobContext.firedTime(firedTime);
-        jobContext.jobManager(this.jobManager);
-        jobContext.triggerManager(this.triggerManager);
-
-        return jobContext;
     }
 
 }

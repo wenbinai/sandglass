@@ -10,6 +10,13 @@ import java.util.Map;
 public interface IJob {
 
     /**
+     * 执行任务
+     * @param context 上下文
+     * @since 0.0.1
+     */
+    void execute(final IJobContext context);
+
+    /**
      * 唯一标识
      * @return 标识
      * @since 0.0.2
@@ -29,12 +36,5 @@ public interface IJob {
      * @since 0.0.2
      */
     Map<String, String> dataMap();
-
-    /**
-     * 执行任务
-     * @param context 上下文
-     * @since 0.0.1
-     */
-    void execute(final IJobContext context);
 
 }

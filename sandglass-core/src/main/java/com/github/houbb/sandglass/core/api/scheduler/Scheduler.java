@@ -3,7 +3,7 @@ package com.github.houbb.sandglass.core.api.scheduler;
 import com.github.houbb.heaven.annotation.NotThreadSafe;
 import com.github.houbb.heaven.util.common.ArgUtil;
 import com.github.houbb.lock.api.core.ILock;
-import com.github.houbb.lock.redis.core.LockSpinRe;
+import com.github.houbb.lock.redis.core.Locks;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.*;
@@ -14,6 +14,7 @@ import com.github.houbb.sandglass.core.support.manager.TriggerManager;
 import com.github.houbb.sandglass.core.support.queue.JobTriggerQueue;
 import com.github.houbb.sandglass.core.support.thread.MainThreadLoop;
 import com.github.houbb.sandglass.core.support.thread.WorkerThreadPool;
+import com.github.houbb.sandglass.core.util.InnerTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
 
@@ -27,9 +28,9 @@ import java.util.concurrent.Executors;
  * @since 0.0.1
  */
 @NotThreadSafe
-public class DefaultScheduler implements IScheduler {
+public class Scheduler implements IScheduler {
 
-    private static final Log LOG = LogFactory.getLog(DefaultScheduler.class);
+    private static final Log LOG = LogFactory.getLog(Scheduler.class);
 
     /**
      * 是否启动标识
@@ -65,13 +66,13 @@ public class DefaultScheduler implements IScheduler {
      * 触发锁
      * @since 0.0.2
      */
-    protected ILock triggerLock = new LockSpinRe();
+    protected ILock triggerLock = Locks.none();
 
     /**
      * 任务锁
      * @since 0.0.2
      */
-    protected ILock jobLock = new LockSpinRe();
+    protected ILock jobLock = Locks.none();
 
     /**
      * 任务调度队列
@@ -91,13 +92,13 @@ public class DefaultScheduler implements IScheduler {
      */
     private final MainThreadLoop mainThreadLoop;
 
-    public DefaultScheduler() {
+    public Scheduler() {
         executorService = Executors.newSingleThreadExecutor();
         mainThreadLoop = new MainThreadLoop();
     }
 
     @Override
-    public DefaultScheduler workerThreadPool(IWorkerThreadPool workerThreadPool) {
+    public Scheduler workerThreadPool(IWorkerThreadPool workerThreadPool) {
         ArgUtil.notNull(workerThreadPool, "workerThreadPool");
 
         this.workerThreadPool = workerThreadPool;
@@ -105,7 +106,7 @@ public class DefaultScheduler implements IScheduler {
     }
 
     @Override
-    public DefaultScheduler jobManager(IJobManager jobManager) {
+    public Scheduler jobManager(IJobManager jobManager) {
         ArgUtil.notNull(jobManager, "jobManager");
 
         this.jobManager = jobManager;
@@ -113,7 +114,7 @@ public class DefaultScheduler implements IScheduler {
     }
 
     @Override
-    public DefaultScheduler triggerManager(ITriggerManager triggerManager) {
+    public Scheduler triggerManager(ITriggerManager triggerManager) {
         ArgUtil.notNull(triggerManager, "triggerManager");
 
         this.triggerManager = triggerManager;
@@ -121,7 +122,7 @@ public class DefaultScheduler implements IScheduler {
     }
 
     @Override
-    public DefaultScheduler timer(ITimer timer) {
+    public Scheduler timer(ITimer timer) {
         ArgUtil.notNull(timer, "timer");
 
         this.timer = timer;
@@ -129,7 +130,7 @@ public class DefaultScheduler implements IScheduler {
     }
 
     @Override
-    public DefaultScheduler triggerLock(ILock triggerLock) {
+    public Scheduler triggerLock(ILock triggerLock) {
         ArgUtil.notNull(triggerLock, "triggerLock");
 
         this.triggerLock = triggerLock;
@@ -137,7 +138,7 @@ public class DefaultScheduler implements IScheduler {
     }
 
     @Override
-    public DefaultScheduler jobLock(ILock jobLock) {
+    public Scheduler jobLock(ILock jobLock) {
         ArgUtil.notNull(jobLock, "jobLock");
 
         this.jobLock = jobLock;
@@ -145,7 +146,7 @@ public class DefaultScheduler implements IScheduler {
     }
 
     @Override
-    public DefaultScheduler jobTriggerQueue(IJobTriggerQueue jobTriggerQueue) {
+    public Scheduler jobTriggerQueue(IJobTriggerQueue jobTriggerQueue) {
         ArgUtil.notNull(jobTriggerQueue, "jobTriggerQueue");
 
         this.jobTriggerQueue = jobTriggerQueue;
@@ -192,8 +193,15 @@ public class DefaultScheduler implements IScheduler {
         this.jobManager.add(job);
         this.triggerManager.add(trigger);
 
+        // 结束时间判断
+        if(InnerTriggerHelper.hasMeetEndTime(timer, trigger)) {
+            return;
+        }
+
         // 把 trigger.nextTime + jobId triggerId 放入到调度队列中
-        JobTriggerDto triggerDto = buildJobTriggerDto(job, trigger, trigger.startTime());
+        ITriggerContext context = TriggerContext.newInstance()
+                .timer(timer);
+        JobTriggerDto triggerDto = InnerTriggerHelper.buildJobTriggerDto(job, trigger, context);
         jobTriggerQueue.put(triggerDto);
     }
 
@@ -203,19 +211,6 @@ public class DefaultScheduler implements IScheduler {
 
         ArgUtil.notEmpty(job.id(), "job.id");
         ArgUtil.notEmpty(trigger.id(), "trigger.id");
-    }
-
-    private JobTriggerDto buildJobTriggerDto(IJob job, ITrigger trigger,
-                                             long timeAfter) {
-        JobTriggerDto dto = new JobTriggerDto();
-        dto.jobId(job.id());
-        dto.triggerId(trigger.id());
-        dto.order(trigger.order());
-
-        long nextTime = trigger.nextTime(timeAfter);
-        dto.nextTime(nextTime);
-
-        return dto;
     }
 
 }

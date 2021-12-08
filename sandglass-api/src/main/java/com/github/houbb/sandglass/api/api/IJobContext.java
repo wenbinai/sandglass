@@ -27,25 +27,4 @@ public interface IJobContext {
      */
     Map<String, String> dataMap();
 
-    /**
-     * 触发时间
-     * @return 时间
-     * @since 0.0.2
-     */
-    long firedTime();
-
-    /**
-     * 任务管理类
-     * @return 任务管理类
-     * @since 0.0.2
-     */
-    IJobManager jobManager();
-
-    /**
-     * 触发器管理类
-     * @return 触发器管理类
-     * @since 0.0.2
-     */
-    ITriggerManager triggerManager();
-
 }
