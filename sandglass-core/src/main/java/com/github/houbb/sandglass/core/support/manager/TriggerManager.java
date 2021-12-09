@@ -2,6 +2,7 @@ package com.github.houbb.sandglass.core.support.manager;
 
 import com.github.houbb.sandglass.api.api.ITrigger;
 import com.github.houbb.sandglass.api.api.ITriggerManager;
+import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -42,5 +43,27 @@ public class TriggerManager implements ITriggerManager {
     @Override
     public ITrigger detail(String id) {
         return map.get(id);
+    }
+
+    @Override
+    public ITrigger pause(String id) {
+        ITrigger trigger = detail(id);
+        if(trigger == null) {
+            return null;
+        }
+
+        trigger.status(TriggerStatusEnum.PAUSE);
+        return trigger;
+    }
+
+    @Override
+    public ITrigger resume(String id) {
+        ITrigger trigger = detail(id);
+        if(trigger == null) {
+            return null;
+        }
+
+        trigger.status(TriggerStatusEnum.NORMAL);
+        return trigger;
     }
 }

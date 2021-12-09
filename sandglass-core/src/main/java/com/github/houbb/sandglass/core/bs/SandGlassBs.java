@@ -4,8 +4,10 @@ import com.github.houbb.heaven.util.common.ArgUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.lock.redis.core.Locks;
 import com.github.houbb.sandglass.api.api.*;
+import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
+import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
 import com.github.houbb.sandglass.core.support.manager.JobManager;
 import com.github.houbb.sandglass.core.support.manager.TriggerManager;
 import com.github.houbb.sandglass.core.support.queue.JobTriggerQueue;
@@ -78,7 +80,13 @@ public final class SandGlassBs {
      * 调度核心
      * @since 0.0.2
      */
-    private IScheduler scheduler = null;
+    private IScheduler scheduler = new Scheduler();
+
+    /**
+     * 调度监听类
+     * @since 0.0.4
+     */
+    private IScheduleListener scheduleListener = new ScheduleListener();
 
     public SandGlassBs workerThreadPool(IWorkerThreadPool workerThreadPool) {
         ArgUtil.notNull(workerThreadPool, "workerThreadPool");
@@ -129,22 +137,35 @@ public final class SandGlassBs {
         return this;
     }
 
+    public SandGlassBs scheduler(IScheduler scheduler) {
+        ArgUtil.notNull(scheduler, "scheduler");
+
+        this.scheduler = scheduler;
+        return this;
+    }
+
+    public SandGlassBs scheduleListener(IScheduleListener scheduleListener) {
+        ArgUtil.notNull(scheduleListener, "scheduleListener");
+
+        this.scheduleListener = scheduleListener;
+        return this;
+    }
+
     /**
      * 线程启动
      * @return this
      * @since 0.0.2
      */
     public SandGlassBs start() {
-        Scheduler scheduler = new Scheduler();
         scheduler.jobLock(jobLock)
                 .jobManager(jobManager)
                 .jobTriggerQueue(jobTriggerQueue)
                 .timer(timer)
                 .workerThreadPool(workerThreadPool)
                 .triggerLock(triggerLock)
-                .triggerManager(triggerManager);
+                .triggerManager(triggerManager)
+                .scheduleListener(scheduleListener);
 
-        this.scheduler = scheduler;
         this.scheduler.start();
 
         return this;

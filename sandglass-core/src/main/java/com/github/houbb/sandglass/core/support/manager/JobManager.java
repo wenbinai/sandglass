@@ -3,6 +3,7 @@ package com.github.houbb.sandglass.core.support.manager;
 import com.github.houbb.heaven.annotation.NotThreadSafe;
 import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.IJobManager;
+import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -45,4 +46,28 @@ public class JobManager implements IJobManager {
     public IJob detail(String id) {
         return map.get(id);
     }
+
+    @Override
+    public IJob pause(String id) {
+        IJob job = detail(id);
+
+        if(job == null) {
+            return null;
+        }
+        job.status(JobStatusEnum.PAUSE);
+
+        return job;
+    }
+
+    @Override
+    public IJob resume(String id) {
+        IJob job = detail(id);
+
+        if(job == null) {
+            return null;
+        }
+        job.status(JobStatusEnum.NORMAL);
+        return job;
+    }
+
 }

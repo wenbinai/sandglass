@@ -4,6 +4,7 @@ import com.github.houbb.heaven.util.common.ArgUtil;
 import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.IJobContext;
+import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,10 +23,17 @@ public abstract class AbstractJob implements IJob {
 
     protected Map<String, String> dataMap;
 
+    /**
+     * 枚举
+     * @since 0.0.4
+     */
+    private JobStatusEnum status;
+
     public AbstractJob() {
         this.id = IdHelper.uuid32();
         this.remark = "";
         this.dataMap = new HashMap<>();
+        this.status = JobStatusEnum.NORMAL;
     }
 
     public AbstractJob id(String id) {
@@ -45,6 +53,17 @@ public abstract class AbstractJob implements IJob {
 
     public AbstractJob dataMap(Map<String, String> dataMap) {
         this.dataMap = dataMap;
+        return this;
+    }
+
+    @Override
+    public JobStatusEnum status() {
+        return status;
+    }
+
+    @Override
+    public AbstractJob status(JobStatusEnum status) {
+        this.status = status;
         return this;
     }
 

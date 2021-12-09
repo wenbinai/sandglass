@@ -1,5 +1,7 @@
 package com.github.houbb.sandglass.api.api;
 
+import com.github.houbb.sandglass.api.constant.JobStatusEnum;
+
 import java.util.Map;
 
 /**
@@ -36,5 +38,20 @@ public interface IJob {
      * @since 0.0.2
      */
     Map<String, String> dataMap();
+
+    /**
+     * 设置状态
+     * @param statusEnum 状态
+     * @return this
+     * @since 0.0.4
+     */
+    IJob status(JobStatusEnum statusEnum);
+
+    /**
+     * 获取任务状态
+     * @return 任务状态
+     * @since 0.0.4
+     */
+    JobStatusEnum status();
 
 }

@@ -86,15 +86,35 @@ ITrigger period(String id, long period, TimeUnit timeUnit);
 
 redis 分布式锁单独作为一个模块。
 
-- [ ] 数据的持久化
-
-任务异步执行的结果，监听器，持久化。
-
 - [ ] 调度的管理
 
-pause
+pause/resume
 
-resume
+schedule/unschedule
+
+start/shutdown
+
+error
+
+- [ ] schedule listener
+
+ListenerManager 
+
+- [ ] trigger & job listener
+
+当任务被触发执行时。
+
+1. fired
+
+2. misfired
+
+3. complete（F/S）
+
+JobTriggerListener
+
+- [ ] 数据的持久化    IStore
+
+任务异步执行的结果，监听器，持久化。
 
 - [ ] trigger & job 的任务更新
 

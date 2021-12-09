@@ -7,7 +7,10 @@ import com.github.houbb.lock.redis.core.Locks;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.*;
+import com.github.houbb.sandglass.api.constant.JobStatusEnum;
+import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
+import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
 import com.github.houbb.sandglass.core.support.manager.JobManager;
 import com.github.houbb.sandglass.core.support.manager.TriggerManager;
@@ -92,6 +95,8 @@ public class Scheduler implements IScheduler {
      */
     private final MainThreadLoop mainThreadLoop;
 
+    private IScheduleListener scheduleListener;
+
     public Scheduler() {
         executorService = Executors.newSingleThreadExecutor();
         mainThreadLoop = new MainThreadLoop();
@@ -154,6 +159,15 @@ public class Scheduler implements IScheduler {
     }
 
     @Override
+    public IScheduler scheduleListener(IScheduleListener scheduleListener) {
+        ArgUtil.notNull(scheduleListener, "scheduleListener");
+
+        this.scheduleListener = scheduleListener;
+
+        return this;
+    }
+
+    @Override
     public synchronized void start() {
         if(startFlag) {
             return;
@@ -178,17 +192,24 @@ public class Scheduler implements IScheduler {
 
         // 异步执行
         executorService.submit(mainThreadLoop);
+
+        scheduleListener.start();
     }
 
     @Override
     public void shutdown() {
         this.startFlag = false;
         mainThreadLoop.startFlag(startFlag);
+
+        scheduleListener.shutdown();
     }
 
     @Override
     public void schedule(IJob job, ITrigger trigger) {
         this.paramCheck(job, trigger);
+
+        job.status(JobStatusEnum.NORMAL);
+        trigger.status(TriggerStatusEnum.NORMAL);
 
         this.jobManager.add(job);
         this.triggerManager.add(trigger);
@@ -203,7 +224,40 @@ public class Scheduler implements IScheduler {
                 .timer(timer);
         JobTriggerDto triggerDto = InnerTriggerHelper.buildJobTriggerDto(job, trigger, context);
         jobTriggerQueue.put(triggerDto);
+
+        scheduleListener.schedule(job, trigger);
     }
+
+    @Override
+    public void unschedule(String jobId, String triggerId) {
+        paramCheck(jobId, triggerId);
+
+        IJob job = jobManager.remove(jobId);
+        ITrigger trigger = triggerManager.remove(triggerId);
+
+        scheduleListener.unschedule(job, trigger);
+    }
+
+    @Override
+    public void pause(String jobId, String triggerId) {
+        paramCheck(jobId, triggerId);
+
+        IJob job = jobManager.pause(jobId);
+        ITrigger trigger = triggerManager.pause(triggerId);
+
+        scheduleListener.pause(job, trigger);
+    }
+
+    @Override
+    public void resume(String jobId, String triggerId) {
+        paramCheck(jobId, triggerId);
+
+        IJob job = jobManager.resume(jobId);
+        ITrigger trigger = triggerManager.resume(triggerId);
+
+        scheduleListener.resume(job, trigger);
+    }
+
 
     void paramCheck(IJob job, ITrigger trigger) {
         ArgUtil.notNull(job, "job");
@@ -211,6 +265,11 @@ public class Scheduler implements IScheduler {
 
         ArgUtil.notEmpty(job.id(), "job.id");
         ArgUtil.notEmpty(trigger.id(), "trigger.id");
+    }
+
+    void paramCheck(String jobId, String triggerId) {
+        ArgUtil.notEmpty(jobId, "jobId");
+        ArgUtil.notEmpty(triggerId, "triggerId");
     }
 
 }

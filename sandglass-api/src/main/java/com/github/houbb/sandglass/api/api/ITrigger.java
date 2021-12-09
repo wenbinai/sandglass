@@ -1,5 +1,6 @@
 package com.github.houbb.sandglass.api.api;
 
+import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 import com.github.houbb.timer.api.ITimer;
 
 /**
@@ -54,5 +55,20 @@ public interface ITrigger {
      * @since 0.0.2
      */
     int order();
+
+    /**
+     * 状态
+     * @return 状态
+     * @since 0.0.4
+     */
+    TriggerStatusEnum status();
+
+    /**
+     * 设置状态
+     * @param statusEnum 状态
+     * @return 结果
+     * @since 0.0.4
+     */
+    ITrigger status(TriggerStatusEnum statusEnum);
 
 }

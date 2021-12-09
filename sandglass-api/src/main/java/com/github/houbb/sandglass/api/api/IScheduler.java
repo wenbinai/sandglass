@@ -1,6 +1,7 @@
 package com.github.houbb.sandglass.api.api;
 
 import com.github.houbb.lock.api.core.ILock;
+import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
 import com.github.houbb.timer.api.ITimer;
 
@@ -101,6 +102,14 @@ public interface IScheduler {
     IScheduler jobTriggerQueue(final IJobTriggerQueue jobTriggerQueue);
 
     /**
+     * 设置调度监听类
+     * @param scheduleListener 调度监听类
+     * @return 实现
+     * @since 0.0.4
+     */
+    IScheduler scheduleListener(final IScheduleListener scheduleListener);
+
+    /**
      * 执行任务调度
      * @since 0.0.2
      */
@@ -119,5 +128,28 @@ public interface IScheduler {
      * @since 0.0.2
      */
     void schedule(final IJob job, final ITrigger trigger);
+
+    /**
+     * 取消调度
+     * @param jobId 任务标识
+     * @param triggerId 触发器标识
+     */
+    void unschedule(String jobId, String triggerId);
+
+    /**
+     * 暂停
+     * @param jobId 任务
+     * @param triggerId 触发器
+     * @since 0.0.4
+     */
+    void pause(String jobId, String triggerId);
+
+    /**
+     * 恢复
+     * @param jobId 任务
+     * @param triggerId 触发器
+     * @since 0.0.4
+     */
+    void resume(String jobId, String triggerId);
 
 }

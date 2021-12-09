@@ -49,4 +49,20 @@ public interface ITriggerManager {
      */
     ITrigger detail(String id);
 
+    /**
+     * 暂停
+     * @param id 标识
+     * @return  被暂停的任务
+     * @since 0.0.4
+     */
+    ITrigger pause(String id);
+
+    /**
+     * 恢复暂停
+     * @param id 标识
+     * @return  被暂停的任务
+     * @since 0.0.4
+     */
+    ITrigger resume(String id);
+
 }
