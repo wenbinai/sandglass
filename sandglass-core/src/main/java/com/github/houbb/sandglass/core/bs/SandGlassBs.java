@@ -7,16 +7,18 @@ import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
+import com.github.houbb.sandglass.api.support.store.IJobStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreListener;
+import com.github.houbb.sandglass.api.support.store.ITriggerStore;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
 import com.github.houbb.sandglass.core.support.listener.JobListener;
 import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
 import com.github.houbb.sandglass.core.support.listener.TriggerListener;
-import com.github.houbb.sandglass.core.support.manager.JobManager;
-import com.github.houbb.sandglass.core.support.manager.TriggerManager;
+import com.github.houbb.sandglass.core.support.store.JobStore;
 import com.github.houbb.sandglass.core.support.store.JobTriggerStore;
 import com.github.houbb.sandglass.core.support.store.JobTriggerStoreListener;
+import com.github.houbb.sandglass.core.support.store.TriggerStore;
 import com.github.houbb.sandglass.core.support.thread.ScheduleMainThreadLoop;
 import com.github.houbb.sandglass.core.support.thread.WorkerThreadPool;
 import com.github.houbb.timer.api.ITimer;
@@ -51,13 +53,13 @@ public final class SandGlassBs {
      * 任务管理类
      * @since 0.0.2
      */
-    private IJobManager jobManager = new JobManager();
+    private IJobStore jobStore = new JobStore();
 
     /**
      * 触发器管理类
      * @since 0.0.2
      */
-    private ITriggerManager triggerManager = new TriggerManager();
+    private ITriggerStore triggerStore = new TriggerStore();
 
     /**
      * 时钟
@@ -120,17 +122,17 @@ public final class SandGlassBs {
         return this;
     }
 
-    public SandGlassBs jobManager(IJobManager jobManager) {
-        ArgUtil.notNull(jobManager, "jobManager");
+    public SandGlassBs jobStore(IJobStore jobStore) {
+        ArgUtil.notNull(jobStore, "jobStore");
 
-        this.jobManager = jobManager;
+        this.jobStore = jobStore;
         return this;
     }
 
-    public SandGlassBs triggerManager(ITriggerManager triggerManager) {
-        ArgUtil.notNull(triggerManager, "triggerManager");
+    public SandGlassBs triggerStore(ITriggerStore triggerStore) {
+        ArgUtil.notNull(triggerStore, "triggerStore");
 
-        this.triggerManager = triggerManager;
+        this.triggerStore = triggerStore;
         return this;
     }
 
@@ -195,17 +197,17 @@ public final class SandGlassBs {
 
         //调度类主线程
         ScheduleMainThreadLoop scheduleMainThreadLoop = new ScheduleMainThreadLoop();
-        scheduleMainThreadLoop.jobManager(jobManager)
+        scheduleMainThreadLoop.jobStore(jobStore)
                 .jobListener(jobListener)
                 .jobTriggerStore(jobTriggerStore)
                 .triggerLock(triggerLock)
                 .triggerListener(triggerListener)
-                .triggerManager(triggerManager)
+                .triggerStore(triggerStore)
                 .workerThreadPool(workerThreadPool);
 
         //调度类
-        scheduler.jobManager(jobManager)
-                .triggerManager(triggerManager)
+        scheduler.jobStore(jobStore)
+                .triggerStore(triggerStore)
                 .jobTriggerStore(jobTriggerStore)
                 .timer(timer)
                 .scheduleListener(scheduleListener)

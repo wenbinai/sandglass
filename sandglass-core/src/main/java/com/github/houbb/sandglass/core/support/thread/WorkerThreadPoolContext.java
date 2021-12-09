@@ -3,7 +3,9 @@ package com.github.houbb.sandglass.core.support.thread;
 import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
+import com.github.houbb.sandglass.api.support.store.IJobStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
+import com.github.houbb.sandglass.api.support.store.ITriggerStore;
 import com.github.houbb.timer.api.ITimer;
 
 /**
@@ -28,13 +30,13 @@ public class WorkerThreadPoolContext implements IWorkerThreadPoolContext {
      * 任务管理类
      * @since 0.0.3
      */
-    private IJobManager jobManager;
+    private IJobStore jobStore;
 
     /**
      * 触发器管理类
      * @since 0.0.3
      */
-    private ITriggerManager triggerManager;
+    private ITriggerStore triggerStore;
 
     /**
      * 时间
@@ -79,22 +81,22 @@ public class WorkerThreadPoolContext implements IWorkerThreadPoolContext {
     }
 
     @Override
-    public IJobManager jobManager() {
-        return jobManager;
+    public IJobStore jobStore() {
+        return jobStore;
     }
 
-    public WorkerThreadPoolContext jobManager(IJobManager jobManager) {
-        this.jobManager = jobManager;
+    public WorkerThreadPoolContext jobStore(IJobStore jobStore) {
+        this.jobStore = jobStore;
         return this;
     }
 
     @Override
-    public ITriggerManager triggerManager() {
-        return triggerManager;
+    public ITriggerStore triggerStore() {
+        return triggerStore;
     }
 
-    public WorkerThreadPoolContext triggerManager(ITriggerManager triggerManager) {
-        this.triggerManager = triggerManager;
+    public WorkerThreadPoolContext triggerStore(ITriggerStore triggerStore) {
+        this.triggerStore = triggerStore;
         return this;
     }
 

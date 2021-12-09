@@ -2,25 +2,20 @@ package com.github.houbb.sandglass.core.api.scheduler;
 
 import com.github.houbb.heaven.annotation.NotThreadSafe;
 import com.github.houbb.heaven.util.common.ArgUtil;
-import com.github.houbb.lock.api.core.ILock;
-import com.github.houbb.lock.redis.core.Locks;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
-import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
-import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
+import com.github.houbb.sandglass.api.support.store.IJobStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
-import com.github.houbb.sandglass.core.support.listener.JobListener;
-import com.github.houbb.sandglass.core.support.listener.TriggerListener;
-import com.github.houbb.sandglass.core.support.manager.JobManager;
-import com.github.houbb.sandglass.core.support.manager.TriggerManager;
+import com.github.houbb.sandglass.api.support.store.ITriggerStore;
+import com.github.houbb.sandglass.core.support.store.JobStore;
 import com.github.houbb.sandglass.core.support.store.JobTriggerStore;
+import com.github.houbb.sandglass.core.support.store.TriggerStore;
 import com.github.houbb.sandglass.core.support.thread.ScheduleMainThreadLoop;
-import com.github.houbb.sandglass.core.support.thread.WorkerThreadPool;
 import com.github.houbb.sandglass.core.util.InnerTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
@@ -61,13 +56,13 @@ public class Scheduler implements IScheduler {
      * 任务管理类
      * @since 0.0.2
      */
-    protected IJobManager jobManager = new JobManager();
+    protected IJobStore jobStore = new JobStore();
 
     /**
      * 触发器管理类
      * @since 0.0.2
      */
-    protected ITriggerManager triggerManager = new TriggerManager();
+    protected ITriggerStore triggerStore = new TriggerStore();
 
     /**
      * 时钟
@@ -98,17 +93,17 @@ public class Scheduler implements IScheduler {
         return this;
     }
 
-    public Scheduler jobManager(IJobManager jobManager) {
-        ArgUtil.notNull(jobManager, "jobManager");
+    public Scheduler jobStore(IJobStore jobStore) {
+        ArgUtil.notNull(jobStore, "jobStore");
 
-        this.jobManager = jobManager;
+        this.jobStore = jobStore;
         return this;
     }
 
-    public Scheduler triggerManager(ITriggerManager triggerManager) {
-        ArgUtil.notNull(triggerManager, "triggerManager");
+    public Scheduler triggerStore(ITriggerStore triggerStore) {
+        ArgUtil.notNull(triggerStore, "triggerStore");
 
-        this.triggerManager = triggerManager;
+        this.triggerStore = triggerStore;
         return this;
     }
 
@@ -177,8 +172,8 @@ public class Scheduler implements IScheduler {
         job.status(JobStatusEnum.NORMAL);
         trigger.status(TriggerStatusEnum.NORMAL);
 
-        this.jobManager.add(job);
-        this.triggerManager.add(trigger);
+        this.jobStore.add(job);
+        this.triggerStore.add(trigger);
 
         // 结束时间判断
         if(InnerTriggerHelper.hasMeetEndTime(timer, trigger)) {
@@ -197,8 +192,8 @@ public class Scheduler implements IScheduler {
     public void unSchedule(String jobId, String triggerId) {
         paramCheck(jobId, triggerId);
 
-        IJob job = jobManager.remove(jobId);
-        ITrigger trigger = triggerManager.remove(triggerId);
+        IJob job = jobStore.remove(jobId);
+        ITrigger trigger = triggerStore.remove(triggerId);
 
         scheduleListener.unSchedule(job, trigger);
     }
@@ -207,8 +202,8 @@ public class Scheduler implements IScheduler {
     public void pause(String jobId, String triggerId) {
         paramCheck(jobId, triggerId);
 
-        IJob job = jobManager.pause(jobId);
-        ITrigger trigger = triggerManager.pause(triggerId);
+        IJob job = jobStore.pause(jobId);
+        ITrigger trigger = triggerStore.pause(triggerId);
 
         scheduleListener.pause(job, trigger);
     }
@@ -217,8 +212,8 @@ public class Scheduler implements IScheduler {
     public void resume(String jobId, String triggerId) {
         paramCheck(jobId, triggerId);
 
-        IJob job = jobManager.resume(jobId);
-        ITrigger trigger = triggerManager.resume(triggerId);
+        IJob job = jobStore.resume(jobId);
+        ITrigger trigger = triggerStore.resume(triggerId);
 
         // 重新放入任务
         this.addJobAndTrigger(job, trigger);

@@ -2,7 +2,9 @@ package com.github.houbb.sandglass.api.api;
 
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
+import com.github.houbb.sandglass.api.support.store.IJobStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
+import com.github.houbb.sandglass.api.support.store.ITriggerStore;
 import com.github.houbb.timer.api.ITimer;
 
 /**
@@ -32,14 +34,14 @@ public interface IWorkerThreadPoolContext {
      * @return 管理类
      * @since 0.0.3
      */
-    IJobManager jobManager();
+    IJobStore jobStore();
 
     /**
      * 触发器管理类
      * @return 管理类
      * @since 0.0.3
      */
-    ITriggerManager triggerManager();
+    ITriggerStore triggerStore();
 
     /**
      * 时间

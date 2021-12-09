@@ -1,9 +1,9 @@
-package com.github.houbb.sandglass.core.support.manager;
+package com.github.houbb.sandglass.core.support.store;
 
 import com.github.houbb.heaven.annotation.NotThreadSafe;
 import com.github.houbb.sandglass.api.api.IJob;
-import com.github.houbb.sandglass.api.api.IJobManager;
 import com.github.houbb.sandglass.api.constant.JobStatusEnum;
+import com.github.houbb.sandglass.api.support.store.IJobStore;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,11 +14,11 @@ import java.util.Map;
  * @since 0.0.2
  */
 @NotThreadSafe
-public class JobManager implements IJobManager {
+public class JobStore implements IJobStore {
 
     private final Map<String, IJob> map;
 
-    public JobManager() {
+    public JobStore() {
         this.map = new HashMap<>();
     }
 

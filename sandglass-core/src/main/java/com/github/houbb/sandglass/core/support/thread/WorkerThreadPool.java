@@ -6,7 +6,9 @@ import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
+import com.github.houbb.sandglass.api.support.store.IJobStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
+import com.github.houbb.sandglass.api.support.store.ITriggerStore;
 import com.github.houbb.sandglass.core.api.job.JobContext;
 import com.github.houbb.sandglass.core.api.scheduler.TriggerContext;
 import com.github.houbb.sandglass.core.util.InnerTriggerHelper;
@@ -53,9 +55,9 @@ public class WorkerThreadPool implements IWorkerThreadPool {
                     final String traceId = IdHelper.uuid32();
                     // 记录实际执行时间
                     JobTriggerDto jobTriggerDto = context.preJobTriggerDto();
-                    IJobManager jobManager = context.jobManager();
+                    IJobStore jobStore = context.jobStore();
                     String jobId = jobTriggerDto.jobId();
-                    final IJob job = jobManager.detail(jobId);
+                    final IJob job = jobStore.detail(jobId);
                     final IJobListener jobListener = context.jobListener();
                     final IJobContext jobContext = buildJobContext(traceId, job);
 
@@ -104,9 +106,9 @@ public class WorkerThreadPool implements IWorkerThreadPool {
         LOG.debug("更新任务和触发器的状态 {}", jobTriggerDto.toString());
         // 更新对应的状态
 
-        final ITriggerManager triggerManager = context.triggerManager();
+        final ITriggerStore triggerStore = context.triggerStore();
         final ITimer timer = context.timer();
-        final ITrigger trigger = triggerManager.detail(jobTriggerDto.triggerId());
+        final ITrigger trigger = triggerStore.detail(jobTriggerDto.triggerId());
         final IJobTriggerStore jobTriggerStore = context.jobTriggerStore();
 
         // 结束时间判断

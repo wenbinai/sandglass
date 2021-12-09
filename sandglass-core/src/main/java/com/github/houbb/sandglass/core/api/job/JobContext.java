@@ -1,8 +1,6 @@
 package com.github.houbb.sandglass.core.api.job;
 
 import com.github.houbb.sandglass.api.api.IJobContext;
-import com.github.houbb.sandglass.api.api.IJobManager;
-import com.github.houbb.sandglass.api.api.ITriggerManager;
 
 import java.util.Map;
 

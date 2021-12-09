@@ -13,14 +13,16 @@ import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
+import com.github.houbb.sandglass.api.support.store.IJobStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
+import com.github.houbb.sandglass.api.support.store.ITriggerStore;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
 import com.github.houbb.sandglass.core.support.listener.JobListener;
 import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
 import com.github.houbb.sandglass.core.support.listener.TriggerListener;
-import com.github.houbb.sandglass.core.support.manager.JobManager;
-import com.github.houbb.sandglass.core.support.manager.TriggerManager;
+import com.github.houbb.sandglass.core.support.store.JobStore;
 import com.github.houbb.sandglass.core.support.store.JobTriggerStore;
+import com.github.houbb.sandglass.core.support.store.TriggerStore;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
 
@@ -50,13 +52,13 @@ public class ScheduleMainThreadLoop extends Thread {
      * 任务管理类
      * @since 0.0.2
      */
-    protected IJobManager jobManager = new JobManager();
+    protected IJobStore jobStore = new JobStore();
 
     /**
      * 触发器管理类
      * @since 0.0.2
      */
-    protected ITriggerManager triggerManager = new TriggerManager();
+    protected ITriggerStore triggerStore = new TriggerStore();
 
     /**
      * 时钟
@@ -106,17 +108,17 @@ public class ScheduleMainThreadLoop extends Thread {
         return this;
     }
 
-    public ScheduleMainThreadLoop jobManager(IJobManager jobManager) {
-        ArgUtil.notNull(jobManager, "jobManager");
+    public ScheduleMainThreadLoop jobStore(IJobStore jobStore) {
+        ArgUtil.notNull(jobStore, "jobStore");
 
-        this.jobManager = jobManager;
+        this.jobStore = jobStore;
         return this;
     }
 
-    public ScheduleMainThreadLoop triggerManager(ITriggerManager triggerManager) {
-        ArgUtil.notNull(triggerManager, "triggerManager");
+    public ScheduleMainThreadLoop triggerStore(ITriggerStore triggerStore) {
+        ArgUtil.notNull(triggerStore, "triggerStore");
 
-        this.triggerManager = triggerManager;
+        this.triggerStore = triggerStore;
         return this;
     }
 
@@ -189,8 +191,8 @@ public class ScheduleMainThreadLoop extends Thread {
                 //1.1 任务是否存在
                 String jobId = jobTriggerDto.jobId();
                 String triggerId = jobTriggerDto.triggerId();
-                IJob job = jobManager.detail(jobId);
-                ITrigger trigger = triggerManager.detail(triggerId);
+                IJob job = jobStore.detail(jobId);
+                ITrigger trigger = triggerStore.detail(triggerId);
                 if(job == null
                     || trigger == null) {
                     LOG.warn("任务 job {}, trigger {} 对应的信息不存在，忽略处理。", jobId, triggerId);
@@ -209,8 +211,8 @@ public class ScheduleMainThreadLoop extends Thread {
                         .newInstance()
                         .preJobTriggerDto(jobTriggerDto)
                         .jobTriggerStore(this.jobTriggerStore)
-                        .jobManager(jobManager)
-                        .triggerManager(triggerManager)
+                        .jobStore(jobStore)
+                        .triggerStore(triggerStore)
                         .timer(timer)
                         .jobListener(jobListener);
 

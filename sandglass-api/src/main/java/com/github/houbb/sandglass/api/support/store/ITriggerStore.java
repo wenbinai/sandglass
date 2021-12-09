@@ -1,44 +1,47 @@
-package com.github.houbb.sandglass.api.api;
+package com.github.houbb.sandglass.api.support.store;
+
+import com.github.houbb.sandglass.api.api.ITrigger;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
- * 任务管理
- *
+ * 指定时：
+ * （1）开始时间
+ * （2）间隔策略
+ * （3）重复次数
  * @author binbin.hou
- * @since 0.0.2
+ * @since 0.0.1
  */
-public interface IJobManager {
+public interface ITriggerStore {
 
     /**
      * 新增
-     * @param job 任务
+     * @param trigger 触发器
      * @since 0.0.2
      */
-    void add(IJob job);
+    void add(ITrigger trigger);
 
     /**
      * 删除
      * @param id 标识
-     * @return  被移除的任务
+     * @return  被移除的触发器
      * @since 0.0.2
      */
-    IJob remove(String id);
+    ITrigger remove(String id);
 
     /**
      * 修改
-     * @param job 任务
+     * @param trigger 触发器
      * @since 0.0.2
      */
-    void edit(IJob job);
+    void edit(ITrigger trigger);
 
     /**
      * 列表
      * @since 0.0.2
      * @return 列表
      */
-    Collection<IJob> list();
+    Collection<ITrigger> list();
 
     /**
      * 详情
@@ -46,7 +49,7 @@ public interface IJobManager {
      * @since 0.0.2
      * @return 列表
      */
-    IJob detail(String id);
+    ITrigger detail(String id);
 
     /**
      * 暂停
@@ -54,7 +57,7 @@ public interface IJobManager {
      * @return  被暂停的任务
      * @since 0.0.4
      */
-    IJob pause(String id);
+    ITrigger pause(String id);
 
     /**
      * 恢复暂停
@@ -62,6 +65,6 @@ public interface IJobManager {
      * @return  被暂停的任务
      * @since 0.0.4
      */
-    IJob resume(String id);
+    ITrigger resume(String id);
 
 }
