@@ -67,9 +67,9 @@ Triggers.cron(String cronExpression);
 通过指定时间间隔创建 trigger，使用方法：
 
 ```java
-ITrigger period(long period);
-ITrigger period(long period, TimeUnit timeUnit);
-ITrigger period(String id, long period, TimeUnit timeUnit);
+Triggers.period(long period);
+Triggers.period(long period, TimeUnit timeUnit);
+Triggers.period(String id, long period, TimeUnit timeUnit);
 ```
 
 # Road-Map
@@ -78,47 +78,27 @@ ITrigger period(String id, long period, TimeUnit timeUnit);
 
 - [x] simpleTrigger
 
-丰富 trigger 策略
-
 - [x] lock 优化
-
-默认添加无锁机制，优化 lock 实现
-
-redis 分布式锁单独作为一个模块。
 
 - [x] 调度的管理
 
-pause/resume
-
-schedule/unschedule
-
-start/shutdown
-
-error
-
 - [x] schedule listener
-
-ListenerManager 
 
 - [x] trigger & job listener
 
-当任务被触发执行时。
-
-1. fired
-
-2. misfired
-
-3. complete（F/S）
-
-JobTriggerListener
-
-- [x] 数据的持久化    IStore
-
-任务异步执行的结果，监听器，持久化。
+- [x] 数据的持久化
 
 - [ ] MIS-FIRE 处理
 
-后续优化
+- [ ] 状态更新
+
+任务执行中
+
+任务暂停
+
+任务完成
+
+任务执行失败
 
 - [ ] spring 整合
 
@@ -127,5 +107,3 @@ JobTriggerListener
 - [ ] 分布式任务调度中心
 
 - [ ] DAG 有向图任务编排
-
-
