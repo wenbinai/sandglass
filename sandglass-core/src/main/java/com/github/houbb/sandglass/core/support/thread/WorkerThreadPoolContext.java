@@ -2,7 +2,8 @@ package com.github.houbb.sandglass.core.support.thread;
 
 import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
-import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
+import com.github.houbb.sandglass.api.support.listener.IJobListener;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
 import com.github.houbb.timer.api.ITimer;
 
 /**
@@ -21,7 +22,7 @@ public class WorkerThreadPoolContext implements IWorkerThreadPoolContext {
      * 任务触发队列
      * @since 0.0.3
      */
-    private IJobTriggerQueue jobTriggerQueue;
+    private IJobTriggerStore jobTriggerStore;
 
     /**
      * 任务管理类
@@ -47,6 +48,12 @@ public class WorkerThreadPoolContext implements IWorkerThreadPoolContext {
      */
     private JobTriggerDto preJobTriggerDto;
 
+    /**
+     * 任务监听器
+     * @since 0.0.4
+     */
+    private IJobListener jobListener;
+
     public static WorkerThreadPoolContext newInstance() {
         return new WorkerThreadPoolContext();
     }
@@ -62,12 +69,12 @@ public class WorkerThreadPoolContext implements IWorkerThreadPoolContext {
     }
 
     @Override
-    public IJobTriggerQueue jobTriggerQueue() {
-        return jobTriggerQueue;
+    public IJobTriggerStore jobTriggerStore() {
+        return jobTriggerStore;
     }
 
-    public WorkerThreadPoolContext jobTriggerQueue(IJobTriggerQueue jobTriggerQueue) {
-        this.jobTriggerQueue = jobTriggerQueue;
+    public WorkerThreadPoolContext jobTriggerStore(IJobTriggerStore jobTriggerStore) {
+        this.jobTriggerStore = jobTriggerStore;
         return this;
     }
 
@@ -108,6 +115,16 @@ public class WorkerThreadPoolContext implements IWorkerThreadPoolContext {
 
     public WorkerThreadPoolContext preJobTriggerDto(JobTriggerDto preJobTriggerDto) {
         this.preJobTriggerDto = preJobTriggerDto;
+        return this;
+    }
+
+    @Override
+    public IJobListener jobListener() {
+        return jobListener;
+    }
+
+    public WorkerThreadPoolContext jobListener(IJobListener jobListener) {
+        this.jobListener = jobListener;
         return this;
     }
 }

@@ -86,7 +86,7 @@ ITrigger period(String id, long period, TimeUnit timeUnit);
 
 redis 分布式锁单独作为一个模块。
 
-- [ ] 调度的管理
+- [x] 调度的管理
 
 pause/resume
 
@@ -96,11 +96,11 @@ start/shutdown
 
 error
 
-- [ ] schedule listener
+- [x] schedule listener
 
 ListenerManager 
 
-- [ ] trigger & job listener
+- [x] trigger & job listener
 
 当任务被触发执行时。
 
@@ -112,11 +112,9 @@ ListenerManager
 
 JobTriggerListener
 
-- [ ] 数据的持久化    IStore
+- [x] 数据的持久化    IStore
 
 任务异步执行的结果，监听器，持久化。
-
-- [ ] trigger & job 的任务更新
 
 - [ ] MIS-FIRE 处理
 

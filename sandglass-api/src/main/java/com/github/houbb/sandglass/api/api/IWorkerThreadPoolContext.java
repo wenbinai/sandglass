@@ -1,7 +1,8 @@
 package com.github.houbb.sandglass.api.api;
 
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
-import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
+import com.github.houbb.sandglass.api.support.listener.IJobListener;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
 import com.github.houbb.timer.api.ITimer;
 
 /**
@@ -24,7 +25,7 @@ public interface IWorkerThreadPoolContext {
      * @return 队列
      * @since 0.0.3
      */
-    IJobTriggerQueue jobTriggerQueue();
+    IJobTriggerStore jobTriggerStore();
 
     /**
      * 任务管理类
@@ -53,5 +54,12 @@ public interface IWorkerThreadPoolContext {
      * @since 0.0.3
      */
     JobTriggerDto preJobTriggerDto();
+
+    /**
+     * 任务监听器
+     * @return 监听器
+     * @since 0.0.4
+     */
+    IJobListener jobListener();
 
 }

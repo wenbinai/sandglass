@@ -1,9 +1,10 @@
-package com.github.houbb.sandglass.core.support.queue;
+package com.github.houbb.sandglass.core.support.store;
 
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
-import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreListener;
 import com.github.houbb.sandglass.core.exception.SandGlassException;
 
 import java.util.concurrent.PriorityBlockingQueue;
@@ -14,9 +15,7 @@ import java.util.concurrent.PriorityBlockingQueue;
  * @author binbin.hou
  * @since 0.0.2
  */
-public class JobTriggerQueue implements IJobTriggerQueue {
-
-    private static final Log LOG = LogFactory.getLog(JobTriggerQueue.class);
+public class JobTriggerStore implements IJobTriggerStore {
 
     /**
      * 优先级阻塞队列
@@ -24,15 +23,27 @@ public class JobTriggerQueue implements IJobTriggerQueue {
      */
     private final PriorityBlockingQueue<JobTriggerDto> queue;
 
-    public JobTriggerQueue() {
+    /**
+     * 监听器
+     * @since 0.0.4
+     */
+    private IJobTriggerStoreListener listener = new JobTriggerStoreListener();
+
+    public JobTriggerStore() {
         this.queue = new PriorityBlockingQueue<>(64);
     }
 
     @Override
-    public IJobTriggerQueue put(JobTriggerDto dto) {
+    public JobTriggerStore listener(IJobTriggerStoreListener listener) {
+        this.listener = listener;
+        return this;
+    }
+
+    @Override
+    public IJobTriggerStore put(JobTriggerDto dto) {
         queue.put(dto);
 
-        LOG.debug("任务调度队列添加任务 {}", dto);
+        listener.put(dto);
         return this;
     }
 
@@ -41,7 +52,7 @@ public class JobTriggerQueue implements IJobTriggerQueue {
         try {
             JobTriggerDto dto = queue.take();
 
-            LOG.debug("任务调度队列获得任务 {}", dto);
+            listener.take(dto);
             return dto;
         } catch (InterruptedException e) {
             throw new SandGlassException(e);

@@ -2,7 +2,7 @@ package com.github.houbb.sandglass.api.api;
 
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
-import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
 import com.github.houbb.timer.api.ITimer;
 
 /**
@@ -46,70 +46,6 @@ import com.github.houbb.timer.api.ITimer;
 public interface IScheduler {
 
     /**
-     * 工作线程
-     * @param workerThreadPool 线程
-     * @return this
-     * @since 0.0.2
-     */
-    IScheduler workerThreadPool(IWorkerThreadPool workerThreadPool);
-
-    /**
-     * 设置 trigger 锁
-     * @param lock 锁
-     * @return this
-     * @since 0.0.2
-     */
-    IScheduler triggerLock(final ILock lock);
-
-    /**
-     * 设置 job 锁
-     * @param lock 锁
-     * @return this
-     * @since 0.0.2
-     */
-    IScheduler jobLock(final ILock lock);
-
-    /**
-     * 任务管理类
-     * @param jobManager 设置任务管理类
-     * @return 管理类
-     * @since 0.0.2
-     */
-    IScheduler jobManager(IJobManager jobManager);
-
-    /**
-     * 触发器管理类
-     * @param triggerManager 设置触发管理类
-     * @return 管理类
-     * @since 0.0.2
-     */
-    IScheduler triggerManager(ITriggerManager triggerManager);
-
-    /**
-     * 时间算法
-     * @param timer 任务
-     * @return 结果
-     * @since 0.0.2
-     */
-    IScheduler timer(final ITimer timer);
-
-    /**
-     * 设置任务触发队列
-     * @param jobTriggerQueue 任务触发队列
-     * @return 实现
-     * @since 0.0.2
-     */
-    IScheduler jobTriggerQueue(final IJobTriggerQueue jobTriggerQueue);
-
-    /**
-     * 设置调度监听类
-     * @param scheduleListener 调度监听类
-     * @return 实现
-     * @since 0.0.4
-     */
-    IScheduler scheduleListener(final IScheduleListener scheduleListener);
-
-    /**
      * 执行任务调度
      * @since 0.0.2
      */
@@ -134,7 +70,7 @@ public interface IScheduler {
      * @param jobId 任务标识
      * @param triggerId 触发器标识
      */
-    void unschedule(String jobId, String triggerId);
+    void unSchedule(String jobId, String triggerId);
 
     /**
      * 暂停

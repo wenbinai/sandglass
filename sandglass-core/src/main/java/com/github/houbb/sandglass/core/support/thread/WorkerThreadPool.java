@@ -5,7 +5,8 @@ import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
-import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
+import com.github.houbb.sandglass.api.support.listener.IJobListener;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
 import com.github.houbb.sandglass.core.api.job.JobContext;
 import com.github.houbb.sandglass.core.api.scheduler.TriggerContext;
 import com.github.houbb.sandglass.core.util.InnerTriggerHelper;
@@ -44,32 +45,42 @@ public class WorkerThreadPool implements IWorkerThreadPool {
         executorService.submit(new Runnable() {
             @Override
             public void run() {
-                // 任务执行
-                // 添加回执，更新对应的状态信息
-                final ITimer timer = context.timer();
-                final long fireTime = timer.time();
-                final String traceId = IdHelper.uuid32();
-                // 记录实际执行时间
-                JobTriggerDto jobTriggerDto = context.preJobTriggerDto();
-                IJobManager jobManager = context.jobManager();
-                String jobId = jobTriggerDto.jobId();
-                final IJob job = jobManager.detail(jobId);
-
                 try {
+                    // 任务执行
+                    // 添加回执，更新对应的状态信息
+                    final ITimer timer = context.timer();
+                    final long fireTime = timer.time();
+                    final String traceId = IdHelper.uuid32();
+                    // 记录实际执行时间
+                    JobTriggerDto jobTriggerDto = context.preJobTriggerDto();
+                    IJobManager jobManager = context.jobManager();
+                    String jobId = jobTriggerDto.jobId();
+                    final IJob job = jobManager.detail(jobId);
+                    final IJobListener jobListener = context.jobListener();
                     final IJobContext jobContext = buildJobContext(traceId, job);
-                    // 任务开始前
-                    job.execute(jobContext);
 
-                    // 任务开始后
-                    handleJobAndTrigger(jobTriggerDto, context, job, fireTime);
+                    try {
+                        // 任务开始前
+                        jobListener.beforeExecute(job, jobContext);
+
+                        job.execute(jobContext);
+
+                        jobListener.afterExecute(job, jobContext);
+
+                        // 任务开始后
+                        handleJobAndTrigger(jobTriggerDto, context, job, fireTime);
+                    } catch (Exception exception) {
+                        // 任务异常
+                        LOG.error("任务执行异常", exception);
+
+                        // 执行结果
+                        handleJobAndTrigger(jobTriggerDto, context, job, fireTime);
+
+                        // 异常执行对应的 handler
+                        jobListener.errorExecute(job, jobContext, exception);
+                    }
                 } catch (Exception exception) {
-                    // 任务异常
-                    LOG.error("任务执行异常", exception);
-
-                    // 执行结果
-                    handleJobAndTrigger(jobTriggerDto, context, job, fireTime);
-
-                    // 异常执行对应的 handler
+                    LOG.error("任务调度遇到异常", exception);
                 }
             }
         });
@@ -96,7 +107,7 @@ public class WorkerThreadPool implements IWorkerThreadPool {
         final ITriggerManager triggerManager = context.triggerManager();
         final ITimer timer = context.timer();
         final ITrigger trigger = triggerManager.detail(jobTriggerDto.triggerId());
-        final IJobTriggerQueue jobTriggerQueue = context.jobTriggerQueue();
+        final IJobTriggerStore jobTriggerStore = context.jobTriggerStore();
 
         // 结束时间判断
         if(InnerTriggerHelper.hasMeetEndTime(timer, trigger)) {
@@ -113,7 +124,7 @@ public class WorkerThreadPool implements IWorkerThreadPool {
 
         // 任务应该什么时候放入队列？
         // 真正完成的时候，还是开始处理的时候？
-        jobTriggerQueue.put(newDto);
+        jobTriggerStore.put(newDto);
     }
 
     /**

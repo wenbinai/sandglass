@@ -32,8 +32,8 @@ public class ScheduleListener implements IScheduleListener {
     }
 
     @Override
-    public void unschedule(IJob job, ITrigger trigger) {
-        LOG.info("schedule unschedule {}, trigger {}", job, trigger);
+    public void unSchedule(IJob job, ITrigger trigger) {
+        LOG.info("schedule unSchedule {}, trigger {}", job, trigger);
     }
 
     @Override

@@ -1,36 +1,36 @@
 package com.github.houbb.sandglass.core.support.thread;
 
 import com.github.houbb.heaven.util.common.ArgUtil;
-import com.github.houbb.heaven.util.lang.StringUtil;
 import com.github.houbb.heaven.util.util.DateUtil;
-import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.lock.redis.core.Locks;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.*;
+import com.github.houbb.sandglass.api.constant.JobStatusEnum;
+import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
-import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
-import com.github.houbb.sandglass.core.api.job.JobContext;
+import com.github.houbb.sandglass.api.support.listener.IJobListener;
+import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
+import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
-import com.github.houbb.sandglass.core.api.scheduler.TriggerContext;
-import com.github.houbb.sandglass.core.exception.SandGlassException;
+import com.github.houbb.sandglass.core.support.listener.JobListener;
+import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
+import com.github.houbb.sandglass.core.support.listener.TriggerListener;
 import com.github.houbb.sandglass.core.support.manager.JobManager;
 import com.github.houbb.sandglass.core.support.manager.TriggerManager;
-import com.github.houbb.sandglass.core.support.queue.JobTriggerQueue;
-import com.github.houbb.sandglass.core.util.InnerTriggerHelper;
+import com.github.houbb.sandglass.core.support.store.JobTriggerStore;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author binbin.hou
  * @since 0.0.2
  */
-public class MainThreadLoop extends Thread {
+public class ScheduleMainThreadLoop extends Thread {
 
     private static final Log LOG = LogFactory.getLog(Scheduler.class);
 
@@ -71,66 +71,102 @@ public class MainThreadLoop extends Thread {
     protected ILock triggerLock = Locks.none();
 
     /**
-     * 任务锁
-     * @since 0.0.2
-     */
-    protected ILock jobLock = Locks.none();
-
-    /**
      * 任务调度队列
      * @since 0.0.2
      */
-    protected IJobTriggerQueue jobTriggerQueue = new JobTriggerQueue();
+    protected IJobTriggerStore jobTriggerStore = new JobTriggerStore();
 
-    public MainThreadLoop startFlag(boolean startFlag) {
+    /**
+     * 任务调度监听器
+     * @since 0.0.4
+     */
+    protected IScheduleListener scheduleListener = new ScheduleListener();
+
+    /**
+     * 任务调度监听器
+     * @since 0.0.4
+     */
+    protected IJobListener jobListener = new JobListener();
+
+    /**
+     * 触发器监听器
+     * @since 0.0.4
+     */
+    protected ITriggerListener triggerListener = new TriggerListener();
+
+    public ScheduleMainThreadLoop startFlag(boolean startFlag) {
         this.startFlag = startFlag;
         return this;
     }
 
-    public MainThreadLoop workerThreadPool(IWorkerThreadPool workerThreadPool) {
+    public ScheduleMainThreadLoop workerThreadPool(IWorkerThreadPool workerThreadPool) {
+        ArgUtil.notNull(workerThreadPool, "workerThreadPool");
+
         this.workerThreadPool = workerThreadPool;
         return this;
     }
 
-    public MainThreadLoop jobManager(IJobManager jobManager) {
+    public ScheduleMainThreadLoop jobManager(IJobManager jobManager) {
+        ArgUtil.notNull(jobManager, "jobManager");
+
         this.jobManager = jobManager;
         return this;
     }
 
-    public MainThreadLoop triggerManager(ITriggerManager triggerManager) {
+    public ScheduleMainThreadLoop triggerManager(ITriggerManager triggerManager) {
+        ArgUtil.notNull(triggerManager, "triggerManager");
+
         this.triggerManager = triggerManager;
         return this;
     }
 
-    public MainThreadLoop timer(ITimer timer) {
+    public ScheduleMainThreadLoop timer(ITimer timer) {
+        ArgUtil.notNull(timer, "timer");
+
         this.timer = timer;
         return this;
     }
 
-    public MainThreadLoop triggerLock(ILock triggerLock) {
+    public ScheduleMainThreadLoop triggerLock(ILock triggerLock) {
+        ArgUtil.notNull(triggerLock, "triggerLock");
+
         this.triggerLock = triggerLock;
         return this;
     }
 
-    public MainThreadLoop jobLock(ILock jobLock) {
-        this.jobLock = jobLock;
+    public ScheduleMainThreadLoop jobTriggerStore(IJobTriggerStore jobTriggerStore) {
+        ArgUtil.notNull(jobTriggerStore, "jobTriggerStore");
+
+        this.jobTriggerStore = jobTriggerStore;
         return this;
     }
 
-    public MainThreadLoop jobTriggerQueue(IJobTriggerQueue jobTriggerQueue) {
-        this.jobTriggerQueue = jobTriggerQueue;
+    public ScheduleMainThreadLoop jobListener(IJobListener jobListener) {
+        ArgUtil.notNull(jobListener, "jobListener");
+
+        this.jobListener = jobListener;
         return this;
     }
 
+    public ScheduleMainThreadLoop triggerListener(ITriggerListener triggerListener) {
+        ArgUtil.notNull(triggerListener, "triggerListener");
+
+        this.triggerListener = triggerListener;
+        return this;
+    }
+
+    public ScheduleMainThreadLoop scheduleListener(IScheduleListener scheduleListener) {
+        ArgUtil.notNull(scheduleListener, "scheduleListener");
+
+        this.scheduleListener = scheduleListener;
+        return this;
+    }
 
     @Override
     public void run() {
-        paramCheck();
-
         this.startFlag = true;
         while (startFlag) {
             String triggerLockKey = buildTriggerLockKey();
-            String jobLockKey = "";
             try {
                 //0. 获取 trigger lock，便于后期分布式拓展
                 boolean triggerLock = this.triggerLock.tryLock(60, TimeUnit.SECONDS,triggerLockKey);
@@ -141,7 +177,7 @@ public class MainThreadLoop extends Thread {
                 }
 
                 //1. 如果 acquireLock 成功，从 trigger queue 中获取最新的一个
-                JobTriggerDto jobTriggerDto = this.jobTriggerQueue.take();
+                JobTriggerDto jobTriggerDto = this.jobTriggerStore.take();
 
                 // 释放锁
                 this.triggerLock.unlock(triggerLockKey);
@@ -150,45 +186,48 @@ public class MainThreadLoop extends Thread {
                     continue;
                 }
 
-                //2. while 等待任务执行时间
-                this.loopWaitUntilFiredTime(jobTriggerDto.nextTime());
-
-                //3. 获取 trigger 对应的 job。更新 trigger 的执行状态。获取 nextTime 到 queue 中
-                //3.1 job 加锁
-                jobLockKey = buildJobLockKey(jobTriggerDto);
-                boolean jobLock = this.jobLock.tryLock(60, TimeUnit.SECONDS,jobLockKey);
-                if(!jobLock) {
-                    LOG.info("job lock 获取失败");
-                    // 获取锁失败
+                //1.1 任务是否存在
+                String jobId = jobTriggerDto.jobId();
+                String triggerId = jobTriggerDto.triggerId();
+                IJob job = jobManager.detail(jobId);
+                ITrigger trigger = triggerManager.detail(triggerId);
+                if(job == null
+                    || trigger == null) {
+                    LOG.warn("任务 job {}, trigger {} 对应的信息不存在，忽略处理。", jobId, triggerId);
+                    continue;
+                }
+                //1.2 任务状态是否暂停
+                if(JobStatusEnum.PAUSE.equals(job.status())
+                    || TriggerStatusEnum.PAUSE.equals(trigger.status())) {
+                    LOG.warn("任务 job {}, trigger {} 对应的状态为暂停，忽略处理。", jobId, triggerId);
                     continue;
                 }
 
+                //3. 获取 trigger 对应的 job。更新 trigger 的执行状态。获取 nextTime 到 queue 中
                 //3.2 更新 trigger & job 的状态
                 WorkerThreadPoolContext workerThreadPoolContext = WorkerThreadPoolContext
                         .newInstance()
                         .preJobTriggerDto(jobTriggerDto)
-                        .jobTriggerQueue(this.jobTriggerQueue)
+                        .jobTriggerStore(this.jobTriggerStore)
                         .jobManager(jobManager)
                         .triggerManager(triggerManager)
-                        .timer(timer);
+                        .timer(timer)
+                        .jobListener(jobListener);
+
+                this.triggerListener.beforeWaitFired(workerThreadPoolContext);
+
+                //2. while 等待任务执行时间
+                this.loopWaitUntilFiredTime(jobTriggerDto.nextTime());
+
+                this.triggerListener.afterWaitFired(workerThreadPoolContext);
 
                 //3.3 使用 worker-thread 执行任务(这里还需要获取锁吗？)
                 workerThreadPool.commit(workerThreadPoolContext);
-
-                //3.4 释放锁
-                this.jobLock.unlock(jobLockKey);
-            } catch (InterruptedException e) {
-                // TODO: 添加对应的异常处理监听类
+            } catch (Exception e) {
                 LOG.error("中断异常 ", e);
+                scheduleListener.exception(e);
             }
         }
-    }
-
-    private void paramCheck() {
-        ArgUtil.notNull(jobManager, "jobManager");
-        ArgUtil.notNull(triggerManager, "triggerManager");
-        ArgUtil.notNull(jobTriggerQueue, "jobTriggerQueue");
-        ArgUtil.notNull(timer, "timer");
     }
 
     /**
@@ -206,39 +245,10 @@ public class MainThreadLoop extends Thread {
                 currentTime = timer.time();
             }
         } catch (InterruptedException e) {
-            //TODO: 循环等待异常
-
             LOG.warn("循环等待被中断", e);
-            throw new SandGlassException(e);
+
+            scheduleListener.exception(e);
         }
-    }
-
-    /**
-     * 处理任务的状态
-     * @param jobTriggerDto 状态
-     * @since 0.0.2
-     */
-    protected void handleJobAndTrigger(JobTriggerDto jobTriggerDto) {
-        LOG.debug("更新任务和触发器的状态 {}", jobTriggerDto.toString());
-        // 更新对应的状态
-
-        ITrigger trigger = triggerManager.detail(jobTriggerDto.triggerId());
-
-        // 结束时间判断
-        if(InnerTriggerHelper.hasMeetEndTime(timer, trigger)) {
-            return;
-        }
-
-        // 存放下一次的执行时间
-        IJob job = jobManager.detail(jobTriggerDto.jobId());
-        ITriggerContext triggerContext = TriggerContext.newInstance()
-                .lastScheduleTime(jobTriggerDto.nextTime())
-                .timer(timer);
-        JobTriggerDto newDto = InnerTriggerHelper.buildJobTriggerDto(job, trigger, triggerContext);
-
-        // 任务应该什么时候放入队列？
-        // 真正完成的时候，还是开始处理的时候？
-        this.jobTriggerQueue.put(newDto);
     }
 
     /**
@@ -248,22 +258,6 @@ public class MainThreadLoop extends Thread {
      */
     protected String buildTriggerLockKey() {
         return "trigger-lock-" + DateUtil.getCurrentTimeStampStr();
-    }
-
-    /**
-     * 构建任务锁 key
-     * @param jobTriggerDto 任务信息
-     * @return 结果
-     * @since 0.0.2
-     */
-    protected String buildJobLockKey(JobTriggerDto jobTriggerDto) {
-        List<String> list = new ArrayList<>();
-        list.add(jobTriggerDto.jobId());
-        list.add(jobTriggerDto.triggerId());
-        list.add(jobTriggerDto.order()+"");
-        list.add(jobTriggerDto.nextTime()+"");
-
-        return StringUtil.join(list, ":");
     }
 
 }

@@ -1,15 +1,23 @@
-package com.github.houbb.sandglass.api.support.queue;
+package com.github.houbb.sandglass.api.support.store;
 
 
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 
 /**
- * 任务调度队列
+ * 任务调度队列-持久化
  *
  * @author binbin.hou
  * @since 0.0.2
  */
-public interface IJobTriggerQueue {
+public interface IJobTriggerStore {
+
+    /**
+     * 设置监听类
+     * @param listener 监听类
+     * @return this
+     * @since 0.0.4
+     */
+    IJobTriggerStore listener(final IJobTriggerStoreListener listener);
 
     /**
      * 添加任务
@@ -17,7 +25,7 @@ public interface IJobTriggerQueue {
      * @return 结果
      * @since 0.0.2
      */
-    IJobTriggerQueue put(JobTriggerDto dto);
+    IJobTriggerStore put(JobTriggerDto dto);
 
     /**
      * 获取最近的一个，获取不到则阻塞

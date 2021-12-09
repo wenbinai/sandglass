@@ -38,7 +38,7 @@ public interface IScheduleListener {
      * @param job 任务标识
      * @param trigger 触发器标识
      */
-    void unschedule(IJob job, ITrigger trigger);
+    void unSchedule(IJob job, ITrigger trigger);
 
     /**
      * 暂停

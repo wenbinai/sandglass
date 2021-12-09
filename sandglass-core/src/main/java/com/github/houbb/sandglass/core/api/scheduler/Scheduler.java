@@ -10,12 +10,16 @@ import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
+import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
-import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
+import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
+import com.github.houbb.sandglass.core.support.listener.JobListener;
+import com.github.houbb.sandglass.core.support.listener.TriggerListener;
 import com.github.houbb.sandglass.core.support.manager.JobManager;
 import com.github.houbb.sandglass.core.support.manager.TriggerManager;
-import com.github.houbb.sandglass.core.support.queue.JobTriggerQueue;
-import com.github.houbb.sandglass.core.support.thread.MainThreadLoop;
+import com.github.houbb.sandglass.core.support.store.JobTriggerStore;
+import com.github.houbb.sandglass.core.support.thread.ScheduleMainThreadLoop;
 import com.github.houbb.sandglass.core.support.thread.WorkerThreadPool;
 import com.github.houbb.sandglass.core.util.InnerTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
@@ -42,10 +46,16 @@ public class Scheduler implements IScheduler {
     private volatile boolean startFlag = false;
 
     /**
-     * 工作线程池
+     * 单个任务
      * @since 0.0.2
      */
-    private IWorkerThreadPool workerThreadPool = new WorkerThreadPool();
+    private final ExecutorService executorService;
+
+    /**
+     * 调度主线程
+     * @since 0.0.2
+     */
+    private ScheduleMainThreadLoop scheduleMainThreadLoop;
 
     /**
      * 任务管理类
@@ -66,51 +76,28 @@ public class Scheduler implements IScheduler {
     protected ITimer timer = SystemTimer.getInstance();
 
     /**
-     * 触发锁
-     * @since 0.0.2
-     */
-    protected ILock triggerLock = Locks.none();
-
-    /**
-     * 任务锁
-     * @since 0.0.2
-     */
-    protected ILock jobLock = Locks.none();
-
-    /**
      * 任务调度队列
      * @since 0.0.2
      */
-    protected IJobTriggerQueue jobTriggerQueue = new JobTriggerQueue();
+    protected IJobTriggerStore jobTriggerStore = new JobTriggerStore();
 
     /**
-     * 单个任务
-     * @since 0.0.2
+     * 任务调度监听类
+     * @since 0.0.4
      */
-    private final ExecutorService executorService;
-
-    /**
-     * 调度主线程
-     * @since 0.0.2
-     */
-    private final MainThreadLoop mainThreadLoop;
-
     private IScheduleListener scheduleListener;
 
     public Scheduler() {
         executorService = Executors.newSingleThreadExecutor();
-        mainThreadLoop = new MainThreadLoop();
     }
 
-    @Override
-    public Scheduler workerThreadPool(IWorkerThreadPool workerThreadPool) {
-        ArgUtil.notNull(workerThreadPool, "workerThreadPool");
+    public Scheduler scheduleMainThreadLoop(ScheduleMainThreadLoop scheduleMainThreadLoop) {
+        ArgUtil.notNull(scheduleMainThreadLoop, "scheduleMainThreadLoop");
 
-        this.workerThreadPool = workerThreadPool;
+        this.scheduleMainThreadLoop = scheduleMainThreadLoop;
         return this;
     }
 
-    @Override
     public Scheduler jobManager(IJobManager jobManager) {
         ArgUtil.notNull(jobManager, "jobManager");
 
@@ -118,7 +105,6 @@ public class Scheduler implements IScheduler {
         return this;
     }
 
-    @Override
     public Scheduler triggerManager(ITriggerManager triggerManager) {
         ArgUtil.notNull(triggerManager, "triggerManager");
 
@@ -126,7 +112,6 @@ public class Scheduler implements IScheduler {
         return this;
     }
 
-    @Override
     public Scheduler timer(ITimer timer) {
         ArgUtil.notNull(timer, "timer");
 
@@ -134,32 +119,14 @@ public class Scheduler implements IScheduler {
         return this;
     }
 
-    @Override
-    public Scheduler triggerLock(ILock triggerLock) {
-        ArgUtil.notNull(triggerLock, "triggerLock");
+    public Scheduler jobTriggerStore(IJobTriggerStore jobTriggerStore) {
+        ArgUtil.notNull(jobTriggerStore, "jobTriggerStore");
 
-        this.triggerLock = triggerLock;
+        this.jobTriggerStore = jobTriggerStore;
         return this;
     }
 
-    @Override
-    public Scheduler jobLock(ILock jobLock) {
-        ArgUtil.notNull(jobLock, "jobLock");
-
-        this.jobLock = jobLock;
-        return this;
-    }
-
-    @Override
-    public Scheduler jobTriggerQueue(IJobTriggerQueue jobTriggerQueue) {
-        ArgUtil.notNull(jobTriggerQueue, "jobTriggerQueue");
-
-        this.jobTriggerQueue = jobTriggerQueue;
-        return this;
-    }
-
-    @Override
-    public IScheduler scheduleListener(IScheduleListener scheduleListener) {
+    public Scheduler scheduleListener(IScheduleListener scheduleListener) {
         ArgUtil.notNull(scheduleListener, "scheduleListener");
 
         this.scheduleListener = scheduleListener;
@@ -169,29 +136,16 @@ public class Scheduler implements IScheduler {
 
     @Override
     public synchronized void start() {
+        ArgUtil.notNull(scheduleMainThreadLoop, "scheduleMainThreadLoop");
+
         if(startFlag) {
             return;
         }
 
         this.startFlag = true;
 
-        mainThreadLoop.jobLock(jobLock);
-        mainThreadLoop.jobManager(jobManager);
-        mainThreadLoop.jobTriggerQueue(jobTriggerQueue);
-
-        mainThreadLoop.triggerLock(triggerLock);
-        mainThreadLoop.triggerManager(triggerManager);
-
-        mainThreadLoop.timer(timer);
-        mainThreadLoop.workerThreadPool(workerThreadPool);
-        mainThreadLoop.startFlag(true);
-
-        //在主线程关闭后无需手动关闭守护线程，因为会自动关闭，避免了麻烦，Java垃圾回收线程就是一个典型的守护线程，
-        //简单粗暴的可以理解为所有为线程服务而不涉及资源的线程都能设置为守护线程。
-//        mainThreadLoop.setDaemon(true);
-
         // 异步执行
-        executorService.submit(mainThreadLoop);
+        executorService.submit(scheduleMainThreadLoop);
 
         scheduleListener.start();
     }
@@ -199,13 +153,25 @@ public class Scheduler implements IScheduler {
     @Override
     public void shutdown() {
         this.startFlag = false;
-        mainThreadLoop.startFlag(startFlag);
+        scheduleMainThreadLoop.startFlag(startFlag);
 
         scheduleListener.shutdown();
     }
 
     @Override
     public void schedule(IJob job, ITrigger trigger) {
+        this.addJobAndTrigger(job, trigger);
+
+        scheduleListener.schedule(job, trigger);
+    }
+
+    /**
+     * 放入任务和触发器
+     * @param job 任务
+     * @param trigger 触发器
+     * @since 0.0.4
+     */
+    private void addJobAndTrigger(IJob job, ITrigger trigger) {
         this.paramCheck(job, trigger);
 
         job.status(JobStatusEnum.NORMAL);
@@ -223,19 +189,18 @@ public class Scheduler implements IScheduler {
         ITriggerContext context = TriggerContext.newInstance()
                 .timer(timer);
         JobTriggerDto triggerDto = InnerTriggerHelper.buildJobTriggerDto(job, trigger, context);
-        jobTriggerQueue.put(triggerDto);
-
-        scheduleListener.schedule(job, trigger);
+        jobTriggerStore.put(triggerDto);
     }
 
+
     @Override
-    public void unschedule(String jobId, String triggerId) {
+    public void unSchedule(String jobId, String triggerId) {
         paramCheck(jobId, triggerId);
 
         IJob job = jobManager.remove(jobId);
         ITrigger trigger = triggerManager.remove(triggerId);
 
-        scheduleListener.unschedule(job, trigger);
+        scheduleListener.unSchedule(job, trigger);
     }
 
     @Override
@@ -254,6 +219,9 @@ public class Scheduler implements IScheduler {
 
         IJob job = jobManager.resume(jobId);
         ITrigger trigger = triggerManager.resume(triggerId);
+
+        // 重新放入任务
+        this.addJobAndTrigger(job, trigger);
 
         scheduleListener.resume(job, trigger);
     }

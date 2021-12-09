@@ -4,13 +4,20 @@ import com.github.houbb.heaven.util.common.ArgUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.lock.redis.core.Locks;
 import com.github.houbb.sandglass.api.api.*;
+import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
-import com.github.houbb.sandglass.api.support.queue.IJobTriggerQueue;
+import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreListener;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
+import com.github.houbb.sandglass.core.support.listener.JobListener;
 import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
+import com.github.houbb.sandglass.core.support.listener.TriggerListener;
 import com.github.houbb.sandglass.core.support.manager.JobManager;
 import com.github.houbb.sandglass.core.support.manager.TriggerManager;
-import com.github.houbb.sandglass.core.support.queue.JobTriggerQueue;
+import com.github.houbb.sandglass.core.support.store.JobTriggerStore;
+import com.github.houbb.sandglass.core.support.store.JobTriggerStoreListener;
+import com.github.houbb.sandglass.core.support.thread.ScheduleMainThreadLoop;
 import com.github.houbb.sandglass.core.support.thread.WorkerThreadPool;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
@@ -65,28 +72,46 @@ public final class SandGlassBs {
     private ILock triggerLock = Locks.none();
 
     /**
-     * 任务锁
-     * @since 0.0.2
-     */
-    private ILock jobLock = Locks.none();
-
-    /**
      * 任务调度队列
      * @since 0.0.2
      */
-    private IJobTriggerQueue jobTriggerQueue = new JobTriggerQueue();
+    private IJobTriggerStore jobTriggerStore = new JobTriggerStore();
 
-    /**
-     * 调度核心
-     * @since 0.0.2
-     */
-    private IScheduler scheduler = new Scheduler();
+//    /**
+//     * 调度核心
+//     * @since 0.0.2
+//     */
+//    @Deprecated
+//    private final IScheduler scheduler = new Scheduler();
 
     /**
      * 调度监听类
      * @since 0.0.4
      */
     private IScheduleListener scheduleListener = new ScheduleListener();
+
+    /**
+     * 任务监听类
+     * @since 0.0.4
+     */
+    private IJobListener jobListener = new JobListener();
+
+    /**
+     * 调度者监听类
+     * @since 0.0.4
+     */
+    private ITriggerListener triggerListener = new TriggerListener();
+
+    /**
+     * 任务持久化监听类
+     * @since 0.0.4
+     */
+    private IJobTriggerStoreListener jobTriggerStoreListener = new JobTriggerStoreListener();
+
+    /**
+     * 任务调度实现类
+     */
+    private IScheduler scheduler;
 
     public SandGlassBs workerThreadPool(IWorkerThreadPool workerThreadPool) {
         ArgUtil.notNull(workerThreadPool, "workerThreadPool");
@@ -123,24 +148,10 @@ public final class SandGlassBs {
         return this;
     }
 
-    public SandGlassBs jobLock(ILock jobLock) {
-        ArgUtil.notNull(jobLock, "jobLock");
+    public SandGlassBs jobTriggerStore(IJobTriggerStore jobTriggerStore) {
+        ArgUtil.notNull(jobTriggerStore, "jobTriggerStore");
 
-        this.jobLock = jobLock;
-        return this;
-    }
-
-    public SandGlassBs jobTriggerQueue(IJobTriggerQueue jobTriggerQueue) {
-        ArgUtil.notNull(jobTriggerQueue, "jobTriggerQueue");
-
-        this.jobTriggerQueue = jobTriggerQueue;
-        return this;
-    }
-
-    public SandGlassBs scheduler(IScheduler scheduler) {
-        ArgUtil.notNull(scheduler, "scheduler");
-
-        this.scheduler = scheduler;
+        this.jobTriggerStore = jobTriggerStore;
         return this;
     }
 
@@ -151,24 +162,71 @@ public final class SandGlassBs {
         return this;
     }
 
+    public SandGlassBs jobListener(IJobListener jobListener) {
+        ArgUtil.notNull(jobListener, "jobListener");
+
+        this.jobListener = jobListener;
+        return this;
+    }
+
+    public SandGlassBs triggerListener(ITriggerListener triggerListener) {
+        ArgUtil.notNull(triggerListener, "triggerListener");
+
+        this.triggerListener = triggerListener;
+        return this;
+    }
+
+    public SandGlassBs jobTriggerStoreListener(IJobTriggerStoreListener jobTriggerStoreListener) {
+        ArgUtil.notNull(jobTriggerStoreListener, "jobTriggerStoreListener");
+
+        this.jobTriggerStoreListener = jobTriggerStoreListener;
+        return this;
+    }
+
     /**
      * 线程启动
      * @return this
      * @since 0.0.2
      */
     public SandGlassBs start() {
-        scheduler.jobLock(jobLock)
-                .jobManager(jobManager)
-                .jobTriggerQueue(jobTriggerQueue)
-                .timer(timer)
-                .workerThreadPool(workerThreadPool)
-                .triggerLock(triggerLock)
-                .triggerManager(triggerManager)
-                .scheduleListener(scheduleListener);
+        final Scheduler scheduler = new Scheduler();
 
+        this.jobTriggerStore.listener(this.jobTriggerStoreListener);
+
+        //调度类主线程
+        ScheduleMainThreadLoop scheduleMainThreadLoop = new ScheduleMainThreadLoop();
+        scheduleMainThreadLoop.jobManager(jobManager)
+                .jobListener(jobListener)
+                .jobTriggerStore(jobTriggerStore)
+                .triggerLock(triggerLock)
+                .triggerListener(triggerListener)
+                .triggerManager(triggerManager)
+                .workerThreadPool(workerThreadPool);
+
+        //调度类
+        scheduler.jobManager(jobManager)
+                .triggerManager(triggerManager)
+                .jobTriggerStore(jobTriggerStore)
+                .timer(timer)
+                .scheduleListener(scheduleListener)
+                .scheduleMainThreadLoop(scheduleMainThreadLoop);
+
+        // 赋值
+        this.scheduler = scheduler;
+
+        // 执行
         this.scheduler.start();
 
         return this;
+    }
+
+    /**
+     * 获取调度实现类
+     * @return 调度实现类
+     * @since 0.0.4
+     */
+    public IScheduler scheduler() {
+        return scheduler;
     }
 
     /**
