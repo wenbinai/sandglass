@@ -20,6 +20,7 @@ public interface IJobTriggerStoreListener {
 
     /**
      * 获取最近的一个，获取不到则阻塞
+     * @param dto 对象
      * @since 0.0.4
      */
     void take(JobTriggerDto dto);
