@@ -79,13 +79,6 @@ public final class SandGlassBs {
      */
     private IJobTriggerStore jobTriggerStore = new JobTriggerStore();
 
-//    /**
-//     * 调度核心
-//     * @since 0.0.2
-//     */
-//    @Deprecated
-//    private final IScheduler scheduler = new Scheduler();
-
     /**
      * 调度监听类
      * @since 0.0.4

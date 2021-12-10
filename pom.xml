@@ -17,6 +17,7 @@
         <module>sandglass-api</module>
         <module>sandglass-core</module>
         <module>sandglass-test</module>
+        <module>sandglass-spring</module>
     </modules>
 
     <properties>
@@ -45,6 +46,7 @@
 
         <!--============================== OTHER ==============================-->
         <junit.version>4.12</junit.version>
+        <spring.version>4.3.15.RELEASE</spring.version>
     </properties>
 
     <dependencyManagement>
@@ -58,6 +60,11 @@
             <dependency>
                 <groupId>com.github.houbb</groupId>
                 <artifactId>sandglass-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.houbb</groupId>
+                <artifactId>sandglass-spring</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!--============================== INTER ==============================-->
@@ -115,6 +122,11 @@
                 <version>${junit.version}</version>
                 <optional>true</optional>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
             </dependency>
 
         </dependencies>
