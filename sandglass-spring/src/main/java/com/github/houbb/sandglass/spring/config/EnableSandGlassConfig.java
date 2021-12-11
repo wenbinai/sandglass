@@ -106,7 +106,7 @@ public class EnableSandGlassConfig implements ImportAware,
     @Order(Ordered.LOWEST_PRECEDENCE)
     public Scheduler scheduler() {
         // 初始化 schedule
-        IWorkerThreadPool workerThreadPool = new WorkerThreadPool(enableSandGlassAttributes.<Integer>getNumber("workPoolSize"));
+        int workPoolSize = enableSandGlassAttributes.<Integer>getNumber("workPoolSize");
         IJobStore jobStore = beanFactory.getBean(enableSandGlassAttributes.getString("jobStore"), IJobStore.class);
         ITriggerStore triggerStore = beanFactory.getBean(enableSandGlassAttributes.getString("triggerStore"), ITriggerStore.class);
         IJobTriggerStore jobTriggerStore = beanFactory.getBean(enableSandGlassAttributes.getString("jobTriggerStore"), IJobTriggerStore.class);
@@ -118,7 +118,7 @@ public class EnableSandGlassConfig implements ImportAware,
         IJobTriggerStoreListener jobTriggerStoreListener = beanFactory.getBean(enableSandGlassAttributes.getString("jobTriggerStoreListener"), IJobTriggerStoreListener.class);
 
         SandGlassBs sandGlassBs = SandGlassBs.newInstance()
-                .workerThreadPool(workerThreadPool)
+                .workPoolSize(workPoolSize)
                 .jobStore(jobStore)
                 .triggerStore(triggerStore)
                 .jobTriggerStore(jobTriggerStore)

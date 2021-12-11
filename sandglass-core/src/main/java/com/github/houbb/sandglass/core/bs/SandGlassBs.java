@@ -44,10 +44,10 @@ public final class SandGlassBs {
     }
 
     /**
-     * 工作线程池
-     * @since 0.0.2
+     * 工作线程池大小
+     * @since 0.0.5
      */
-    private IWorkerThreadPool workerThreadPool = new WorkerThreadPool();
+    private int workPoolSize = 10;
 
     /**
      * 任务管理类
@@ -108,10 +108,10 @@ public final class SandGlassBs {
      */
     private Scheduler scheduler = new Scheduler();
 
-    public SandGlassBs workerThreadPool(IWorkerThreadPool workerThreadPool) {
-        ArgUtil.notNull(workerThreadPool, "workerThreadPool");
+    public SandGlassBs workPoolSize(int workPoolSize) {
+        ArgUtil.gte("workPoolSize", workPoolSize, 1);
 
-        this.workerThreadPool = workerThreadPool;
+        this.workPoolSize = workPoolSize;
         return this;
     }
 
@@ -198,8 +198,10 @@ public final class SandGlassBs {
      */
     public SandGlassBs init() {
         this.jobTriggerStore.listener(this.jobTriggerStoreListener);
+        this.jobTriggerStore.timer(this.timer);
 
         //调度类主线程
+        IWorkerThreadPool workerThreadPool = new WorkerThreadPool(workPoolSize);
         ScheduleMainThreadLoop scheduleMainThreadLoop = new ScheduleMainThreadLoop();
         scheduleMainThreadLoop.jobStore(jobStore)
                 .jobListener(jobListener)

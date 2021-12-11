@@ -2,6 +2,7 @@ package com.github.houbb.sandglass.api.support.store;
 
 
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
+import com.github.houbb.timer.api.ITimer;
 
 /**
  * 任务调度队列-持久化
@@ -18,6 +19,14 @@ public interface IJobTriggerStore {
      * @since 0.0.4
      */
     IJobTriggerStore listener(final IJobTriggerStoreListener listener);
+
+    /**
+     * 时间
+     * @param timer 时间
+     * @return this
+     * @since 0.0.5
+     */
+    IJobTriggerStore timer(final ITimer timer);
 
     /**
      * 添加任务

@@ -180,13 +180,13 @@ public class ScheduleMainThreadLoop extends Thread {
 
                 //1. 如果 acquireLock 成功，从 trigger queue 中获取最新的一个
                 JobTriggerDto jobTriggerDto = this.jobTriggerStore.take();
-
-                // 释放锁
-                this.triggerLock.unlock(triggerLockKey);
                 if(jobTriggerDto == null) {
                     LOG.info("jobTriggerDto 信息为空");
+                    this.triggerLock.unlock(triggerLockKey);
                     continue;
                 }
+                // 释放锁
+                this.triggerLock.unlock(triggerLockKey);
 
                 //1.1 任务是否存在
                 String jobId = jobTriggerDto.jobId();
@@ -231,6 +231,7 @@ public class ScheduleMainThreadLoop extends Thread {
             }
         }
     }
+
 
     /**
      * 循环等待

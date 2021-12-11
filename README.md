@@ -1,6 +1,6 @@
 # SandGlass
 
-⏳ [SandGlass](https://github.com/houbb/sandglass) 是一款为 java 设计的时间任务调度工具。
+⏳ [SandGlass](https://github.com/houbb/sandglass) 是一款为 java 设计的分布式任务调度工具。
 
 [![Build Status](https://travis-ci.com/houbb/sandglass.svg?branch=master)](https://travis-ci.com/houbb/sandglass)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.houbb/sandglass/badge.svg)](http://mvnrepository.com/artifact/com.github.houbb/sandglass)
@@ -8,6 +8,18 @@
 [![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)](https://github.com/houbb/sandglass)
 
 > [变更日志](https://github.com/houbb/sandglass/blob/master/CHANGELOG.md)
+
+## 特性
+
+- 高性能任务调度
+
+- 支持用户自定义
+
+- 完美整合 spring
+
+- 完美整合 springboot
+
+- 真正意义上的分布式任务调度系统
 
 # 快速开始
 
@@ -72,6 +84,107 @@ Triggers.period(long period, TimeUnit timeUnit);
 Triggers.period(String id, long period, TimeUnit timeUnit);
 ```
 
+# 引导类
+
+## 说明
+
+和其他的开源工具一样，为了便于用户自定义。
+
+SandGlass 也支持引导类自定义。
+
+```java
+SandGlassBs.newInstance()
+      .workPoolSize(10)
+      .jobStore(new JobStore())
+      .jobListener(new JobListener())
+      .jobTriggerStoreListener(new JobTriggerStoreListener())
+      .jobTriggerStore(new JobTriggerStore())
+      .triggerListener(new TriggerListener())
+      .triggerLock(Locks.none())
+      .triggerStore(new TriggerStore())
+      .timer(SystemTimer.getInstance())
+      .scheduleListener(new ScheduleListener())
+      .start();
+```
+
+## 属性说明
+
+所有属性都是基于接口的，允许用户自定义定义。
+
+可配置的属性列表如下：
+
+| 属性 | 说明 | 默认值 |
+|:---|:---|:---|
+| workPoolSize | 工作线程池大小 | 10 |
+| jobStore | 任务持久化 |  |
+| triggerStore | 触发器持久化 |  |
+| jobTriggerStore | 任务触发器持久化 |  |
+| jobTriggerStoreListener | 任务出发持久化监听器 |  |
+| timer | 时间策略 |  |
+| triggerLock | 触发器锁 |  |
+| scheduleListener | 任务调度监听器 |  |
+| jobListener | 任务执行监听器 |  |
+| triggerListener | 触发器监听器 |  |
+
+
+# spring 整合
+
+## 定时任务定义
+
+类似于 spring 的任务调度，我们可以通过注解指定方法。
+
+```java
+@Service
+public class MyJobService {
+
+    @PeriodSchedule(period = 2000)
+    public void logTime() {
+        System.out.println("---------------- TIME");
+    }
+
+    @CronSchedule("*/5 * * * * ?")
+    public void logName() {
+        System.out.println("---------------- NAME");
+    }
+
+}
+```
+
+`@PeriodSchedule` 用于指定 period 执行的任务，`@CronSchedule` 用于指定 cron 表达式对应的任务。
+
+## 定时任务启用
+
+直接指定 `@EnableSandGlass` 注解即可，无需额外配置。
+
+```java
+@Configurable
+@ComponentScan(basePackages = "com.github.houbb.sandglass.test.spring")
+@EnableSandGlass
+public class SpringConfig {
+}
+```
+
+## 注解其定义
+
+`@EnableSandGlass` 允许用户进行自定义。
+
+可配置的属性列表如下：
+
+| 属性 | 说明 | 默认值 |
+|:---|:---|:---|
+| workPoolSize | 工作线程池大小 | 10 |
+| jobStore | 任务持久化 |  |
+| triggerStore | 触发器持久化 |  |
+| jobTriggerStore | 任务触发器持久化 |  |
+| jobTriggerStoreListener | 任务出发持久化监听器 |  |
+| timer | 时间策略 |  |
+| triggerLock | 触发器锁 |  |
+| scheduleListener | 任务调度监听器 |  |
+| jobListener | 任务执行监听器 |  |
+| triggerListener | 触发器监听器 |  |
+
+自定义方式：实现对应接口，在注解中对应对应的 bean 名称即可。
+
 # Road-Map
 
 - [x] trigger 接口优化
@@ -88,6 +201,10 @@ Triggers.period(String id, long period, TimeUnit timeUnit);
 
 - [x] 数据的持久化
 
+- [x] spring 整合
+
+- [ ] springboot 整合
+
 - [ ] MIS-FIRE 处理
 
 - [ ] 状态更新
@@ -100,10 +217,20 @@ Triggers.period(String id, long period, TimeUnit timeUnit);
 
 任务执行失败
 
-- [ ] spring 整合
-
-- [ ] springboot 整合
-
 - [ ] 分布式任务调度中心
+
+（1）分布式任务调度控台
+
+sandglass-web
+
+sandglass-h5
+
+（2）分布式任务调度客户端
+
+sandglass-client
+
+（3）rpc 通讯协议
+
+sandglass-socket
 
 - [ ] DAG 有向图任务编排

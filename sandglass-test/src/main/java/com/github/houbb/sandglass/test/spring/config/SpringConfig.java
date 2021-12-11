@@ -11,6 +11,6 @@ import org.springframework.context.annotation.ComponentScan;
  */
 @Configurable
 @ComponentScan(basePackages = "com.github.houbb.sandglass.test.spring")
-@EnableSandGlass(workPoolSize = 1)
+@EnableSandGlass(workPoolSize = 1, jobTriggerStoreListener = "myJobTriggerStoreListener")
 public class SpringConfig {
 }

@@ -2,7 +2,6 @@ package com.github.houbb.sandglass.spring.annotation;
 
 import com.github.houbb.sandglass.spring.config.EnableSandGlassConfig;
 import com.github.houbb.sandglass.spring.config.SandGlassComponentScan;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
@@ -23,6 +22,7 @@ public @interface EnableSandGlass {
      * 工作线程池大小
      * @return 工作线程
      * @since 0.0.5
+     * @see com.github.houbb.sandglass.api.api.IWorkerThreadPool 接口
      */
     int workPoolSize() default 10;
 
@@ -30,6 +30,7 @@ public @interface EnableSandGlass {
      * 任务持久化实体 bean
      * @return 任务持久化
      * @since 0.0.5
+     * @see com.github.houbb.sandglass.api.support.store.IJobStore 接口
      */
     String jobStore() default "sandglass-jobStore";
 
@@ -37,6 +38,7 @@ public @interface EnableSandGlass {
      * 触发器持久化 bean
      * @return bean
      * @since 0.0.5
+     * @see com.github.houbb.sandglass.api.support.store.ITriggerStore 接口
      */
     String triggerStore() default "sandglass-triggerStore";
 
@@ -44,6 +46,7 @@ public @interface EnableSandGlass {
      * 任务触发器持久化类
      * @return bean
      * @since 0.0.5
+     * @see com.github.houbb.sandglass.api.support.store.IJobTriggerStore 接口
      */
     String jobTriggerStore() default "sandglass-jobTriggerStore";
 
@@ -51,6 +54,7 @@ public @interface EnableSandGlass {
      * 时间调度实现
      * @return 时间调度
      * @since 0.0.5
+     * @see com.github.houbb.timer.api.ITimer 接口
      */
     String timer() default "sandglass-timer";
 
@@ -58,6 +62,7 @@ public @interface EnableSandGlass {
      * 触发器锁
      * @return 锁
      * @since 0.0.5
+     * @see com.github.houbb.lock.api.core.ILock 锁
      */
     String triggerLock() default "sandglass-triggerLock";
 
@@ -65,6 +70,7 @@ public @interface EnableSandGlass {
      * 任务调度监听器
      * @return 监听器
      * @since 0.0.5
+     * @see com.github.houbb.sandglass.api.support.listener.IScheduleListener 接口
      */
     String scheduleListener() default "sandglass-scheduleListener";
 
@@ -72,6 +78,7 @@ public @interface EnableSandGlass {
      * 任务监听类
      * @return bean
      * @since 0.0.5
+     * @see com.github.houbb.sandglass.api.support.listener.IJobListener 接口
      */
     String jobListener() default "sandglass-jobListener";
 
@@ -79,6 +86,7 @@ public @interface EnableSandGlass {
      * 触发器监听类
      * @return bean
      * @since 0.0.5
+     * @see com.github.houbb.sandglass.api.support.listener.ITriggerListener 接口
      */
     String triggerListener() default "sandglass-triggerListener";
 
@@ -86,6 +94,7 @@ public @interface EnableSandGlass {
      * 任务触发器持久化监听类
      * @return bean
      * @since 0.0.5
+     * @see com.github.houbb.sandglass.api.support.store.IJobTriggerStoreListener 接口
      */
     String jobTriggerStoreListener() default "sandglass-jobTriggerStoreListener";
 
