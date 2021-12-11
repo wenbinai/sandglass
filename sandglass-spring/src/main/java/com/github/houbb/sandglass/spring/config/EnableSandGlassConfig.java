@@ -1,14 +1,11 @@
 package com.github.houbb.sandglass.spring.config;
 
-import com.github.houbb.heaven.util.common.ArgUtil;
 import com.github.houbb.heaven.util.lang.reflect.ClassUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.IJob;
-import com.github.houbb.sandglass.api.api.IScheduler;
 import com.github.houbb.sandglass.api.api.ITrigger;
-import com.github.houbb.sandglass.api.api.IWorkerThreadPool;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
@@ -18,17 +15,13 @@ import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreListener;
 import com.github.houbb.sandglass.api.support.store.ITriggerStore;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
 import com.github.houbb.sandglass.core.bs.SandGlassBs;
-import com.github.houbb.sandglass.core.support.thread.WorkerThreadPool;
 import com.github.houbb.sandglass.spring.annotation.CronSchedule;
 import com.github.houbb.sandglass.spring.annotation.EnableSandGlass;
 import com.github.houbb.sandglass.spring.annotation.PeriodSchedule;
 import com.github.houbb.sandglass.spring.utils.InnerSpringJobUtils;
 import com.github.houbb.sandglass.spring.utils.InnerSpringTriggerUtils;
 import com.github.houbb.timer.api.ITimer;
-import com.sun.istack.internal.Nullable;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -40,7 +33,6 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -69,7 +61,6 @@ public class EnableSandGlassConfig implements ImportAware,
 
     private static final Log log = LogFactory.getLog(EnableSandGlassConfig.class);
 
-    @Nullable
     private AnnotationAttributes enableSandGlassAttributes;
 
     /**
