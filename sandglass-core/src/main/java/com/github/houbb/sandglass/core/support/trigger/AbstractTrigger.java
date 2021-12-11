@@ -1,6 +1,5 @@
 package com.github.houbb.sandglass.core.support.trigger;
 
-import com.github.houbb.heaven.util.common.ArgUtil;
 import com.github.houbb.sandglass.api.api.ITrigger;
 import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 import com.github.houbb.sandglass.core.constant.SandGlassOrderConst;
@@ -14,11 +13,6 @@ import com.github.houbb.timer.core.timer.SystemTimer;
  */
 public abstract class AbstractTrigger implements ITrigger {
 
-    /**
-     * 唯一标识
-     * @since 0.0.2
-     */
-    private final String id;
 
     /**
      * 备注
@@ -49,17 +43,6 @@ public abstract class AbstractTrigger implements ITrigger {
      * @since 0.0.4
      */
     private TriggerStatusEnum status = TriggerStatusEnum.NORMAL;
-
-    protected AbstractTrigger(String id) {
-        ArgUtil.notEmpty(id, "id");
-
-        this.id = id;
-    }
-
-    @Override
-    public String id() {
-        return id;
-    }
 
     @Override
     public String remark() {
@@ -110,18 +93,6 @@ public abstract class AbstractTrigger implements ITrigger {
     public AbstractTrigger status(TriggerStatusEnum status) {
         this.status = status;
         return this;
-    }
-
-    @Override
-    public String toString() {
-        return "AbstractTrigger{" +
-                "id='" + id + '\'' +
-                ", remark='" + remark + '\'' +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
-                ", order=" + order +
-                ", status=" + status +
-                '}';
     }
 
 }

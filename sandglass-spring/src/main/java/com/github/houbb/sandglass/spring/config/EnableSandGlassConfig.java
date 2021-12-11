@@ -1,33 +1,53 @@
 package com.github.houbb.sandglass.spring.config;
 
+import com.github.houbb.heaven.util.common.ArgUtil;
 import com.github.houbb.heaven.util.lang.reflect.ClassUtil;
+import com.github.houbb.lock.api.core.ILock;
+import com.github.houbb.log.integration.core.Log;
+import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.IJob;
+import com.github.houbb.sandglass.api.api.IScheduler;
 import com.github.houbb.sandglass.api.api.ITrigger;
-import com.github.houbb.sandglass.core.support.trigger.CronTrigger;
-import com.github.houbb.sandglass.core.support.trigger.Triggers;
+import com.github.houbb.sandglass.api.api.IWorkerThreadPool;
+import com.github.houbb.sandglass.api.support.listener.IJobListener;
+import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
+import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
+import com.github.houbb.sandglass.api.support.store.IJobStore;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreListener;
+import com.github.houbb.sandglass.api.support.store.ITriggerStore;
+import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
+import com.github.houbb.sandglass.core.bs.SandGlassBs;
+import com.github.houbb.sandglass.core.support.thread.WorkerThreadPool;
 import com.github.houbb.sandglass.spring.annotation.CronSchedule;
 import com.github.houbb.sandglass.spring.annotation.EnableSandGlass;
 import com.github.houbb.sandglass.spring.annotation.PeriodSchedule;
 import com.github.houbb.sandglass.spring.utils.InnerSpringJobUtils;
 import com.github.houbb.sandglass.spring.utils.InnerSpringTriggerUtils;
+import com.github.houbb.timer.api.ITimer;
 import com.sun.istack.internal.Nullable;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.EnvironmentAware;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -43,11 +63,14 @@ import java.util.Map;
  * @since 0.0.5
  */
 @Configuration
-public class EnableSandGlassConfig implements ImportAware, BeanPostProcessor,
-        BeanFactoryAware, EnvironmentAware, ApplicationContextAware, InstantiationAwareBeanPostProcessor, InitializingBean {
+public class EnableSandGlassConfig implements ImportAware,
+        EnvironmentAware, ApplicationContextAware, BeanPostProcessor, InitializingBean, ApplicationListener<ContextRefreshedEvent>,
+        BeanFactoryPostProcessor {
+
+    private static final Log log = LogFactory.getLog(EnableSandGlassConfig.class);
 
     @Nullable
-    private AnnotationAttributes annotationAttributes;
+    private AnnotationAttributes enableSandGlassAttributes;
 
     /**
      * 环境
@@ -65,7 +88,7 @@ public class EnableSandGlassConfig implements ImportAware, BeanPostProcessor,
      * bean 工厂
      * @since 0.0.5
      */
-    private BeanFactory beanFactory;
+    private ConfigurableListableBeanFactory beanFactory;
 
     /**
      * 触发 map
@@ -73,26 +96,60 @@ public class EnableSandGlassConfig implements ImportAware, BeanPostProcessor,
      */
     private Map<ITrigger, IJob> triggerIJobMap = new HashMap<>();
 
+    /**
+     * 调度实现
+     * @since 0.0.5
+     */
+    private Scheduler scheduler;
+
+    @Bean(name = "sandglass-scheduler")
+    @Order(Ordered.LOWEST_PRECEDENCE)
+    public Scheduler scheduler() {
+        // 初始化 schedule
+        IWorkerThreadPool workerThreadPool = new WorkerThreadPool(enableSandGlassAttributes.<Integer>getNumber("workPoolSize"));
+        IJobStore jobStore = beanFactory.getBean(enableSandGlassAttributes.getString("jobStore"), IJobStore.class);
+        ITriggerStore triggerStore = beanFactory.getBean(enableSandGlassAttributes.getString("triggerStore"), ITriggerStore.class);
+        IJobTriggerStore jobTriggerStore = beanFactory.getBean(enableSandGlassAttributes.getString("jobTriggerStore"), IJobTriggerStore.class);
+        ITimer timer = beanFactory.getBean(enableSandGlassAttributes.getString("timer"), ITimer.class);
+        ILock triggerLock = beanFactory.getBean(enableSandGlassAttributes.getString("triggerLock"), ILock.class);
+        IScheduleListener scheduleListener = beanFactory.getBean(enableSandGlassAttributes.getString("scheduleListener"), IScheduleListener.class);
+        IJobListener jobListener = beanFactory.getBean(enableSandGlassAttributes.getString("jobListener"), IJobListener.class);
+        ITriggerListener triggerListener = beanFactory.getBean(enableSandGlassAttributes.getString("triggerListener"), ITriggerListener.class);
+        IJobTriggerStoreListener jobTriggerStoreListener = beanFactory.getBean(enableSandGlassAttributes.getString("jobTriggerStoreListener"), IJobTriggerStoreListener.class);
+
+        SandGlassBs sandGlassBs = SandGlassBs.newInstance()
+                .workerThreadPool(workerThreadPool)
+                .jobStore(jobStore)
+                .triggerStore(triggerStore)
+                .jobTriggerStore(jobTriggerStore)
+                .timer(timer)
+                .triggerLock(triggerLock)
+                .scheduleListener(scheduleListener)
+                .triggerListener(triggerListener)
+                .jobTriggerStoreListener(jobTriggerStoreListener)
+                .jobListener(jobListener);
+
+        sandGlassBs.init();
+
+        // 获取 scheduler
+        this.scheduler = sandGlassBs.scheduler();
+        return this.scheduler;
+    }
 
     @Override
     public void setImportMetadata(AnnotationMetadata importMetadata) {
-        annotationAttributes = AnnotationAttributes.fromMap(
+        enableSandGlassAttributes = AnnotationAttributes.fromMap(
                 importMetadata.getAnnotationAttributes(EnableSandGlass.class.getName(), false));
-        if (annotationAttributes == null) {
+        if (enableSandGlassAttributes == null) {
             throw new IllegalArgumentException(
                     "@EnableSandGlass is not present on importing class " + importMetadata.getClassName());
         }
     }
 
     @Override
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory = beanFactory;
-    }
-
-    @Override
     public void afterPropertiesSet() throws Exception {
-        // 这个方法一般是最后执行的。
-
+        // 执行顺序：
+        // beanFactory=>environment=>applicationContext=>setImportMetadata=>afterPropertiesSet=>postProcessAfterInitialization=>onApplicationEvent
     }
 
     @Override
@@ -102,6 +159,12 @@ public class EnableSandGlassConfig implements ImportAware, BeanPostProcessor,
 
     @Override
     public Object postProcessAfterInitialization(final Object bean, String beanName) throws BeansException {
+        this.initJobAndTrigger(bean, beanName);
+        return bean;
+    }
+
+
+    private void initJobAndTrigger(final Object bean, String beanName) {
         final Class clazz = bean.getClass();
         // public 方法，不能有入参
         List<Method> methodList = ClassUtil.getMethodList(clazz);
@@ -123,9 +186,8 @@ public class EnableSandGlassConfig implements ImportAware, BeanPostProcessor,
                 triggerIJobMap.put(cronTrigger, job);
             }
         }
-
-        return bean;
     }
+
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -138,17 +200,22 @@ public class EnableSandGlassConfig implements ImportAware, BeanPostProcessor,
     }
 
     @Override
-    public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
-        return null;
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        // 加载所有的调度方法
+        for(Map.Entry<ITrigger, IJob> entry : triggerIJobMap.entrySet()) {
+            ITrigger trigger = entry.getKey();
+            IJob job = entry.getValue();
+
+            this.scheduler.schedule(job, trigger);
+        }
+
+        // 加载完成后启动
+        this.scheduler.start();
     }
 
     @Override
-    public boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
-        return false;
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
     }
 
-    @Override
-    public PropertyValues postProcessPropertyValues(PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
-        return null;
-    }
 }

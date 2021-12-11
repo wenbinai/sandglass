@@ -43,6 +43,7 @@
         <lock.version>0.0.3</lock.version>
         <log-integration.version>1.1.8</log-integration.version>
         <cron.version>1.0.0</cron.version>
+        <test.version>0.0.1</test.version>
 
         <!--============================== OTHER ==============================-->
         <junit.version>4.12</junit.version>
@@ -115,19 +116,24 @@
                 <version>${log-integration.version}</version>
             </dependency>
 
-            <!--============================== OTHER ==============================-->
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
-                <optional>true</optional>
-                <scope>test</scope>
+                <groupId>com.github.houbb</groupId>
+                <artifactId>test-spring</artifactId>
+                <version>${test.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.github.houbb</groupId>
+                <artifactId>test-core</artifactId>
+                <version>${test.version}</version>
+            </dependency>
+
+            <!--============================== OTHER ==============================-->
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
                 <version>${spring.version}</version>
             </dependency>
+
 
         </dependencies>
     </dependencyManagement>

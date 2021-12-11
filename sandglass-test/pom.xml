@@ -17,12 +17,21 @@
             <groupId>com.github.houbb</groupId>
             <artifactId>sandglass-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.houbb</groupId>
+            <artifactId>sandglass-spring</artifactId>
+        </dependency>
 
         <!--============================== OTHER ==============================-->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>com.github.houbb</groupId>
+            <artifactId>test-spring</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.houbb</groupId>
+            <artifactId>test-core</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>

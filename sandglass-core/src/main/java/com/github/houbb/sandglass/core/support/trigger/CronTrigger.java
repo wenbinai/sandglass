@@ -26,12 +26,18 @@ public class CronTrigger extends AbstractTrigger {
      */
     private final CronExpression cronExpression;
 
-    public CronTrigger(String id, String cronExpression) {
-        super(id);
+    /**
+     * 唯一标识
+     * @since 0.0.2
+     */
+    private final String id;
 
+    public CronTrigger(String id, String cronExpression) {
+        ArgUtil.notEmpty(id, "id");
         ArgUtil.notEmpty(cronExpression, "cronExpression");
 
         try {
+            this.id = id;
             this.cronExpression = new CronExpression(cronExpression);
         } catch (ParseException e) {
             throw new SandGlassException(e);
@@ -57,15 +63,26 @@ public class CronTrigger extends AbstractTrigger {
     }
 
     @Override
+    public String id() {
+        return this.id;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+
         CronTrigger that = (CronTrigger) o;
-        return Objects.equals(cronExpression, that.cronExpression);
+
+        if (cronExpression != null ? !cronExpression.equals(that.cronExpression) : that.cronExpression != null)
+            return false;
+        return id != null ? id.equals(that.id) : that.id == null;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(cronExpression);
+        int result = cronExpression != null ? cronExpression.hashCode() : 0;
+        result = 31 * result + (id != null ? id.hashCode() : 0);
+        return result;
     }
 }

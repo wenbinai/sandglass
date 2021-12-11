@@ -41,10 +41,17 @@ public class PeriodTrigger extends AbstractTrigger {
      */
     private volatile boolean fixedRate = false;
 
+    /**
+     * 唯一标识
+     * @since 0.0.2
+     */
+    private final String id;
+
     public PeriodTrigger(String id, long period, TimeUnit timeUnit) {
-        super(id);
+        ArgUtil.notEmpty(id, "id");
         ArgUtil.gt("period", period, 0);
 
+        this.id = id;
         this.timeUnit = timeUnit;
         this.period = this.timeUnit.toMillis(period);
     }
@@ -90,15 +97,25 @@ public class PeriodTrigger extends AbstractTrigger {
     }
 
     @Override
+    public String id() {
+        return this.id;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+
         PeriodTrigger that = (PeriodTrigger) o;
-        return period == that.period && initialDelay == that.initialDelay && fixedRate == that.fixedRate && timeUnit == that.timeUnit;
+
+        if (period != that.period) return false;
+        return id != null ? id.equals(that.id) : that.id == null;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(period, timeUnit, initialDelay, fixedRate);
+        int result = (int) (period ^ (period >>> 32));
+        result = 31 * result + (id != null ? id.hashCode() : 0);
+        return result;
     }
 }

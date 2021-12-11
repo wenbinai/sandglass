@@ -106,7 +106,7 @@ public final class SandGlassBs {
     /**
      * 任务调度实现类
      */
-    private IScheduler scheduler;
+    private Scheduler scheduler = new Scheduler();
 
     public SandGlassBs workerThreadPool(IWorkerThreadPool workerThreadPool) {
         ArgUtil.notNull(workerThreadPool, "workerThreadPool");
@@ -184,8 +184,19 @@ public final class SandGlassBs {
      * @since 0.0.2
      */
     public SandGlassBs start() {
-        final Scheduler scheduler = new Scheduler();
+        this.init();
 
+        // 执行
+        this.scheduler.start();
+
+        return this;
+    }
+
+    /**
+     * 初始化
+     * @return 初始化
+     */
+    public SandGlassBs init() {
         this.jobTriggerStore.listener(this.jobTriggerStoreListener);
 
         //调度类主线程
@@ -206,11 +217,11 @@ public final class SandGlassBs {
                 .scheduleListener(scheduleListener)
                 .scheduleMainThreadLoop(scheduleMainThreadLoop);
 
-        // 赋值
-        this.scheduler = scheduler;
+        return this;
+    }
 
-        // 执行
-        this.scheduler.start();
+    public SandGlassBs setScheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
 
         return this;
     }
@@ -220,7 +231,7 @@ public final class SandGlassBs {
      * @return 调度实现类
      * @since 0.0.4
      */
-    public IScheduler scheduler() {
+    public Scheduler scheduler() {
         return scheduler;
     }
 
