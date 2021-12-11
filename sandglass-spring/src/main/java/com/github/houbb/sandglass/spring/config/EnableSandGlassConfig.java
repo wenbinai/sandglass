@@ -29,7 +29,9 @@ import org.springframework.core.type.AnnotationMetadata;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 启用时间调度配置
@@ -42,7 +44,7 @@ import java.util.List;
  */
 @Configuration
 public class EnableSandGlassConfig implements ImportAware, BeanPostProcessor,
-        BeanFactoryAware, EnvironmentAware, ApplicationContextAware, InstantiationAwareBeanPostProcessor {
+        BeanFactoryAware, EnvironmentAware, ApplicationContextAware, InstantiationAwareBeanPostProcessor, InitializingBean {
 
     @Nullable
     private AnnotationAttributes annotationAttributes;
@@ -65,6 +67,13 @@ public class EnableSandGlassConfig implements ImportAware, BeanPostProcessor,
      */
     private BeanFactory beanFactory;
 
+    /**
+     * 触发 map
+     * @since 0.0.5
+     */
+    private Map<ITrigger, IJob> triggerIJobMap = new HashMap<>();
+
+
     @Override
     public void setImportMetadata(AnnotationMetadata importMetadata) {
         annotationAttributes = AnnotationAttributes.fromMap(
@@ -82,6 +91,7 @@ public class EnableSandGlassConfig implements ImportAware, BeanPostProcessor,
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        // 这个方法一般是最后执行的。
 
     }
 
@@ -105,11 +115,12 @@ public class EnableSandGlassConfig implements ImportAware, BeanPostProcessor,
                 ITrigger cronTrigger = InnerSpringTriggerUtils.buildTrigger(bean, method, cronSchedule);
                 IJob job = InnerSpringJobUtils.buildJob(bean, method);
 
+                triggerIJobMap.put(cronTrigger, job);
             } else if(periodSchedule != null) {
                 ITrigger cronTrigger = InnerSpringTriggerUtils.buildTrigger(bean, method, periodSchedule);
                 IJob job = InnerSpringJobUtils.buildJob(bean, method);
 
-
+                triggerIJobMap.put(cronTrigger, job);
             }
         }
 

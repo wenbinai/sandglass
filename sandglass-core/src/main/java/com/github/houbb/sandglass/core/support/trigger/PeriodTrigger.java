@@ -5,6 +5,7 @@ import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.sandglass.api.api.ITriggerContext;
 import com.github.houbb.timer.api.ITimer;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -88,4 +89,16 @@ public class PeriodTrigger extends AbstractTrigger {
         return lastCompleteTime + period;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PeriodTrigger that = (PeriodTrigger) o;
+        return period == that.period && initialDelay == that.initialDelay && fixedRate == that.fixedRate && timeUnit == that.timeUnit;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(period, timeUnit, initialDelay, fixedRate);
+    }
 }

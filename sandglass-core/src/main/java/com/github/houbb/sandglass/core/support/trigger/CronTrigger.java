@@ -9,6 +9,7 @@ import org.quartz.CronExpression;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * CRON 表达式触发器
@@ -55,4 +56,16 @@ public class CronTrigger extends AbstractTrigger {
         return cronExpression.getNextValidTimeAfter(date).getTime();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CronTrigger that = (CronTrigger) o;
+        return Objects.equals(cronExpression, that.cronExpression);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(cronExpression);
+    }
 }
