@@ -235,13 +235,13 @@ public class SpringConfig {
 
 - [x] springboot 整合
 
-- [ ] thread-Factory 线程命名优化
+- [x] thread-Factory 线程命名优化
 
 scheduler-thread
 
 work-thread
 
-- [ ] 兼容 spring schedule
+~~- [ ] 兼容 spring schedule~~
 
 - [ ] MIS-FIRE 处理
 
