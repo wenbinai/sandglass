@@ -12,12 +12,13 @@
     <groupId>com.github.houbb</groupId>
     <artifactId>sandglass</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.5</version>
+    <version>0.0.6</version>
     <modules>
         <module>sandglass-api</module>
         <module>sandglass-core</module>
         <module>sandglass-test</module>
         <module>sandglass-spring</module>
+        <module>sandglass-springboot-starter</module>
     </modules>
 
     <properties>
@@ -48,6 +49,7 @@
         <!--============================== OTHER ==============================-->
         <junit.version>4.12</junit.version>
         <spring.version>4.3.15.RELEASE</spring.version>
+        <spring-boot.version>1.5.22.RELEASE</spring-boot.version>
     </properties>
 
     <dependencyManagement>
@@ -66,6 +68,11 @@
             <dependency>
                 <groupId>com.github.houbb</groupId>
                 <artifactId>sandglass-spring</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.houbb</groupId>
+                <artifactId>sandglass-springboot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!--============================== INTER ==============================-->
@@ -133,7 +140,11 @@
                 <artifactId>spring-context</artifactId>
                 <version>${spring.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>

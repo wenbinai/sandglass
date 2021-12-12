@@ -13,11 +13,13 @@
 
 - 高性能任务调度
 
-- 支持用户自定义
+- 支持不依赖 spring，完全独立运行
 
-- 完美整合 spring
+- 支持整合 spring
 
-- 完美整合 springboot
+- 支持整合 springboot
+
+- 支持用户高度自定义
 
 - 真正意义上的分布式任务调度系统
 
@@ -129,6 +131,16 @@ SandGlassBs.newInstance()
 
 # spring 整合
 
+## maven 引入
+
+```xml
+<dependency>
+    <groupId>com.github.houbb</groupId>
+    <artifactId>sandglass-spring</artifactId>
+    <version>${最新版本}</version>
+</dependency>
+```
+
 ## 定时任务定义
 
 类似于 spring 的任务调度，我们可以通过注解指定方法。
@@ -185,6 +197,24 @@ public class SpringConfig {
 
 自定义方式：实现对应接口，在注解中对应对应的 bean 名称即可。
 
+# springboot 整合
+
+## maven 引入
+
+```xml
+<dependency>
+    <groupId>com.github.houbb</groupId>
+    <artifactId>sandglass-springboot-starter</artifactId>
+    <version>${最新版本}</version>
+</dependency>
+```
+
+其他什么都不需要，就可以类似 spring 整合一样使用定时任务了。
+
+## 方法定义
+
+同 spring 整合
+
 # Road-Map
 
 - [x] trigger 接口优化
@@ -203,7 +233,15 @@ public class SpringConfig {
 
 - [x] spring 整合
 
-- [ ] springboot 整合
+- [x] springboot 整合
+
+- [ ] thread-Factory 线程命名优化
+
+scheduler-thread
+
+work-thread
+
+- [ ] 兼容 spring schedule
 
 - [ ] MIS-FIRE 处理
 
