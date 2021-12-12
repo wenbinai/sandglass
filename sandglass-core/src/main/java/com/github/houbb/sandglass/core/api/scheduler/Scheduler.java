@@ -15,13 +15,13 @@ import com.github.houbb.sandglass.api.support.store.ITriggerStore;
 import com.github.houbb.sandglass.core.support.store.JobStore;
 import com.github.houbb.sandglass.core.support.store.JobTriggerStore;
 import com.github.houbb.sandglass.core.support.store.TriggerStore;
+import com.github.houbb.sandglass.core.support.thread.NamedThreadFactory;
 import com.github.houbb.sandglass.core.support.thread.ScheduleMainThreadLoop;
 import com.github.houbb.sandglass.core.util.InnerTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * 1. 异常处理
@@ -83,7 +83,9 @@ public class Scheduler implements IScheduler {
     private IScheduleListener scheduleListener;
 
     public Scheduler() {
-        executorService = Executors.newSingleThreadExecutor();
+        executorService = new ThreadPoolExecutor(1, 1,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(64), new NamedThreadFactory("SG-SCHEDULER"));
     }
 
     public Scheduler scheduleMainThreadLoop(ScheduleMainThreadLoop scheduleMainThreadLoop) {

@@ -14,10 +14,7 @@ import com.github.houbb.sandglass.core.api.scheduler.TriggerContext;
 import com.github.houbb.sandglass.core.util.InnerTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * 执行者线程池
@@ -34,8 +31,8 @@ public class WorkerThreadPool implements IWorkerThreadPool {
     public WorkerThreadPool(int threadSize) {
         // 这里要调整下
         this.executorService = new ThreadPoolExecutor(threadSize, threadSize,
-                0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(64));
+                1L, TimeUnit.MINUTES,
+                new LinkedBlockingQueue<Runnable>(64), new NamedThreadFactory("SG-WORKER"));
     }
 
     public WorkerThreadPool() {
