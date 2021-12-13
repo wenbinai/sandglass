@@ -7,6 +7,7 @@ import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
+import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
 import com.github.houbb.sandglass.api.support.store.IJobStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreListener;
@@ -15,6 +16,7 @@ import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
 import com.github.houbb.sandglass.core.support.listener.JobListener;
 import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
 import com.github.houbb.sandglass.core.support.listener.TriggerListener;
+import com.github.houbb.sandglass.core.support.outOfDate.OutOfDateStrategies;
 import com.github.houbb.sandglass.core.support.store.JobStore;
 import com.github.houbb.sandglass.core.support.store.JobTriggerStore;
 import com.github.houbb.sandglass.core.support.store.JobTriggerStoreListener;
@@ -108,6 +110,12 @@ public final class SandGlassBs {
      */
     private Scheduler scheduler = new Scheduler();
 
+    /**
+     * 执行任务过期策略
+     * @since 0.0.7
+     */
+    private IOutOfDateStrategy outOfDateStrategy = OutOfDateStrategies.fireNow();
+
     public SandGlassBs workPoolSize(int workPoolSize) {
         ArgUtil.gte("workPoolSize", workPoolSize, 1);
 
@@ -178,6 +186,13 @@ public final class SandGlassBs {
         return this;
     }
 
+    public SandGlassBs outOfDateStrategy(IOutOfDateStrategy outOfDateStrategy) {
+        ArgUtil.notNull(outOfDateStrategy, "outOfDateStrategy");
+
+        this.outOfDateStrategy = outOfDateStrategy;
+        return this;
+    }
+
     /**
      * 线程启动
      * @return this
@@ -209,7 +224,8 @@ public final class SandGlassBs {
                 .triggerLock(triggerLock)
                 .triggerListener(triggerListener)
                 .triggerStore(triggerStore)
-                .workerThreadPool(workerThreadPool);
+                .workerThreadPool(workerThreadPool)
+                .outOfDateStrategy(outOfDateStrategy);
 
         //调度类
         scheduler.jobStore(jobStore)

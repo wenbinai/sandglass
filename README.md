@@ -19,6 +19,8 @@
 
 - 支持整合 springboot
 
+- 支持任务 MIS-FIRE 处理策略
+
 - 支持用户高度自定义
 
 - 真正意义上的分布式任务调度系统
@@ -237,13 +239,11 @@ public class SpringConfig {
 
 - [x] thread-Factory 线程命名优化
 
-scheduler-thread
-
-work-thread
-
 ~~- [ ] 兼容 spring schedule~~
 
-- [ ] MIS-FIRE 处理
+- [x] MIS-FIRE 处理
+
+- [ ] 并发执行问题
 
 - [ ] 状态更新
 

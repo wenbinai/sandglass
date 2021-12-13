@@ -13,6 +13,7 @@ import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
+import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
 import com.github.houbb.sandglass.api.support.store.IJobStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
 import com.github.houbb.sandglass.api.support.store.ITriggerStore;
@@ -20,6 +21,7 @@ import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
 import com.github.houbb.sandglass.core.support.listener.JobListener;
 import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
 import com.github.houbb.sandglass.core.support.listener.TriggerListener;
+import com.github.houbb.sandglass.core.support.outOfDate.OutOfDateStrategies;
 import com.github.houbb.sandglass.core.support.store.JobStore;
 import com.github.houbb.sandglass.core.support.store.JobTriggerStore;
 import com.github.houbb.sandglass.core.support.store.TriggerStore;
@@ -96,6 +98,12 @@ public class ScheduleMainThreadLoop extends Thread {
      */
     protected ITriggerListener triggerListener = new TriggerListener();
 
+    /**
+     * 任务过期策略
+     * @since 0.0.7
+     */
+    protected IOutOfDateStrategy outOfDateStrategy = OutOfDateStrategies.fireNow();
+
     public ScheduleMainThreadLoop startFlag(boolean startFlag) {
         this.startFlag = startFlag;
         return this;
@@ -164,6 +172,13 @@ public class ScheduleMainThreadLoop extends Thread {
         return this;
     }
 
+    public ScheduleMainThreadLoop outOfDateStrategy(IOutOfDateStrategy outOfDateStrategy) {
+        ArgUtil.notNull(outOfDateStrategy, "outOfDateStrategy");
+
+        this.outOfDateStrategy = outOfDateStrategy;
+        return this;
+    }
+
     @Override
     public void run() {
         this.startFlag = true;
@@ -223,8 +238,13 @@ public class ScheduleMainThreadLoop extends Thread {
 
                 this.triggerListener.afterWaitFired(workerThreadPoolContext);
 
-                //3.3 使用 worker-thread 执行任务(这里还需要获取锁吗？)
-                workerThreadPool.commit(workerThreadPoolContext);
+                //3.1 添加过期策略处理
+                boolean hasOutOfDate = outOfDateStrategy.hasOutOfDate(workerThreadPoolContext);
+                if(hasOutOfDate) {
+                    outOfDateStrategy.handleOutOfDate(workerThreadPoolContext);
+                } else {
+                    workerThreadPool.commit(workerThreadPoolContext);
+                }
             } catch (Exception e) {
                 LOG.error("中断异常 ", e);
                 scheduleListener.exception(e);

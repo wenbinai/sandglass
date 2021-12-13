@@ -72,7 +72,7 @@ public class JobTriggerStore implements IJobTriggerStore {
             // 原因：避免获取第一个，loop 循环等待，导致后续加入的快要执行的被阻塞。
             JobTriggerDto peekDto = queue.peek();
             while (!isAroundTheLoopTime(peekDto)) {
-                LOG.debug("还未到到指定的 loop 时间，循环等待。");
+//                LOG.debug("还未到到指定的 loop 时间，循环等待。");
                 TimeUnit.MILLISECONDS.sleep(1);
                 peekDto = queue.peek();
             }
