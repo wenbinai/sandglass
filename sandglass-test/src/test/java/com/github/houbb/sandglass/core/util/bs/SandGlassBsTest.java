@@ -10,8 +10,10 @@ import com.github.houbb.sandglass.core.support.store.JobTriggerStore;
 import com.github.houbb.sandglass.core.support.store.JobTriggerStoreListener;
 import com.github.houbb.sandglass.core.support.store.TriggerStore;
 import com.github.houbb.timer.core.timer.SystemTimer;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class SandGlassBsTest {
 
     @Test
