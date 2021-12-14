@@ -2,9 +2,11 @@ package com.github.houbb.sandglass.core.support.thread;
 
 import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
+import com.github.houbb.sandglass.api.dto.TaskLogDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.store.IJobStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
+import com.github.houbb.sandglass.api.support.store.ITaskLogStore;
 import com.github.houbb.sandglass.api.support.store.ITriggerStore;
 import com.github.houbb.timer.api.ITimer;
 
@@ -55,6 +57,18 @@ public class WorkerThreadPoolContext implements IWorkerThreadPoolContext {
      * @since 0.0.4
      */
     private IJobListener jobListener;
+
+    /**
+     * 任务执行日志
+     * @since 0.0.9
+     */
+    private TaskLogDto taskLogDto;
+
+    /**
+     * 任务日志持久化
+     * @since 0.0.9
+     */
+    private ITaskLogStore taskLogStore;
 
     public static WorkerThreadPoolContext newInstance() {
         return new WorkerThreadPoolContext();
@@ -127,6 +141,26 @@ public class WorkerThreadPoolContext implements IWorkerThreadPoolContext {
 
     public WorkerThreadPoolContext jobListener(IJobListener jobListener) {
         this.jobListener = jobListener;
+        return this;
+    }
+
+    @Override
+    public TaskLogDto taskLogDto() {
+        return taskLogDto;
+    }
+
+    public WorkerThreadPoolContext taskLogDto(TaskLogDto taskLogDto) {
+        this.taskLogDto = taskLogDto;
+        return this;
+    }
+
+    @Override
+    public ITaskLogStore taskLogStore() {
+        return taskLogStore;
+    }
+
+    public WorkerThreadPoolContext taskLogStore(ITaskLogStore taskLogStore) {
+        this.taskLogStore = taskLogStore;
         return this;
     }
 }

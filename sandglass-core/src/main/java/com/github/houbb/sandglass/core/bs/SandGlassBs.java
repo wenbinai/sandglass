@@ -8,19 +8,13 @@ import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
 import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
-import com.github.houbb.sandglass.api.support.store.IJobStore;
-import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
-import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreListener;
-import com.github.houbb.sandglass.api.support.store.ITriggerStore;
+import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
 import com.github.houbb.sandglass.core.support.listener.JobListener;
 import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
 import com.github.houbb.sandglass.core.support.listener.TriggerListener;
 import com.github.houbb.sandglass.core.support.outOfDate.OutOfDateStrategies;
-import com.github.houbb.sandglass.core.support.store.JobStore;
-import com.github.houbb.sandglass.core.support.store.JobTriggerStore;
-import com.github.houbb.sandglass.core.support.store.JobTriggerStoreListener;
-import com.github.houbb.sandglass.core.support.store.TriggerStore;
+import com.github.houbb.sandglass.core.support.store.*;
 import com.github.houbb.sandglass.core.support.thread.ScheduleMainThreadLoop;
 import com.github.houbb.sandglass.core.support.thread.WorkerThreadPool;
 import com.github.houbb.timer.api.ITimer;
@@ -116,6 +110,12 @@ public final class SandGlassBs {
      */
     private IOutOfDateStrategy outOfDateStrategy = OutOfDateStrategies.fireNow();
 
+    /**
+     * 任务日志持久化类
+     * @since 0.0.8
+     */
+    private ITaskLogStore taskLogStore = new TaskLogStore();
+
     public SandGlassBs workPoolSize(int workPoolSize) {
         ArgUtil.gte("workPoolSize", workPoolSize, 1);
 
@@ -193,6 +193,13 @@ public final class SandGlassBs {
         return this;
     }
 
+    public SandGlassBs taskLogStore(ITaskLogStore taskLogStore) {
+        ArgUtil.notNull(taskLogStore, "taskLogStore");
+
+        this.taskLogStore = taskLogStore;
+        return this;
+    }
+
     /**
      * 线程启动
      * @return this
@@ -227,7 +234,10 @@ public final class SandGlassBs {
                 .triggerListener(triggerListener)
                 .triggerStore(triggerStore)
                 .workerThreadPool(workerThreadPool)
-                .outOfDateStrategy(outOfDateStrategy);
+                .outOfDateStrategy(outOfDateStrategy)
+                .scheduleListener(scheduleListener)
+                .taskLogStore(taskLogStore)
+                ;
 
         //调度类
         scheduler.jobStore(jobStore)
