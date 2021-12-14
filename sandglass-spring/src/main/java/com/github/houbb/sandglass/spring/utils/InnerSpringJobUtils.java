@@ -20,15 +20,23 @@ public final class InnerSpringJobUtils {
      * 构建任务
      * @param bean 对象
      * @param method 方法
+     * @param allowConcurrentExecuteVal 是否允许并发执行
      * @return 结果
      * @since 0.0.5
      */
-    public static IJob buildJob(final Object bean, final Method method) {
+    public static IJob buildJob(final Object bean, final Method method,
+                                final boolean allowConcurrentExecuteVal) {
         String className = bean.getClass().getName();
         String methodName = method.getName();
 
         final String jobId = buildJobId(className, methodName);
         return new AbstractJob() {
+
+            @Override
+            public boolean allowConcurrentExecute() {
+                return allowConcurrentExecuteVal;
+            }
+
             @Override
             protected void doExecute(IJobContext context) {
                 try {

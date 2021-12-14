@@ -36,6 +36,15 @@ public class TriggerStore implements ITriggerStore {
     }
 
     @Override
+    public void editStatus(String triggerId, TriggerStatusEnum triggerStatusEnum) {
+        ITrigger trigger = detail(triggerId);
+        if(trigger != null) {
+            trigger.status(triggerStatusEnum);
+            edit(trigger);
+        }
+    }
+
+    @Override
     public Collection<ITrigger> list() {
         return map.values();
     }
@@ -63,7 +72,7 @@ public class TriggerStore implements ITriggerStore {
             return null;
         }
 
-        trigger.status(TriggerStatusEnum.NORMAL);
+        trigger.status(TriggerStatusEnum.WAIT_TRIGGER);
         return trigger;
     }
 }

@@ -29,6 +29,22 @@ public interface IJobTriggerStore {
     IJobTriggerStore timer(final ITimer timer);
 
     /**
+     * 任务持久化
+     * @param jobStore 任务持久化
+     * @return this
+     * @since 0.0.8
+     */
+    IJobTriggerStore jobStore(final IJobStore jobStore);
+
+    /**
+     * 触发器持久化
+     * @param triggerStore 触发器持久化
+     * @return this
+     * @since 0.0.8
+     */
+    IJobTriggerStore triggerStore(final ITriggerStore triggerStore);
+
+    /**
      * 添加任务
      * @param dto 任务
      * @return 结果

@@ -1,6 +1,7 @@
 package com.github.houbb.sandglass.api.support.store;
 
 import com.github.houbb.sandglass.api.api.ITrigger;
+import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 
 import java.util.Collection;
 
@@ -35,6 +36,14 @@ public interface ITriggerStore {
      * @since 0.0.2
      */
     void edit(ITrigger trigger);
+
+    /**
+     * 状态更新
+     * @param triggerId 触发器标识
+     * @param triggerStatusEnum 触发器状态
+     * @since 0.0.8
+     */
+    void editStatus(String triggerId, TriggerStatusEnum triggerStatusEnum);
 
     /**
      * 列表

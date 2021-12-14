@@ -2,11 +2,12 @@ package com.github.houbb.sandglass.core.util;
 
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
-import com.github.houbb.sandglass.api.api.IJob;
-import com.github.houbb.sandglass.api.api.ITrigger;
-import com.github.houbb.sandglass.api.api.ITriggerContext;
-import com.github.houbb.sandglass.api.api.IWorkerThreadPoolContext;
+import com.github.houbb.sandglass.api.api.*;
+import com.github.houbb.sandglass.api.constant.JobStatusEnum;
+import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
+import com.github.houbb.sandglass.api.support.listener.IJobListener;
+import com.github.houbb.sandglass.api.support.store.IJobStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
 import com.github.houbb.sandglass.api.support.store.ITriggerStore;
 import com.github.houbb.sandglass.core.api.scheduler.TriggerContext;
@@ -17,11 +18,11 @@ import com.github.houbb.timer.api.ITimer;
  * @author binbin.hou
  * @since 0.0.3
  */
-public class InnerTriggerHelper {
+public class InnerJobTriggerHelper {
 
-    private static final Log LOG = LogFactory.getLog(InnerTriggerHelper.class);
+    private static final Log LOG = LogFactory.getLog(InnerJobTriggerHelper.class);
 
-    private InnerTriggerHelper(){}
+    private InnerJobTriggerHelper(){}
 
     /**
      * 是否已到达结束时间
@@ -65,16 +66,15 @@ public class InnerTriggerHelper {
      *
      * 1. job 的状态更新
      * 2. trigger 的状态更新
-     * @param jobTriggerDto 状态
      * @param context 上下文
-     * @param job 任务
      * @param actualFiredTime 实际执行时间
      * @since 0.0.2
      */
-    public static void handleJobAndTrigger(JobTriggerDto jobTriggerDto,
-                                     IWorkerThreadPoolContext context,
-                                     final IJob job,
-                                     final long actualFiredTime) {
+    public static void handleJobAndTriggerNextFire(IWorkerThreadPoolContext context,
+                                                   final long actualFiredTime) {
+        JobTriggerDto jobTriggerDto = context.preJobTriggerDto();
+        final String jobId = jobTriggerDto.jobId();
+        final IJob job = context.jobStore().detail(jobId);
         LOG.debug("更新任务和触发器的状态 {}", jobTriggerDto.toString());
         // 更新对应的状态
 
@@ -84,7 +84,11 @@ public class InnerTriggerHelper {
         final IJobTriggerStore jobTriggerStore = context.jobTriggerStore();
 
         // 结束时间判断
-        if(InnerTriggerHelper.hasMeetEndTime(timer, trigger)) {
+        if(InnerJobTriggerHelper.hasMeetEndTime(timer, trigger)) {
+            // 更新状态为已完成
+            job.status(JobStatusEnum.COMPLETE);
+            trigger.status(TriggerStatusEnum.COMPLETE);
+
             return;
         }
 
@@ -94,11 +98,36 @@ public class InnerTriggerHelper {
                 .lastActualFiredTime(actualFiredTime)
                 .lastCompleteTime(timer.time())
                 .timer(timer);
-        JobTriggerDto newDto = InnerTriggerHelper.buildJobTriggerDto(job, trigger, triggerContext);
+
+        // 设置状态
+        job.status(JobStatusEnum.WAIT_TRIGGER);
+        trigger.status(TriggerStatusEnum.WAIT_TRIGGER);
+        JobTriggerDto newDto = InnerJobTriggerHelper.buildJobTriggerDto(job, trigger, triggerContext);
 
         // 任务应该什么时候放入队列？
         // 真正完成的时候，还是开始处理的时候？
         jobTriggerStore.put(newDto);
+    }
+
+    /**
+     * 更新任务状态
+     * @param context 上下文
+     * @param jobStatusEnum 任务状态枚举
+     * @param triggerStatusEnum 触发器状态枚举
+     * @since 0.0.8
+     */
+    public static void updateJobAndTriggerStatus(final IWorkerThreadPoolContext context,
+                                           final JobStatusEnum jobStatusEnum,
+                                           final TriggerStatusEnum triggerStatusEnum) {
+        JobTriggerDto jobTriggerDto = context.preJobTriggerDto();
+        final String jobId = jobTriggerDto.jobId();
+        final String triggerId = jobTriggerDto.triggerId();
+
+        final IJobStore jobStore = context.jobStore();
+        final ITriggerStore triggerStore = context.triggerStore();
+
+        jobStore.editStatus(jobId, jobStatusEnum);
+        triggerStore.editStatus(triggerId, triggerStatusEnum);
     }
 
 }

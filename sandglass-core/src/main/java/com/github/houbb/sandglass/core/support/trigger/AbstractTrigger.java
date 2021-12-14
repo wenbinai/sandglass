@@ -42,7 +42,7 @@ public abstract class AbstractTrigger implements ITrigger {
      * 状态
      * @since 0.0.4
      */
-    private TriggerStatusEnum status = TriggerStatusEnum.NORMAL;
+    private TriggerStatusEnum status = TriggerStatusEnum.WAIT_TRIGGER;
 
     @Override
     public String remark() {

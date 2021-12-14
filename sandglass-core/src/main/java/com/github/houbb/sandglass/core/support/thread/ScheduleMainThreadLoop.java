@@ -25,6 +25,7 @@ import com.github.houbb.sandglass.core.support.outOfDate.OutOfDateStrategies;
 import com.github.houbb.sandglass.core.support.store.JobStore;
 import com.github.houbb.sandglass.core.support.store.JobTriggerStore;
 import com.github.houbb.sandglass.core.support.store.TriggerStore;
+import com.github.houbb.sandglass.core.util.InnerJobTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
 
@@ -213,15 +214,9 @@ public class ScheduleMainThreadLoop extends Thread {
                     LOG.warn("任务 job {}, trigger {} 对应的信息不存在，忽略处理。", jobId, triggerId);
                     continue;
                 }
-                //1.2 任务状态是否暂停
-                if(JobStatusEnum.PAUSE.equals(job.status())
-                    || TriggerStatusEnum.PAUSE.equals(trigger.status())) {
-                    LOG.warn("任务 job {}, trigger {} 对应的状态为暂停，忽略处理。", jobId, triggerId);
-                    continue;
-                }
 
                 //3. 获取 trigger 对应的 job。更新 trigger 的执行状态。获取 nextTime 到 queue 中
-                //3.2 更新 trigger & job 的状态
+                //3.1 更新 trigger & job 的状态
                 WorkerThreadPoolContext workerThreadPoolContext = WorkerThreadPoolContext
                         .newInstance()
                         .preJobTriggerDto(jobTriggerDto)
@@ -231,14 +226,28 @@ public class ScheduleMainThreadLoop extends Thread {
                         .timer(timer)
                         .jobListener(jobListener);
 
+                //3.2 任务并发处理的判断
+                boolean allowConcurrentExecute = job.allowConcurrentExecute();
+                if(!allowConcurrentExecute) {
+                    //3.2.1 是否有执行中的任务
+                    IJob currentJob = jobStore.detail(jobId);
+
+                    if(JobStatusEnum.isInProgress(currentJob.status())) {
+                        LOG.warn("任务 {} 禁止并发执行，且有执行中的任务，下一次执行。",
+                                jobId);
+                        InnerJobTriggerHelper.handleJobAndTriggerNextFire(workerThreadPoolContext, timer.time());
+                    }
+                }
+
+                // 更新任务状态
+                jobStore.editStatus(jobId, JobStatusEnum.WAIT_EXECUTE);
+
                 this.triggerListener.beforeWaitFired(workerThreadPoolContext);
-
-                //2. while 等待任务执行时间
+                //3.3 while 等待任务执行时间
                 this.loopWaitUntilFiredTime(jobTriggerDto.nextTime());
-
                 this.triggerListener.afterWaitFired(workerThreadPoolContext);
 
-                //3.1 添加过期策略处理
+                //3.4 添加过期策略处理
                 boolean hasOutOfDate = outOfDateStrategy.hasOutOfDate(workerThreadPoolContext);
                 if(hasOutOfDate) {
                     outOfDateStrategy.handleOutOfDate(workerThreadPoolContext);
@@ -251,7 +260,6 @@ public class ScheduleMainThreadLoop extends Thread {
             }
         }
     }
-
 
     /**
      * 循环等待

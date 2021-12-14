@@ -38,6 +38,17 @@ public class JobStore implements IJobStore {
     }
 
     @Override
+    public void editStatus(String jobId, JobStatusEnum jobStatusEnum) {
+        IJob job = this.detail(jobId);
+
+        if(job != null) {
+            job.status(jobStatusEnum);
+
+            this.edit(job);
+        }
+    }
+
+    @Override
     public Collection<IJob> list() {
         return map.values();
     }
@@ -66,7 +77,7 @@ public class JobStore implements IJobStore {
         if(job == null) {
             return null;
         }
-        job.status(JobStatusEnum.NORMAL);
+        job.status(JobStatusEnum.WAIT_TRIGGER);
         return job;
     }
 

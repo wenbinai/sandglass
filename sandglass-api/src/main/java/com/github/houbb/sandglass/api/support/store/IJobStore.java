@@ -1,6 +1,7 @@
 package com.github.houbb.sandglass.api.support.store;
 
 import com.github.houbb.sandglass.api.api.IJob;
+import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 
 import java.util.Collection;
 
@@ -33,6 +34,14 @@ public interface IJobStore {
      * @since 0.0.2
      */
     void edit(IJob job);
+
+    /**
+     * 修改状态
+     * @param jobId 任务标识
+     * @param jobStatusEnum 任务状态枚举
+     * @since 0.0.8
+     */
+    void editStatus(String jobId, JobStatusEnum jobStatusEnum);
 
     /**
      * 列表

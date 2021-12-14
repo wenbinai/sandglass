@@ -6,7 +6,7 @@ import com.github.houbb.sandglass.api.api.IWorkerThreadPoolContext;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
 import com.github.houbb.sandglass.api.support.store.IJobStore;
-import com.github.houbb.sandglass.core.util.InnerTriggerHelper;
+import com.github.houbb.sandglass.core.util.InnerJobTriggerHelper;
 
 /**
  * 下次执行
@@ -38,14 +38,8 @@ public class OutOfDateStrategyFireNextTime implements IOutOfDateStrategy {
 
     @Override
     public void handleOutOfDate(IWorkerThreadPoolContext workerThreadPoolContext) {
-        JobTriggerDto jobTriggerDto = workerThreadPoolContext.preJobTriggerDto();
-        final IJobStore jobStore = workerThreadPoolContext.jobStore();
-        String jobId = jobTriggerDto.jobId();
-        final IJob job = jobStore.detail(jobId);
-
         long actualFireTime = workerThreadPoolContext.timer().time();
-        InnerTriggerHelper.handleJobAndTrigger(jobTriggerDto,
-                workerThreadPoolContext, job, actualFireTime);
+        InnerJobTriggerHelper.handleJobAndTriggerNextFire(workerThreadPoolContext, actualFireTime);
     }
 
 }

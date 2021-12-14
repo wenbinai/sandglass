@@ -13,13 +13,15 @@
 
 - 高性能任务调度
 
+- 支持任务 MIS-FIRE 处理策略
+
+- 支持任务是否并发处理
+
 - 支持不依赖 spring，完全独立运行
 
 - 支持整合 spring
 
 - 支持整合 springboot
-
-- 支持任务 MIS-FIRE 处理策略
 
 - 支持用户高度自定义
 
@@ -243,9 +245,9 @@ public class SpringConfig {
 
 - [x] MIS-FIRE 处理
 
-- [ ] 并发执行问题
+- [x] 并发执行问题
 
-- [ ] 状态更新
+- [x] 状态更新
 
 任务执行中
 

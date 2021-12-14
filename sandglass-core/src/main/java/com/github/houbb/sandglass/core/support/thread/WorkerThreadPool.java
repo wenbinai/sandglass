@@ -3,15 +3,15 @@ package com.github.houbb.sandglass.core.support.thread;
 import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
-import com.github.houbb.sandglass.api.api.IJob;
-import com.github.houbb.sandglass.api.api.IJobContext;
-import com.github.houbb.sandglass.api.api.IWorkerThreadPool;
-import com.github.houbb.sandglass.api.api.IWorkerThreadPoolContext;
+import com.github.houbb.sandglass.api.api.*;
+import com.github.houbb.sandglass.api.constant.JobStatusEnum;
+import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.store.IJobStore;
+import com.github.houbb.sandglass.api.support.store.ITriggerStore;
 import com.github.houbb.sandglass.core.api.job.JobContext;
-import com.github.houbb.sandglass.core.util.InnerTriggerHelper;
+import com.github.houbb.sandglass.core.util.InnerJobTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
 
 import java.util.concurrent.ExecutorService;
@@ -60,8 +60,11 @@ public class WorkerThreadPool implements IWorkerThreadPool {
                     final IJob job = jobStore.detail(jobId);
                     final IJobListener jobListener = context.jobListener();
                     final IJobContext jobContext = buildJobContext(traceId, job);
-
                     try {
+                        // 任务更新为处理中
+                        InnerJobTriggerHelper.updateJobAndTriggerStatus(context,
+                                JobStatusEnum.EXECUTING, TriggerStatusEnum.EXECUTING);
+
                         // 任务开始前
                         jobListener.beforeExecute(job, jobContext);
 
@@ -69,24 +72,36 @@ public class WorkerThreadPool implements IWorkerThreadPool {
 
                         jobListener.afterExecute(job, jobContext);
 
+                        // 任务更新为已执行
+                        InnerJobTriggerHelper.updateJobAndTriggerStatus(context,
+                                JobStatusEnum.EXECUTED, TriggerStatusEnum.EXECUTED);
+
                         // 任务开始后
-                        InnerTriggerHelper.handleJobAndTrigger(jobTriggerDto, context, job, fireTime);
+                        InnerJobTriggerHelper.handleJobAndTriggerNextFire(context, fireTime);
                     } catch (Exception exception) {
                         // 任务异常
                         LOG.error("任务执行异常", exception);
+                        // 任务更新为已执行
+                        InnerJobTriggerHelper.updateJobAndTriggerStatus(context,
+                                JobStatusEnum.EXECUTED, TriggerStatusEnum.EXECUTED);
 
                         // 执行结果
-                        InnerTriggerHelper.handleJobAndTrigger(jobTriggerDto, context, job, fireTime);
+                        InnerJobTriggerHelper.handleJobAndTriggerNextFire(context, fireTime);
 
                         // 异常执行对应的 handler
                         jobListener.errorExecute(job, jobContext, exception);
                     }
                 } catch (Exception exception) {
                     LOG.error("任务调度遇到异常", exception);
+                    // 执行结果
+                    long fireTime = context.timer().time();
+                    InnerJobTriggerHelper.handleJobAndTriggerNextFire(context, fireTime);
                 }
             }
         });
     }
+
+
 
     /**
      * 构建任务执行的上下文

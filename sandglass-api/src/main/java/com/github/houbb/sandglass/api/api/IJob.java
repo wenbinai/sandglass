@@ -54,4 +54,11 @@ public interface IJob {
      */
     JobStatusEnum status();
 
+    /**
+     * 允许并发执行
+     * @return 是否允许并发执行
+     * @since 0.0.4
+     */
+    boolean allowConcurrentExecute();
+
 }

@@ -10,7 +10,11 @@ public enum JobStatusEnum {
     /**
      * 状态
      */
-    NORMAL("NORMAL", "正常"),
+    WAIT_TRIGGER("WAIT_TRIGGER", "待触发"),
+    WAIT_EXECUTE("WAIT_EXECUTE", "待执行"),
+    EXECUTING("EXECUTING", "执行中"),
+    EXECUTED("EXECUTED", "已执行"),
+    COMPLETE("COMPLETE", "已完成"),
     PAUSE("PAUSE", "已暂停"),
     ;
 
@@ -29,4 +33,19 @@ public enum JobStatusEnum {
     public String getDesc() {
         return desc;
     }
+
+    /**
+     * 任务是否处于执行中
+     * @param jobStatusEnum 任务状态枚举
+     * @return 是否
+     * @since 0.0.8
+     */
+    public static boolean isInProgress(JobStatusEnum jobStatusEnum) {
+        if(JobStatusEnum.WAIT_EXECUTE.equals(jobStatusEnum)
+            || JobStatusEnum.EXECUTING.equals(jobStatusEnum)) {
+            return true;
+        }
+        return false;
+    }
+
 }

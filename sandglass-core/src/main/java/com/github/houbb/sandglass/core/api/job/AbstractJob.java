@@ -29,11 +29,18 @@ public abstract class AbstractJob implements IJob {
      */
     private JobStatusEnum status;
 
+    /**
+     * 是否允许并发执行
+     * @since 0.0.8
+     */
+    protected boolean allowConcurrentExecute;
+
     public AbstractJob() {
         this.id = IdHelper.uuid32();
         this.remark = "";
         this.dataMap = new HashMap<>();
-        this.status = JobStatusEnum.NORMAL;
+        this.status = JobStatusEnum.WAIT_TRIGGER;
+        this.allowConcurrentExecute = true;
     }
 
     public AbstractJob id(String id) {
@@ -91,4 +98,13 @@ public abstract class AbstractJob implements IJob {
         ArgUtil.notNull(dataMap, "dataMap");
     }
 
+    @Override
+    public boolean allowConcurrentExecute() {
+        return allowConcurrentExecute;
+    }
+
+    public AbstractJob allowConcurrentExecute(boolean allowConcurrentExecute) {
+        this.allowConcurrentExecute = allowConcurrentExecute;
+        return this;
+    }
 }

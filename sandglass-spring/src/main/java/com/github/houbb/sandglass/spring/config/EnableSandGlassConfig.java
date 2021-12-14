@@ -167,14 +167,16 @@ public class EnableSandGlassConfig implements ImportAware,
 
             if(cronSchedule != null) {
                 ITrigger cronTrigger = InnerSpringTriggerUtils.buildTrigger(bean, method, cronSchedule);
-                IJob job = InnerSpringJobUtils.buildJob(bean, method);
+                boolean allowConcurrentExecute = cronSchedule.allowConcurrentExecute();
+                IJob job = InnerSpringJobUtils.buildJob(bean, method, allowConcurrentExecute);
 
                 triggerIJobMap.put(cronTrigger, job);
             } else if(periodSchedule != null) {
-                ITrigger cronTrigger = InnerSpringTriggerUtils.buildTrigger(bean, method, periodSchedule);
-                IJob job = InnerSpringJobUtils.buildJob(bean, method);
+                ITrigger periodTrigger = InnerSpringTriggerUtils.buildTrigger(bean, method, periodSchedule);
+                boolean allowConcurrentExecute = periodSchedule.allowConcurrentExecute();
+                IJob job = InnerSpringJobUtils.buildJob(bean, method, allowConcurrentExecute);
 
-                triggerIJobMap.put(cronTrigger, job);
+                triggerIJobMap.put(periodTrigger, job);
             }
         }
     }

@@ -2,9 +2,15 @@ package com.github.houbb.sandglass.core.support.store;
 
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
+import com.github.houbb.sandglass.api.api.IJob;
+import com.github.houbb.sandglass.api.api.ITrigger;
+import com.github.houbb.sandglass.api.constant.JobStatusEnum;
+import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
+import com.github.houbb.sandglass.api.support.store.IJobStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreListener;
+import com.github.houbb.sandglass.api.support.store.ITriggerStore;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
 import com.github.houbb.sandglass.core.exception.SandGlassException;
 import com.github.houbb.timer.api.ITimer;
@@ -41,6 +47,18 @@ public class JobTriggerStore implements IJobTriggerStore {
      */
     private ITimer timer = SystemTimer.getInstance();
 
+    /**
+     * 任务持久化
+     * @since 0.0.8
+     */
+    private IJobStore jobStore = new JobStore();
+
+    /**
+     * 触发器持久化
+     * @since 0.0.8
+     */
+    private ITriggerStore triggerStore = new TriggerStore();
+
     public JobTriggerStore() {
         this.queue = new PriorityBlockingQueue<>(64);
     }
@@ -58,6 +76,18 @@ public class JobTriggerStore implements IJobTriggerStore {
     }
 
     @Override
+    public JobTriggerStore jobStore(IJobStore jobStore) {
+        this.jobStore = jobStore;
+        return this;
+    }
+
+    @Override
+    public JobTriggerStore triggerStore(ITriggerStore triggerStore) {
+        this.triggerStore = triggerStore;
+        return this;
+    }
+
+    @Override
     public IJobTriggerStore put(JobTriggerDto dto) {
         queue.put(dto);
 
@@ -71,8 +101,11 @@ public class JobTriggerStore implements IJobTriggerStore {
             // 这里应该首先得到第一个，查看执行时间是否为将要执行的，如果不是，就则返回 null。
             // 原因：避免获取第一个，loop 循环等待，导致后续加入的快要执行的被阻塞。
             JobTriggerDto peekDto = queue.peek();
-            while (!isAroundTheLoopTime(peekDto)) {
-//                LOG.debug("还未到到指定的 loop 时间，循环等待。");
+
+            //1.1 如果是暂停的任务，继续执行
+            //1.2 如果还未到等待时间，继续执行
+            while (isPausedJobOrTrigger(peekDto)
+                    && !isAroundTheLoopTime(peekDto)) {
                 TimeUnit.MILLISECONDS.sleep(1);
                 peekDto = queue.peek();
             }
@@ -108,6 +141,56 @@ public class JobTriggerStore implements IJobTriggerStore {
         long currentTime = timer.time();
 
         return nextTime - currentTime <= limitMills;
+    }
+
+    /**
+     * 是被暂停的任务或者触发器
+     * 1. 如果是，则从队列中移除当前元素。
+     *
+     * @param jobTriggerDto 对象
+     * @return 结果
+     */
+    private boolean isPausedJobOrTrigger(JobTriggerDto jobTriggerDto) {
+        String jobId = jobTriggerDto.jobId();
+        String triggerId = jobTriggerDto.triggerId();
+
+        IJob job = jobStore.detail(jobId);
+        ITrigger trigger = triggerStore.detail(triggerId);
+
+        if(JobStatusEnum.PAUSE.equals(job.status())) {
+            // 移除队首的元素
+            removeHeadAndRePut(jobTriggerDto);
+
+            return true;
+        }
+        if(TriggerStatusEnum.PAUSE.equals(trigger.status())) {
+            // 移除队首的元素
+            removeHeadAndRePut(jobTriggerDto);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 移除队首的元素，并且将 nextTime+1S 之后重新放入队列
+     * @param jobTriggerDto 临时对象
+     * @since 0.0.8
+     */
+    private void removeHeadAndRePut(JobTriggerDto jobTriggerDto) {
+        try {
+            JobTriggerDto jobTriggerDtoOld = this.queue.take();
+            LOG.debug("移除队首元素 {}", jobTriggerDtoOld);
+
+            long nextTime = jobTriggerDto.nextTime() + 1000;
+            jobTriggerDto.nextTime(nextTime);
+            LOG.debug("重新放入元素 {}", jobTriggerDto);
+            this.queue.put(jobTriggerDto);
+        } catch (InterruptedException e) {
+            LOG.warn("异常", e);
+            throw new SandGlassException(e);
+        }
     }
 
 }

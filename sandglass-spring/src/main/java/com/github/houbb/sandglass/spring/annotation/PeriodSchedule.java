@@ -42,4 +42,11 @@ public @interface PeriodSchedule {
      */
     boolean fixedRate() default false;
 
+    /**
+     * 是否允许并发执行
+     * @return 是否
+     * @since 0.0.8
+     */
+    boolean allowConcurrentExecute() default true;
+
 }

@@ -17,7 +17,7 @@ import com.github.houbb.sandglass.core.support.store.JobTriggerStore;
 import com.github.houbb.sandglass.core.support.store.TriggerStore;
 import com.github.houbb.sandglass.core.support.thread.NamedThreadFactory;
 import com.github.houbb.sandglass.core.support.thread.ScheduleMainThreadLoop;
-import com.github.houbb.sandglass.core.util.InnerTriggerHelper;
+import com.github.houbb.sandglass.core.util.InnerJobTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
 
@@ -171,21 +171,21 @@ public class Scheduler implements IScheduler {
     private void addJobAndTrigger(IJob job, ITrigger trigger) {
         this.paramCheck(job, trigger);
 
-        job.status(JobStatusEnum.NORMAL);
-        trigger.status(TriggerStatusEnum.NORMAL);
+        job.status(JobStatusEnum.WAIT_TRIGGER);
+        trigger.status(TriggerStatusEnum.WAIT_TRIGGER);
 
         this.jobStore.add(job);
         this.triggerStore.add(trigger);
 
         // 结束时间判断
-        if(InnerTriggerHelper.hasMeetEndTime(timer, trigger)) {
+        if(InnerJobTriggerHelper.hasMeetEndTime(timer, trigger)) {
             return;
         }
 
         // 把 trigger.nextTime + jobId triggerId 放入到调度队列中
         ITriggerContext context = TriggerContext.newInstance()
                 .timer(timer);
-        JobTriggerDto triggerDto = InnerTriggerHelper.buildJobTriggerDto(job, trigger, context);
+        JobTriggerDto triggerDto = InnerJobTriggerHelper.buildJobTriggerDto(job, trigger, context);
         jobTriggerStore.put(triggerDto);
     }
 

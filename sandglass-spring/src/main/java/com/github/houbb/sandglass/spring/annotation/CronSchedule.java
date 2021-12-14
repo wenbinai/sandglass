@@ -20,4 +20,11 @@ public @interface CronSchedule {
      */
     String value();
 
+    /**
+     * 是否允许并发执行
+     * @return 是否
+     * @since 0.0.8
+     */
+    boolean allowConcurrentExecute() default true;
+
 }
