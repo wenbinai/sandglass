@@ -47,7 +47,7 @@ public final class InnerSpringTriggerUtils {
         String methodName = method.getName();
 
         final String id = buildTriggerId(className, methodName);
-        PeriodTrigger periodTrigger = new PeriodTrigger(id, periodSchedule.period(),
+        PeriodTrigger periodTrigger = new PeriodTrigger(id, periodSchedule.value(),
                 periodSchedule.timeUnit());
         periodTrigger.fixedRate(periodSchedule.fixedRate());
         periodTrigger.initialDelay(periodSchedule.initialDelay());

@@ -11,7 +11,6 @@ import com.github.houbb.sandglass.api.support.store.IJobStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreListener;
 import com.github.houbb.sandglass.api.support.store.ITriggerStore;
-import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
 import com.github.houbb.sandglass.core.exception.SandGlassException;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
@@ -105,7 +104,7 @@ public class JobTriggerStore implements IJobTriggerStore {
             //1.1 如果是暂停的任务，继续执行
             //1.2 如果还未到等待时间，继续执行
             while (isPausedJobOrTrigger(peekDto)
-                    && !isAroundTheLoopTime(peekDto)) {
+                    || !isAroundTheLoopTime(peekDto)) {
                 TimeUnit.MILLISECONDS.sleep(1);
                 peekDto = queue.peek();
             }
@@ -151,6 +150,10 @@ public class JobTriggerStore implements IJobTriggerStore {
      * @return 结果
      */
     private boolean isPausedJobOrTrigger(JobTriggerDto jobTriggerDto) {
+        if(jobTriggerDto == null) {
+            return false;
+        }
+
         String jobId = jobTriggerDto.jobId();
         String triggerId = jobTriggerDto.triggerId();
 

@@ -12,7 +12,7 @@ public class SpringBootJobService {
 
     private static final Log LOG = LogFactory.getLog(MyJobService.class);
 
-    @PeriodSchedule(period = 2000)
+    @PeriodSchedule(2000)
     public void logTime() {
         LOG.info("------------ SB TIME {}", System.currentTimeMillis());
     }

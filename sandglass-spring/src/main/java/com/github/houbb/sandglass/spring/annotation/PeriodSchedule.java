@@ -19,7 +19,7 @@ public @interface PeriodSchedule {
      * @return 表达式
      * @since 0.0.5
      */
-    long period();
+    long value();
 
     /**
      * 时间单位

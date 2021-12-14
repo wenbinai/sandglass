@@ -214,6 +214,8 @@ public final class SandGlassBs {
     public SandGlassBs init() {
         this.jobTriggerStore.listener(this.jobTriggerStoreListener);
         this.jobTriggerStore.timer(this.timer);
+        this.jobTriggerStore.jobStore(this.jobStore);
+        this.jobTriggerStore.triggerStore(this.triggerStore);
 
         //调度类主线程
         IWorkerThreadPool workerThreadPool = new WorkerThreadPool(workPoolSize);
