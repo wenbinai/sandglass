@@ -9,10 +9,8 @@ import com.github.houbb.sandglass.api.api.ITrigger;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
-import com.github.houbb.sandglass.api.support.store.IJobStore;
-import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
-import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreListener;
-import com.github.houbb.sandglass.api.support.store.ITriggerStore;
+import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
+import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
 import com.github.houbb.sandglass.core.bs.SandGlassBs;
 import com.github.houbb.sandglass.spring.annotation.CronSchedule;
@@ -107,6 +105,8 @@ public class EnableSandGlassConfig implements ImportAware,
         IJobListener jobListener = beanFactory.getBean(enableSandGlassAttributes.getString("jobListener"), IJobListener.class);
         ITriggerListener triggerListener = beanFactory.getBean(enableSandGlassAttributes.getString("triggerListener"), ITriggerListener.class);
         IJobTriggerStoreListener jobTriggerStoreListener = beanFactory.getBean(enableSandGlassAttributes.getString("jobTriggerStoreListener"), IJobTriggerStoreListener.class);
+        IOutOfDateStrategy outOfDateStrategy = beanFactory.getBean(enableSandGlassAttributes.getString("outOfDateStrategy"), IOutOfDateStrategy.class);
+        ITaskLogStore taskLogStore = beanFactory.getBean(enableSandGlassAttributes.getString("taskLogStore"), ITaskLogStore.class);
 
         SandGlassBs sandGlassBs = SandGlassBs.newInstance()
                 .workPoolSize(workPoolSize)
@@ -118,7 +118,9 @@ public class EnableSandGlassConfig implements ImportAware,
                 .scheduleListener(scheduleListener)
                 .triggerListener(triggerListener)
                 .jobTriggerStoreListener(jobTriggerStoreListener)
-                .jobListener(jobListener);
+                .jobListener(jobListener)
+                .outOfDateStrategy(outOfDateStrategy)
+                .taskLogStore(taskLogStore);
 
         sandGlassBs.init();
 

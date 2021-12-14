@@ -98,4 +98,18 @@ public @interface EnableSandGlass {
      */
     String jobTriggerStoreListener() default "sandglass-jobTriggerStoreListener";
 
+    /**
+     * 超时策略
+     * @return 策略
+     * @since 0.0.8
+     */
+    String outOfDateStrategy() default "sandglass-outOfDateStrategy";
+
+    /**
+     * 任务日志持久化策略
+     * @return 任务日志
+     * @since 0.0.9
+     */
+    String taskLogStore() default "sandglass-taskLogStore";
+
 }
