@@ -5,7 +5,6 @@ import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.sandglass.api.api.ITriggerContext;
 import com.github.houbb.timer.api.ITimer;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -94,11 +93,6 @@ public class PeriodTrigger extends AbstractTrigger {
         // 在上次之后之后，执行
         long lastCompleteTime = context.lastCompleteTime();
         return lastCompleteTime + period;
-    }
-
-    @Override
-    public String id() {
-        return this.id;
     }
 
     @Override

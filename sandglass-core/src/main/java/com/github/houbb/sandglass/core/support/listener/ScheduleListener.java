@@ -4,6 +4,8 @@ import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.ITrigger;
+import com.github.houbb.sandglass.api.dto.JobDetailDto;
+import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 
 /**
@@ -27,28 +29,28 @@ public class ScheduleListener implements IScheduleListener {
     }
 
     @Override
-    public void schedule(IJob job, ITrigger trigger) {
-        LOG.info("schedule schedule {}, trigger {}", job, trigger);
-    }
-
-    @Override
-    public void unSchedule(IJob job, ITrigger trigger) {
-        LOG.info("schedule unSchedule {}, trigger {}", job, trigger);
-    }
-
-    @Override
-    public void pause(IJob job, ITrigger trigger) {
-        LOG.info("schedule pause {}, trigger {}", job, trigger);
-    }
-
-    @Override
-    public void resume(IJob job, ITrigger trigger) {
-        LOG.info("schedule resume {}, trigger {}", job, trigger);
-    }
-
-    @Override
     public void exception(Exception exception) {
         LOG.error("schedule exception {}", exception);
+    }
+
+    @Override
+    public void schedule(JobDetailDto jobDetailDto, TriggerDetailDto triggerDetailDto) {
+        LOG.info("schedule {}, trigger {}", jobDetailDto, triggerDetailDto);
+    }
+
+    @Override
+    public void unSchedule(JobDetailDto jobDetailDto, TriggerDetailDto triggerDetailDto) {
+        LOG.info("unSchedule {}, trigger {}", jobDetailDto, triggerDetailDto);
+    }
+
+    @Override
+    public void pause(JobDetailDto jobDetailDto, TriggerDetailDto triggerDetailDto) {
+        LOG.info("schedule pause {}, trigger {}", jobDetailDto, triggerDetailDto);
+    }
+
+    @Override
+    public void resume(JobDetailDto jobDetailDto, TriggerDetailDto triggerDetailDto) {
+        LOG.info("schedule resume {}, trigger {}", jobDetailDto, triggerDetailDto);
     }
 
 }

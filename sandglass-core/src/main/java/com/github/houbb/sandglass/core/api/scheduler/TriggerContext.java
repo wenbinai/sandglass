@@ -33,6 +33,12 @@ public class TriggerContext implements ITriggerContext {
      */
     private Long lastActualFiredTime;
 
+    /**
+     * 开始时间
+     * @since 1.0.0
+     */
+    private long startTime;
+
     public static TriggerContext newInstance() {
         return new TriggerContext();
     }
@@ -74,6 +80,16 @@ public class TriggerContext implements ITriggerContext {
 
     public TriggerContext lastActualFiredTime(Long lastActualFiredTime) {
         this.lastActualFiredTime = lastActualFiredTime;
+        return this;
+    }
+
+    @Override
+    public long startTime() {
+        return startTime;
+    }
+
+    public TriggerContext startTime(long startTime) {
+        this.startTime = startTime;
         return this;
     }
 }

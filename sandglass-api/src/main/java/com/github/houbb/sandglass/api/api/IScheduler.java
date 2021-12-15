@@ -1,6 +1,8 @@
 package com.github.houbb.sandglass.api.api;
 
 import com.github.houbb.lock.api.core.ILock;
+import com.github.houbb.sandglass.api.dto.JobDetailDto;
+import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
 import com.github.houbb.timer.api.ITimer;
@@ -46,6 +48,28 @@ import com.github.houbb.timer.api.ITimer;
 public interface IScheduler {
 
     /**
+     * 任务调度
+     * @param job 任务
+     * @param trigger 触发器
+     * @since 0.0.2
+     */
+    @Deprecated
+    void schedule(final IJob job,
+                  final ITrigger trigger);
+
+    /**
+     * 任务调度
+     * @param job 任务
+     * @param trigger 触发器
+     * @since 0.0.2
+     */
+    @Deprecated
+    void schedule(final IJob job,
+                  final ITrigger trigger,
+                  final JobDetailDto jobDetailDto,
+                  final TriggerDetailDto triggerDetailDto);
+
+    /**
      * 执行任务调度
      * @since 0.0.2
      */
@@ -56,14 +80,6 @@ public interface IScheduler {
      * @since 0.0.2
      */
     void shutdown();
-
-    /**
-     * 任务调度
-     * @param job 任务
-     * @param trigger 触发器
-     * @since 0.0.2
-     */
-    void schedule(final IJob job, final ITrigger trigger);
 
     /**
      * 取消调度

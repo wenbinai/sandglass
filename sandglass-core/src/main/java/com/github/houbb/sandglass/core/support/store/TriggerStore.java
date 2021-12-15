@@ -21,58 +21,18 @@ public class TriggerStore implements ITriggerStore {
     }
 
     @Override
-    public void add(ITrigger trigger) {
-        map.put(trigger.id(), trigger);
+    public void add(String triggerId, ITrigger trigger) {
+        map.put(triggerId, trigger);
     }
 
     @Override
-    public ITrigger remove(String id) {
-        return map.remove(id);
+    public ITrigger trigger(String triggerId) {
+        return map.get(triggerId);
     }
 
     @Override
-    public void edit(ITrigger trigger) {
-        map.put(trigger.id(), trigger);
+    public ITrigger remove(String triggerId) {
+        return map.get(triggerId);
     }
 
-    @Override
-    public void editStatus(String triggerId, TriggerStatusEnum triggerStatusEnum) {
-        ITrigger trigger = detail(triggerId);
-        if(trigger != null) {
-            trigger.status(triggerStatusEnum);
-            edit(trigger);
-        }
-    }
-
-    @Override
-    public Collection<ITrigger> list() {
-        return map.values();
-    }
-
-    @Override
-    public ITrigger detail(String id) {
-        return map.get(id);
-    }
-
-    @Override
-    public ITrigger pause(String id) {
-        ITrigger trigger = detail(id);
-        if(trigger == null) {
-            return null;
-        }
-
-        trigger.status(TriggerStatusEnum.PAUSE);
-        return trigger;
-    }
-
-    @Override
-    public ITrigger resume(String id) {
-        ITrigger trigger = detail(id);
-        if(trigger == null) {
-            return null;
-        }
-
-        trigger.status(TriggerStatusEnum.WAIT_TRIGGER);
-        return trigger;
-    }
 }

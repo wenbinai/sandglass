@@ -2,6 +2,8 @@ package com.github.houbb.sandglass.api.support.listener;
 
 import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.ITrigger;
+import com.github.houbb.sandglass.api.dto.JobDetailDto;
+import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
 
 /**
  * @author binbin.hou
@@ -28,32 +30,32 @@ public interface IScheduleListener {
 
     /**
      * 调度
-     * @param job 任务
-     * @param trigger 触发器
+     * @param jobDetailDto 任务详情
+     * @param triggerDetailDto 触发器详情
      */
-    void schedule(IJob job, ITrigger trigger);
+    void schedule(JobDetailDto jobDetailDto, TriggerDetailDto triggerDetailDto);
 
     /**
      * 取消调度
-     * @param job 任务标识
-     * @param trigger 触发器标识
+     * @param jobDetailDto 任务
+     * @param triggerDetailDto 触发器
      */
-    void unSchedule(IJob job, ITrigger trigger);
+    void unSchedule(JobDetailDto jobDetailDto, TriggerDetailDto triggerDetailDto);
 
     /**
      * 暂停
-     * @param job 任务
-     * @param trigger 触发器
+     * @param jobDetailDto 任务
+     * @param triggerDetailDto 触发器
      * @since 0.0.4
      */
-    void pause(IJob job, ITrigger trigger);
+    void pause(JobDetailDto jobDetailDto, TriggerDetailDto triggerDetailDto);
 
     /**
      * 恢复
-     * @param job 任务
-     * @param trigger 触发器
+     * @param jobDetailDto 任务
+     * @param triggerDetailDto 触发器
      * @since 0.0.4
      */
-    void resume(IJob job, ITrigger trigger);
+    void resume(JobDetailDto jobDetailDto, TriggerDetailDto triggerDetailDto);
 
 }

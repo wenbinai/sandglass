@@ -18,60 +18,20 @@ public interface IJobStore {
      * @param job 任务
      * @since 0.0.2
      */
-    void add(IJob job);
+    void add(String jobId, IJob job);
 
     /**
-     * 删除
-     * @param id 标识
-     * @return  被移除的任务
-     * @since 0.0.2
-     */
-    IJob remove(String id);
-
-    /**
-     * 修改
-     * @param job 任务
-     * @since 0.0.2
-     */
-    void edit(IJob job);
-
-    /**
-     * 修改状态
+     * 获取
      * @param jobId 任务标识
-     * @param jobStatusEnum 任务状态枚举
-     * @since 0.0.8
+     * @return 结果
      */
-    void editStatus(String jobId, JobStatusEnum jobStatusEnum);
+    IJob job(String jobId);
 
     /**
-     * 列表
-     * @since 0.0.2
-     * @return 列表
+     * 移除
+     * @param jobId 任务标识
+     * @return 结果
      */
-    Collection<IJob> list();
-
-    /**
-     * 详情
-     * @param id 标识
-     * @since 0.0.2
-     * @return 列表
-     */
-    IJob detail(String id);
-
-    /**
-     * 暂停
-     * @param id 标识
-     * @return  被暂停的任务
-     * @since 0.0.4
-     */
-    IJob pause(String id);
-
-    /**
-     * 恢复暂停
-     * @param id 标识
-     * @return  被暂停的任务
-     * @since 0.0.4
-     */
-    IJob resume(String id);
+    IJob remove(String jobId);
 
 }

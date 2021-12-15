@@ -38,4 +38,11 @@ public interface ITriggerContext {
      */
     Long lastActualFiredTime();
 
+    /**
+     * 开始时间
+     * @return 开始时间
+     * @since 1.0.0
+     */
+    long startTime();
+
 }

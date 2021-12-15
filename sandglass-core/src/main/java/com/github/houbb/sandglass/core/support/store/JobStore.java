@@ -23,62 +23,18 @@ public class JobStore implements IJobStore {
     }
 
     @Override
-    public void add(IJob job) {
-        map.put(job.id(), job);
+    public void add(String jobId, IJob job) {
+        map.put(jobId, job);
     }
 
     @Override
-    public IJob remove(String id) {
-        return map.remove(id);
+    public IJob job(String jobId) {
+        return map.get(jobId);
     }
 
     @Override
-    public void edit(IJob job) {
-        map.put(job.id(), job);
-    }
-
-    @Override
-    public void editStatus(String jobId, JobStatusEnum jobStatusEnum) {
-        IJob job = this.detail(jobId);
-
-        if(job != null) {
-            job.status(jobStatusEnum);
-
-            this.edit(job);
-        }
-    }
-
-    @Override
-    public Collection<IJob> list() {
-        return map.values();
-    }
-
-    @Override
-    public IJob detail(String id) {
-        return map.get(id);
-    }
-
-    @Override
-    public IJob pause(String id) {
-        IJob job = detail(id);
-
-        if(job == null) {
-            return null;
-        }
-        job.status(JobStatusEnum.PAUSE);
-
-        return job;
-    }
-
-    @Override
-    public IJob resume(String id) {
-        IJob job = detail(id);
-
-        if(job == null) {
-            return null;
-        }
-        job.status(JobStatusEnum.WAIT_TRIGGER);
-        return job;
+    public IJob remove(String jobId) {
+        return map.remove(jobId);
     }
 
 }
