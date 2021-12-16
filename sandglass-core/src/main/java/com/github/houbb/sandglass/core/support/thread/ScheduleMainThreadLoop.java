@@ -6,33 +6,29 @@ import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.lock.redis.core.Locks;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
-import com.github.houbb.sandglass.api.api.*;
+import com.github.houbb.sandglass.api.api.IJob;
+import com.github.houbb.sandglass.api.api.ITrigger;
+import com.github.houbb.sandglass.api.api.IWorkerThreadPool;
 import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 import com.github.houbb.sandglass.api.constant.TaskStatusEnum;
 import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
+import com.github.houbb.sandglass.api.dto.JobDetailDto;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.dto.TaskLogDto;
+import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
 import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
-import com.github.houbb.sandglass.api.support.store.IJobStore;
-import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
-import com.github.houbb.sandglass.api.support.store.ITaskLogStore;
-import com.github.houbb.sandglass.api.support.store.ITriggerStore;
+import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
 import com.github.houbb.sandglass.core.support.listener.JobListener;
 import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
 import com.github.houbb.sandglass.core.support.listener.TriggerListener;
 import com.github.houbb.sandglass.core.support.outOfDate.OutOfDateStrategies;
-import com.github.houbb.sandglass.core.support.store.JobStore;
-import com.github.houbb.sandglass.core.support.store.JobTriggerStore;
-import com.github.houbb.sandglass.core.support.store.TaskLogStore;
-import com.github.houbb.sandglass.core.support.store.TriggerStore;
 import com.github.houbb.sandglass.core.util.InnerJobTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
-import javafx.concurrent.Task;
 
 import java.util.concurrent.TimeUnit;
 
@@ -54,67 +50,79 @@ public class ScheduleMainThreadLoop extends Thread {
      * 工作线程池
      * @since 0.0.2
      */
-    private IWorkerThreadPool workerThreadPool = new WorkerThreadPool();
+    private IWorkerThreadPool workerThreadPool;
 
     /**
      * 任务管理类
      * @since 0.0.2
      */
-    protected IJobStore jobStore = new JobStore();
+    private IJobStore jobStore;
 
     /**
      * 触发器管理类
      * @since 0.0.2
      */
-    protected ITriggerStore triggerStore = new TriggerStore();
+    private ITriggerStore triggerStore;
+
+    /**
+     * 任务管详情理类
+     * @since 0.0.2
+     */
+    private IJobDetailStore jobDetailStore;
+
+    /**
+     * 触发器详情管理类
+     * @since 0.0.2
+     */
+    private ITriggerDetailStore triggerDetailStore;
 
     /**
      * 时钟
      * @since 0.0.2
      */
-    protected ITimer timer = SystemTimer.getInstance();
+    protected ITimer timer;
 
     /**
      * 触发锁
      * @since 0.0.2
      */
-    protected ILock triggerLock = Locks.none();
+    protected ILock triggerLock;
 
     /**
      * 任务调度队列
      * @since 0.0.2
      */
-    protected IJobTriggerStore jobTriggerStore = new JobTriggerStore();
+    protected IJobTriggerStore jobTriggerStore;
 
     /**
      * 任务调度监听器
      * @since 0.0.4
      */
-    protected IScheduleListener scheduleListener = new ScheduleListener();
+    protected IScheduleListener scheduleListener;
 
     /**
      * 任务调度监听器
      * @since 0.0.4
      */
-    protected IJobListener jobListener = new JobListener();
+    protected IJobListener jobListener;
 
     /**
      * 触发器监听器
      * @since 0.0.4
      */
-    protected ITriggerListener triggerListener = new TriggerListener();
+    protected ITriggerListener triggerListener;
 
     /**
      * 任务过期策略
      * @since 0.0.7
      */
-    protected IOutOfDateStrategy outOfDateStrategy = OutOfDateStrategies.fireNow();
+    protected IOutOfDateStrategy outOfDateStrategy;
 
     /**
      * 任务执行记录持久化
      * @since 0.0.9
      */
-    protected ITaskLogStore taskLogStore = new TaskLogStore();
+    protected ITaskLogStore taskLogStore;
 
     public ScheduleMainThreadLoop startFlag(boolean startFlag) {
         this.startFlag = startFlag;
@@ -129,16 +137,22 @@ public class ScheduleMainThreadLoop extends Thread {
     }
 
     public ScheduleMainThreadLoop jobStore(IJobStore jobStore) {
-        ArgUtil.notNull(jobStore, "jobStore");
-
         this.jobStore = jobStore;
         return this;
     }
 
     public ScheduleMainThreadLoop triggerStore(ITriggerStore triggerStore) {
-        ArgUtil.notNull(triggerStore, "triggerStore");
-
         this.triggerStore = triggerStore;
+        return this;
+    }
+
+    public ScheduleMainThreadLoop jobDetailStore(IJobDetailStore jobDetailStore) {
+        this.jobDetailStore = jobDetailStore;
+        return this;
+    }
+
+    public ScheduleMainThreadLoop triggerDetailStore(ITriggerDetailStore triggerDetailStore) {
+        this.triggerDetailStore = triggerDetailStore;
         return this;
     }
 
@@ -223,10 +237,14 @@ public class ScheduleMainThreadLoop extends Thread {
                 //1.1 任务是否存在
                 String jobId = jobTriggerDto.jobId();
                 String triggerId = jobTriggerDto.triggerId();
-                IJob job = jobStore.detail(jobId);
-                ITrigger trigger = triggerStore.detail(triggerId);
+                IJob job = jobStore.job(jobId);
+                ITrigger trigger = triggerStore.trigger(triggerId);
+                JobDetailDto jobDetailDto = jobDetailStore.detail(jobId);
+                TriggerDetailDto triggerDetailDto = triggerDetailStore.detail(triggerId);
                 if(job == null
-                    || trigger == null) {
+                    || trigger == null
+                    || jobDetailDto == null
+                    || triggerDetailDto == null) {
                     LOG.warn("任务 job {}, trigger {} 对应的信息不存在，忽略处理。", jobId, triggerId);
                     continue;
                 }
@@ -234,7 +252,8 @@ public class ScheduleMainThreadLoop extends Thread {
                 //3. 获取 trigger 对应的 job。更新 trigger 的执行状态。获取 nextTime 到 queue 中
                 //3.1 更新 trigger & job 的状态
                 // 构建初始化日志
-                TaskLogDto taskLogDto = buildInitTaskLogDto(job, jobTriggerDto);
+                TaskLogDto taskLogDto = buildInitTaskLogDto(jobTriggerDto,
+                        jobDetailDto);
 
                 WorkerThreadPoolContext workerThreadPoolContext = WorkerThreadPoolContext
                         .newInstance()
@@ -245,13 +264,15 @@ public class ScheduleMainThreadLoop extends Thread {
                         .timer(timer)
                         .jobListener(jobListener)
                         .taskLogDto(taskLogDto)
-                        .taskLogStore(taskLogStore);
+                        .taskLogStore(taskLogStore)
+                        .jobDetailStore(jobDetailStore)
+                        .triggerDetailStore(triggerDetailStore);
 
                 //3.2 任务并发处理的判断
-                boolean allowConcurrentExecute = job.allowConcurrentExecute();
+                boolean allowConcurrentExecute = jobDetailDto.allowConcurrentExecute();
                 if(!allowConcurrentExecute) {
                     //3.2.1 是否有执行中的任务
-                    IJob currentJob = jobStore.detail(jobId);
+                    JobDetailDto currentJob = jobDetailStore.detail(jobId);
 
                     if(JobStatusEnum.isInProgress(currentJob.status())) {
                         LOG.warn("任务 {} 禁止并发执行，且有执行中的任务，下一次执行。",
@@ -266,7 +287,8 @@ public class ScheduleMainThreadLoop extends Thread {
                 }
 
                 // 更新任务状态
-                jobStore.editStatus(jobId, JobStatusEnum.WAIT_EXECUTE);
+                jobDetailStore.editStatus(jobId, JobStatusEnum.WAIT_EXECUTE.getCode());
+                triggerDetailStore.editStatus(triggerId, TriggerStatusEnum.WAIT_EXECUTE.getCode());
 
                 this.triggerListener.beforeWaitFired(workerThreadPoolContext);
                 //3.3 while 等待任务执行时间
@@ -294,10 +316,11 @@ public class ScheduleMainThreadLoop extends Thread {
     /**
      * 构建初始化状态的任务日志
      * @param jobTriggerDto 触发对象
+     * @param jobDetailDto 任务详情
      * @return 结果
      * @since 0.0.9
      */
-    private TaskLogDto buildInitTaskLogDto(final IJob job, final JobTriggerDto jobTriggerDto) {
+    private TaskLogDto buildInitTaskLogDto(final JobTriggerDto jobTriggerDto, JobDetailDto jobDetailDto) {
         // 构建执行日志
         final long time = timer.time();
 
@@ -307,7 +330,7 @@ public class ScheduleMainThreadLoop extends Thread {
         taskLogDto.triggerId(jobTriggerDto.triggerId());
         taskLogDto.order(jobTriggerDto.order());
         taskLogDto.triggeredTime(time);
-        taskLogDto.allowConcurrentExecute(job.allowConcurrentExecute());
+        taskLogDto.allowConcurrentExecute(jobDetailDto.allowConcurrentExecute());
         long triggerDifferTime = time - jobTriggerDto.nextTime();
         taskLogDto.triggerDifferTime(triggerDifferTime);
 

@@ -40,9 +40,9 @@ public enum JobStatusEnum {
      * @return 是否
      * @since 0.0.8
      */
-    public static boolean isInProgress(JobStatusEnum jobStatusEnum) {
-        if(JobStatusEnum.WAIT_EXECUTE.equals(jobStatusEnum)
-            || JobStatusEnum.EXECUTING.equals(jobStatusEnum)) {
+    public static boolean isInProgress(String jobStatusEnum) {
+        if(JobStatusEnum.WAIT_EXECUTE.getCode().equals(jobStatusEnum)
+            || JobStatusEnum.EXECUTING.getCode().equals(jobStatusEnum)) {
             return true;
         }
         return false;

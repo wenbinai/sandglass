@@ -6,11 +6,10 @@ import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.ITrigger;
 import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
+import com.github.houbb.sandglass.api.dto.JobDetailDto;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
-import com.github.houbb.sandglass.api.support.store.IJobStore;
-import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
-import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreListener;
-import com.github.houbb.sandglass.api.support.store.ITriggerStore;
+import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
+import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.exception.SandGlassException;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
@@ -50,13 +49,13 @@ public class JobTriggerStore implements IJobTriggerStore {
      * 任务持久化
      * @since 0.0.8
      */
-    private IJobStore jobStore = new JobStore();
+    private IJobDetailStore jobDetailStore;
 
     /**
      * 触发器持久化
      * @since 0.0.8
      */
-    private ITriggerStore triggerStore = new TriggerStore();
+    private ITriggerDetailStore triggerDetailStore;
 
     public JobTriggerStore() {
         this.queue = new PriorityBlockingQueue<>(64);
@@ -75,14 +74,14 @@ public class JobTriggerStore implements IJobTriggerStore {
     }
 
     @Override
-    public JobTriggerStore jobStore(IJobStore jobStore) {
-        this.jobStore = jobStore;
+    public JobTriggerStore jobDetailStore(IJobDetailStore jobDetailStore) {
+        this.jobDetailStore = jobDetailStore;
         return this;
     }
 
     @Override
-    public JobTriggerStore triggerStore(ITriggerStore triggerStore) {
-        this.triggerStore = triggerStore;
+    public JobTriggerStore triggerDetailStore(ITriggerDetailStore triggerDetailStore) {
+        this.triggerDetailStore = triggerDetailStore;
         return this;
     }
 
@@ -157,16 +156,15 @@ public class JobTriggerStore implements IJobTriggerStore {
         String jobId = jobTriggerDto.jobId();
         String triggerId = jobTriggerDto.triggerId();
 
-        IJob job = jobStore.detail(jobId);
-        ITrigger trigger = triggerStore.detail(triggerId);
-
-        if(JobStatusEnum.PAUSE.equals(job.status())) {
+        JobDetailDto jobDetailDto = jobDetailStore.detail(jobId);
+        if(JobStatusEnum.PAUSE.getCode().equals(jobDetailDto.status())) {
             // 移除队首的元素
             removeHeadAndRePut(jobTriggerDto);
 
             return true;
         }
-        if(TriggerStatusEnum.PAUSE.equals(trigger.status())) {
+        TriggerDetailDto triggerDetailDto = triggerDetailStore.detail(triggerId);
+        if(TriggerStatusEnum.PAUSE.getCode().equals(triggerDetailDto.status())) {
             // 移除队首的元素
             removeHeadAndRePut(jobTriggerDto);
 

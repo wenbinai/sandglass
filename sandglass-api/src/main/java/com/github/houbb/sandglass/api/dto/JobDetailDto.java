@@ -1,5 +1,11 @@
 package com.github.houbb.sandglass.api.dto;
 
+import com.github.houbb.sandglass.api.constant.JobStatusEnum;
+import com.github.houbb.sandglass.api.constant.JobTypeEnum;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 任务静态信息，可持久化的部分
  *
@@ -18,49 +24,49 @@ public class JobDetailDto extends BaseDto {
      * 任务状态
      * @since 1.0.0
      */
-    private String status;
+    private String status = JobStatusEnum.WAIT_TRIGGER.getCode();
 
     /**
      * 备注
      * @since 0.0.2
      */
-    private String remark;
+    private String remark = "";
 
     /**
      * 数据 map
      * @since 0.0.2
      */
-    private String dataMapJson;
+    private Map<String, String> dataMap = new HashMap<>();
 
     /**
      * 是否允许并发执行
      * @since 1.0.0
      */
-    private String allowConcurrentExecute;
+    private boolean allowConcurrentExecute = true;
 
     /**
      * 任务类型
      * @since 1.0.0
      */
-    private String jobType;
+    private String jobType = JobTypeEnum.COMMON.code();
 
     /**
      * 类全称
      * @since 1.0.0
      */
-    private String classFullName;
+    private String classFullName = "";
 
     /**
      * spring bean 名称
      * @since 1.0.0
      */
-    private String springBeanName;
+    private String springBeanName = "";
 
     /**
      * spring 方法名称
      * @since 1.0.0
      */
-    private String springMethodName;
+    private String springMethodName = "";
 
     public String jobId() {
         return jobId;
@@ -89,20 +95,20 @@ public class JobDetailDto extends BaseDto {
         return this;
     }
 
-    public String dataMapJson() {
-        return dataMapJson;
+    public Map<String, String> dataMap() {
+        return dataMap;
     }
 
-    public JobDetailDto dataMapJson(String dataMapJson) {
-        this.dataMapJson = dataMapJson;
+    public JobDetailDto dataMap(Map<String, String> dataMap) {
+        this.dataMap = dataMap;
         return this;
     }
 
-    public String allowConcurrentExecute() {
+    public boolean allowConcurrentExecute() {
         return allowConcurrentExecute;
     }
 
-    public JobDetailDto allowConcurrentExecute(String allowConcurrentExecute) {
+    public JobDetailDto allowConcurrentExecute(boolean allowConcurrentExecute) {
         this.allowConcurrentExecute = allowConcurrentExecute;
         return this;
     }
@@ -149,8 +155,8 @@ public class JobDetailDto extends BaseDto {
                 "jobId='" + jobId + '\'' +
                 ", status='" + status + '\'' +
                 ", remark='" + remark + '\'' +
-                ", dataMapJson='" + dataMapJson + '\'' +
-                ", allowConcurrentExecute='" + allowConcurrentExecute + '\'' +
+                ", dataMap=" + dataMap +
+                ", allowConcurrentExecute=" + allowConcurrentExecute +
                 ", jobType='" + jobType + '\'' +
                 ", classFullName='" + classFullName + '\'' +
                 ", springBeanName='" + springBeanName + '\'' +

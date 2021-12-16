@@ -1,5 +1,10 @@
 package com.github.houbb.sandglass.api.dto;
 
+import com.github.houbb.sandglass.api.constant.SandGlassOrderConst;
+import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
+
+import java.util.concurrent.TimeUnit;
+
 /**
  * 任务静态信息，可持久化的部分
  *
@@ -18,13 +23,13 @@ public class TriggerDetailDto extends BaseDto {
      * 任务状态
      * @since 1.0.0
      */
-    private String status;
+    private String status = TriggerStatusEnum.WAIT_TRIGGER.getCode();
 
     /**
      * 备注
      * @since 0.0.2
      */
-    private String remark;
+    private String remark = "";
 
     /**
      * 任务类型
@@ -36,19 +41,19 @@ public class TriggerDetailDto extends BaseDto {
      * 触发器优先级
      * @since 1.0.0
      */
-    private String triggerOrder;
+    private int triggerOrder = SandGlassOrderConst.DEFAULT;
 
     /**
      * 开始时间
      * @since 1.0.0
      */
-    private long startTime;
+    private long startTime = 0;
 
     /**
      * 结束时间
      * @since 1.0.0
      */
-    private long endTime;
+    private long endTime = Long.MAX_VALUE;
 
     /**
      * cron 表达式
@@ -63,18 +68,18 @@ public class TriggerDetailDto extends BaseDto {
     /**
      * 触发器延迟执行
      */
-    private long initialDelay;
+    private long initialDelay = 0;
 
     /**
      * 时间单位
      * @since 1.0.0
      */
-    private String timeUint;
+    private TimeUnit timeUint = TimeUnit.MILLISECONDS;
 
     /**
      * 触发器是否固定速率
      */
-    private String fixedRate;
+    private boolean fixedRate = false;
 
     public String triggerId() {
         return triggerId;
@@ -112,11 +117,11 @@ public class TriggerDetailDto extends BaseDto {
         return this;
     }
 
-    public String triggerOrder() {
+    public int triggerOrder() {
         return triggerOrder;
     }
 
-    public TriggerDetailDto triggerOrder(String triggerOrder) {
+    public TriggerDetailDto triggerOrder(int triggerOrder) {
         this.triggerOrder = triggerOrder;
         return this;
     }
@@ -166,20 +171,20 @@ public class TriggerDetailDto extends BaseDto {
         return this;
     }
 
-    public String timeUint() {
+    public TimeUnit timeUint() {
         return timeUint;
     }
 
-    public TriggerDetailDto timeUint(String timeUint) {
+    public TriggerDetailDto timeUint(TimeUnit timeUint) {
         this.timeUint = timeUint;
         return this;
     }
 
-    public String fixedRate() {
+    public boolean fixedRate() {
         return fixedRate;
     }
 
-    public TriggerDetailDto fixedRate(String fixedRate) {
+    public TriggerDetailDto fixedRate(boolean fixedRate) {
         this.fixedRate = fixedRate;
         return this;
     }

@@ -7,6 +7,7 @@ import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 import com.github.houbb.sandglass.api.constant.TaskStatusEnum;
 import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
+import com.github.houbb.sandglass.api.dto.JobDetailDto;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.dto.TaskLogDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
@@ -60,9 +61,10 @@ public class WorkerThreadPool implements IWorkerThreadPool {
                     JobTriggerDto jobTriggerDto = context.preJobTriggerDto();
                     IJobStore jobStore = context.jobStore();
                     String jobId = jobTriggerDto.jobId();
-                    final IJob job = jobStore.detail(jobId);
+                    final IJob job = jobStore.job(jobId);
+                    final JobDetailDto jobDetailDto = context.jobDetailStore().detail(jobId);
                     final IJobListener jobListener = context.jobListener();
-                    final IJobContext jobContext = buildJobContext(traceId, job);
+                    final IJobContext jobContext = buildJobContext(traceId, jobDetailDto);
 
                     // 日志
                     final TaskLogDto taskLogDto = context.taskLogDto();
@@ -126,13 +128,13 @@ public class WorkerThreadPool implements IWorkerThreadPool {
     /**
      * 构建任务执行的上下文
      * @param traceId 唯一标识
-     * @param job 任务
+     * @param jobDetailDto 任务详情
      * @return 结果
      * @since 0.0.2
      */
-    private IJobContext buildJobContext(String traceId, IJob job) {
+    private IJobContext buildJobContext(String traceId, JobDetailDto jobDetailDto) {
         JobContext jobContext = new JobContext();
-        jobContext.dataMap(job.dataMap());
+        jobContext.dataMap(jobDetailDto.dataMap());
         jobContext.traceId(traceId);
         return jobContext;
     }

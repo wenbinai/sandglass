@@ -47,7 +47,7 @@
 //1.1 定义任务
 IJob job = new AbstractJob() {
     @Override
-    protected void doExecute(IJobContext context) {
+    public void execute(IJobContext context) {
         LOG.info("HELLO");
     }
 };
@@ -76,7 +76,6 @@ SandGlassHelper.schedule(job, trigger);
 通过 cron 表达式创建 trigger，可以通过方法：
 
 ```java
-Triggers.cron(String id, String cronExpression);
 Triggers.cron(String cronExpression);
 ```
 
@@ -87,7 +86,6 @@ Triggers.cron(String cronExpression);
 ```java
 Triggers.period(long period);
 Triggers.period(long period, TimeUnit timeUnit);
-Triggers.period(String id, long period, TimeUnit timeUnit);
 ```
 
 # 引导类
@@ -131,6 +129,8 @@ SandGlassBs.newInstance()
 | scheduleListener | 任务调度监听器 |  |
 | jobListener | 任务执行监听器 |  |
 | triggerListener | 触发器监听器 |  |
+| jobDetailStore | 任务详情持久化 |  |
+| triggerDetailStore | 触发器详情详情持久化 |  |
 
 
 # spring 整合
@@ -198,6 +198,8 @@ public class SpringConfig {
 | scheduleListener | 任务调度监听器 |  |
 | jobListener | 任务执行监听器 |  |
 | triggerListener | 触发器监听器 |  |
+| jobDetailStore | 任务详情持久化 |  |
+| triggerDetailStore | 触发器详情详情持久化 |  |
 
 自定义方式：实现对应接口，在注解中对应对应的 bean 名称即可。
 
@@ -249,7 +251,7 @@ public class SpringConfig {
 
 - [x] 任务状态更新
 
-- [ ] 任务执行日志
+- [x] 任务执行日志
 
 RAM 最多只保存 100 条
 

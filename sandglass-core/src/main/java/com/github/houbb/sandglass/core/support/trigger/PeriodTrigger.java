@@ -1,7 +1,6 @@
 package com.github.houbb.sandglass.core.support.trigger;
 
 import com.github.houbb.heaven.util.common.ArgUtil;
-import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.sandglass.api.api.ITriggerContext;
 import com.github.houbb.timer.api.ITimer;
 
@@ -40,23 +39,11 @@ public class PeriodTrigger extends AbstractTrigger {
      */
     private volatile boolean fixedRate = false;
 
-    /**
-     * 唯一标识
-     * @since 0.0.2
-     */
-    private final String id;
-
-    public PeriodTrigger(String id, long period, TimeUnit timeUnit) {
-        ArgUtil.notEmpty(id, "id");
+    public PeriodTrigger(long period, TimeUnit timeUnit) {
         ArgUtil.gt("period", period, 0);
 
-        this.id = id;
         this.timeUnit = timeUnit;
         this.period = this.timeUnit.toMillis(period);
-    }
-
-    public PeriodTrigger(long period, TimeUnit timeUnit) {
-        this(IdHelper.uuid32(), period, timeUnit);
     }
 
     public PeriodTrigger(long period) {
@@ -72,6 +59,22 @@ public class PeriodTrigger extends AbstractTrigger {
     public PeriodTrigger fixedRate(boolean fixedRate) {
         this.fixedRate = fixedRate;
         return this;
+    }
+
+    public long period() {
+        return period;
+    }
+
+    public TimeUnit timeUnit() {
+        return timeUnit;
+    }
+
+    public long initialDelay() {
+        return initialDelay;
+    }
+
+    public boolean fixedRate() {
+        return fixedRate;
     }
 
     @Override
@@ -95,21 +98,4 @@ public class PeriodTrigger extends AbstractTrigger {
         return lastCompleteTime + period;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        PeriodTrigger that = (PeriodTrigger) o;
-
-        if (period != that.period) return false;
-        return id != null ? id.equals(that.id) : that.id == null;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (period ^ (period >>> 32));
-        result = 31 * result + (id != null ? id.hashCode() : 0);
-        return result;
-    }
 }

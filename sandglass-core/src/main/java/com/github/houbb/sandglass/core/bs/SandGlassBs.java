@@ -116,24 +116,22 @@ public final class SandGlassBs {
      */
     private ITaskLogStore taskLogStore = new TaskLogStore();
 
+    /**
+     * 任务详情持久化
+     * @since 1.0.0
+     */
+    private IJobDetailStore jobDetailStore = new JobDetailStore();
+
+    /**
+     * 触发器详情持久化
+     * @since 1.0.0
+     */
+    private ITriggerDetailStore triggerDetailStore = new TriggerDetailStore();
+
     public SandGlassBs workPoolSize(int workPoolSize) {
         ArgUtil.gte("workPoolSize", workPoolSize, 1);
 
         this.workPoolSize = workPoolSize;
-        return this;
-    }
-
-    public SandGlassBs jobStore(IJobStore jobStore) {
-        ArgUtil.notNull(jobStore, "jobStore");
-
-        this.jobStore = jobStore;
-        return this;
-    }
-
-    public SandGlassBs triggerStore(ITriggerStore triggerStore) {
-        ArgUtil.notNull(triggerStore, "triggerStore");
-
-        this.triggerStore = triggerStore;
         return this;
     }
 
@@ -148,6 +146,20 @@ public final class SandGlassBs {
         ArgUtil.notNull(triggerLock, "triggerLock");
 
         this.triggerLock = triggerLock;
+        return this;
+    }
+
+    public SandGlassBs jobStore(IJobStore jobStore) {
+        ArgUtil.notNull(jobStore, "jobStore");
+
+        this.jobStore = jobStore;
+        return this;
+    }
+
+    public SandGlassBs triggerStore(ITriggerStore triggerStore) {
+        ArgUtil.notNull(triggerStore, "triggerStore");
+
+        this.triggerStore = triggerStore;
         return this;
     }
 
@@ -200,6 +212,20 @@ public final class SandGlassBs {
         return this;
     }
 
+    public SandGlassBs jobDetailStore(IJobDetailStore jobDetailStore) {
+        ArgUtil.notNull(jobDetailStore, "jobDetailStore");
+
+        this.jobDetailStore = jobDetailStore;
+        return this;
+    }
+
+    public SandGlassBs triggerDetailStore(ITriggerDetailStore triggerDetailStore) {
+        ArgUtil.notNull(triggerDetailStore, "triggerDetailStore");
+
+        this.triggerDetailStore = triggerDetailStore;
+        return this;
+    }
+
     /**
      * 线程启动
      * @return this
@@ -221,26 +247,33 @@ public final class SandGlassBs {
     public SandGlassBs init() {
         this.jobTriggerStore.listener(this.jobTriggerStoreListener);
         this.jobTriggerStore.timer(this.timer);
-        this.jobTriggerStore.jobStore(this.jobStore);
-        this.jobTriggerStore.triggerStore(this.triggerStore);
+        this.jobTriggerStore.jobDetailStore(this.jobDetailStore);
+        this.jobTriggerStore.triggerDetailStore(this.triggerDetailStore);
 
         //调度类主线程
         IWorkerThreadPool workerThreadPool = new WorkerThreadPool(workPoolSize);
         ScheduleMainThreadLoop scheduleMainThreadLoop = new ScheduleMainThreadLoop();
-        scheduleMainThreadLoop.jobStore(jobStore)
+        scheduleMainThreadLoop.jobDetailStore(jobDetailStore)
+                .triggerDetailStore(triggerDetailStore)
                 .jobListener(jobListener)
                 .jobTriggerStore(jobTriggerStore)
                 .triggerLock(triggerLock)
                 .triggerListener(triggerListener)
-                .triggerStore(triggerStore)
                 .workerThreadPool(workerThreadPool)
                 .outOfDateStrategy(outOfDateStrategy)
                 .scheduleListener(scheduleListener)
                 .taskLogStore(taskLogStore)
+                .jobDetailStore(jobDetailStore)
+                .triggerDetailStore(triggerDetailStore)
+                .jobStore(jobStore)
+                .triggerStore(triggerStore)
+                .timer(timer)
                 ;
 
         //调度类
-        scheduler.jobStore(jobStore)
+        scheduler.jobDetailStore(jobDetailStore)
+                .triggerDetailStore(triggerDetailStore)
+                .jobStore(jobStore)
                 .triggerStore(triggerStore)
                 .jobTriggerStore(jobTriggerStore)
                 .timer(timer)

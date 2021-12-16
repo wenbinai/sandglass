@@ -33,6 +33,14 @@ public class CronTrigger extends AbstractTrigger {
         }
     }
 
+    public CronExpression cronExpression() {
+        return cronExpression;
+    }
+
+    public String cronExpressionString() {
+        return cronExpression.getCronExpression();
+    }
+
     @Override
     public long nextTime(ITriggerContext context) {
         // 上一次的调度时间

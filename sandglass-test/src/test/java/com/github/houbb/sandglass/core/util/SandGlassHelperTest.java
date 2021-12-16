@@ -24,7 +24,7 @@ public class SandGlassHelperTest {
         //1.1 定义任务
         IJob job = new AbstractJob() {
             @Override
-            protected void doExecute(IJobContext context) {
+            public void execute(IJobContext context) {
                 LOG.info("HELLO");
             }
         };

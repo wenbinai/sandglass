@@ -5,11 +5,10 @@ import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
+import com.github.houbb.sandglass.api.dto.JobDetailDto;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
-import com.github.houbb.sandglass.api.support.listener.IJobListener;
-import com.github.houbb.sandglass.api.support.store.IJobStore;
-import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
-import com.github.houbb.sandglass.api.support.store.ITriggerStore;
+import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
+import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.api.scheduler.TriggerContext;
 import com.github.houbb.timer.api.ITimer;
 
@@ -31,7 +30,7 @@ public class InnerJobTriggerHelper {
      * @return 是否
      * @since 0.0.3
      */
-    public static boolean hasMeetEndTime(final ITimer timer, ITrigger trigger) {
+    public static boolean hasMeetEndTime(final ITimer timer, TriggerDetailDto trigger) {
         // 当前时间
         long currentTime = timer.time();
         long endTime = trigger.endTime();
@@ -41,19 +40,20 @@ public class InnerJobTriggerHelper {
 
     /**
      * 构建任务触发对象
-     * @param job 任务
+     * @param jobDetail 任务
      * @param trigger 触发器
      * @param context 触发器上下文
      * @return 实现
      * @since 0.0.3
      */
-    public static JobTriggerDto buildJobTriggerDto(IJob job,
+    public static JobTriggerDto buildJobTriggerDto(JobDetailDto jobDetail,
                                                    ITrigger trigger,
+                                                   TriggerDetailDto triggerDetailDto,
                                                    ITriggerContext context) {
         JobTriggerDto dto = new JobTriggerDto();
-        dto.jobId(job.id());
-        dto.triggerId(trigger.id());
-        dto.order(trigger.order());
+        dto.jobId(jobDetail.jobId());
+        dto.triggerId(triggerDetailDto.triggerId());
+        dto.order(triggerDetailDto.triggerOrder());
 
         long nextTime = trigger.nextTime(context);
         dto.nextTime(nextTime);
@@ -74,20 +74,28 @@ public class InnerJobTriggerHelper {
                                                    final long actualFiredTime) {
         JobTriggerDto jobTriggerDto = context.preJobTriggerDto();
         final String jobId = jobTriggerDto.jobId();
-        final IJob job = context.jobStore().detail(jobId);
+        final String triggerId = jobTriggerDto.triggerId();
+
+        final IJob job = context.jobStore().job(jobId);
         LOG.debug("更新任务和触发器的状态 {}", jobTriggerDto.toString());
         // 更新对应的状态
 
         final ITriggerStore triggerStore = context.triggerStore();
         final ITimer timer = context.timer();
-        final ITrigger trigger = triggerStore.detail(jobTriggerDto.triggerId());
+        final ITrigger trigger = triggerStore.trigger(jobTriggerDto.triggerId());
         final IJobTriggerStore jobTriggerStore = context.jobTriggerStore();
 
+        // 更新状态为已完成
+        final IJobDetailStore jobDetailStore = context.jobDetailStore();
+        final ITriggerDetailStore triggerDetailStore = context.triggerDetailStore();
+
+        final JobDetailDto jobDetailDto = jobDetailStore.detail(jobId);
+        final TriggerDetailDto triggerDetailDto = triggerDetailStore.detail(triggerId);
+
         // 结束时间判断
-        if(InnerJobTriggerHelper.hasMeetEndTime(timer, trigger)) {
-            // 更新状态为已完成
-            job.status(JobStatusEnum.COMPLETE);
-            trigger.status(TriggerStatusEnum.COMPLETE);
+        if(InnerJobTriggerHelper.hasMeetEndTime(timer, triggerDetailDto)) {
+            jobDetailStore.editStatus(jobId, JobStatusEnum.COMPLETE.getCode());
+            triggerDetailStore.editStatus(triggerId, TriggerStatusEnum.COMPLETE.getCode());
 
             return;
         }
@@ -100,9 +108,10 @@ public class InnerJobTriggerHelper {
                 .timer(timer);
 
         // 设置状态
-        job.status(JobStatusEnum.WAIT_TRIGGER);
-        trigger.status(TriggerStatusEnum.WAIT_TRIGGER);
-        JobTriggerDto newDto = InnerJobTriggerHelper.buildJobTriggerDto(job, trigger, triggerContext);
+        jobDetailStore.editStatus(jobId, JobStatusEnum.WAIT_TRIGGER.getCode());
+        triggerDetailStore.editStatus(triggerId, TriggerStatusEnum.WAIT_TRIGGER.getCode());
+
+        JobTriggerDto newDto = InnerJobTriggerHelper.buildJobTriggerDto(jobDetailDto, trigger, triggerDetailDto, triggerContext);
 
         // 任务应该什么时候放入队列？
         // 真正完成的时候，还是开始处理的时候？
@@ -123,11 +132,11 @@ public class InnerJobTriggerHelper {
         final String jobId = jobTriggerDto.jobId();
         final String triggerId = jobTriggerDto.triggerId();
 
-        final IJobStore jobStore = context.jobStore();
-        final ITriggerStore triggerStore = context.triggerStore();
+        final IJobDetailStore jobDetailStore = context.jobDetailStore();
+        final ITriggerDetailStore triggerDetailStore = context.triggerDetailStore();
 
-        jobStore.editStatus(jobId, jobStatusEnum);
-        triggerStore.editStatus(triggerId, triggerStatusEnum);
+        jobDetailStore.editStatus(jobId, jobStatusEnum.getCode());
+        triggerDetailStore.editStatus(triggerId, triggerStatusEnum.getCode());
     }
 
 }

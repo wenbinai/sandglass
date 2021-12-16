@@ -2,6 +2,9 @@ package com.github.houbb.sandglass.spring.utils;
 
 import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.IJobContext;
+import com.github.houbb.sandglass.api.constant.JobTypeEnum;
+import com.github.houbb.sandglass.api.dto.JobDetailDto;
+import com.github.houbb.sandglass.api.dto.mixed.JobAndDetailDto;
 import com.github.houbb.sandglass.core.api.job.AbstractJob;
 import com.github.houbb.sandglass.core.exception.SandGlassException;
 
@@ -18,39 +21,42 @@ public final class InnerSpringJobUtils {
 
     /**
      * 构建任务
+     * @param beanName bean 名称
      * @param bean 对象
      * @param method 方法
      * @param allowConcurrentExecuteVal 是否允许并发执行
      * @return 结果
      * @since 0.0.5
      */
-    public static IJob buildJob(final Object bean, final Method method,
-                                final boolean allowConcurrentExecuteVal) {
+    public static JobAndDetailDto buildJob(final String beanName,
+                                           final Object bean,
+                                           final Method method,
+                                           final boolean allowConcurrentExecuteVal) {
         String className = bean.getClass().getName();
         String methodName = method.getName();
 
         final String jobId = buildJobId(className, methodName);
-        return new AbstractJob() {
+        JobDetailDto jobDetailDto = new JobDetailDto();
+        jobDetailDto.allowConcurrentExecute(allowConcurrentExecuteVal);
+        jobDetailDto.jobId(jobId);
+        jobDetailDto.jobType(JobTypeEnum.SPRING.code());
+        jobDetailDto.classFullName(className);
+        jobDetailDto.springBeanName(beanName);
+        jobDetailDto.springMethodName(methodName);
 
+        final IJob job = new AbstractJob() {
             @Override
-            public boolean allowConcurrentExecute() {
-                return allowConcurrentExecuteVal;
-            }
-
-            @Override
-            protected void doExecute(IJobContext context) {
+            public void execute(IJobContext context) {
                 try {
                     method.invoke(bean);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new SandGlassException(e);
                 }
             }
-
-            @Override
-            public String id() {
-                return jobId;
-            }
         };
+
+        // 构建结果
+        return JobAndDetailDto.of(job, jobDetailDto);
     }
 
     /**

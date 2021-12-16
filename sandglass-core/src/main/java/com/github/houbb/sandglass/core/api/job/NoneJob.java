@@ -11,10 +11,8 @@ import com.github.houbb.sandglass.api.api.IJobContext;
  */
 @ThreadSafe
 public class NoneJob extends AbstractJob {
-
     @Override
-    protected void doExecute(IJobContext context) {
+    public void execute(IJobContext context) {
 
     }
-
 }

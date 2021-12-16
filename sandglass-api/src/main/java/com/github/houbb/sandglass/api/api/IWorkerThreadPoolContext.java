@@ -3,10 +3,7 @@ package com.github.houbb.sandglass.api.api;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.dto.TaskLogDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
-import com.github.houbb.sandglass.api.support.store.IJobStore;
-import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
-import com.github.houbb.sandglass.api.support.store.ITaskLogStore;
-import com.github.houbb.sandglass.api.support.store.ITriggerStore;
+import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.timer.api.ITimer;
 
 /**
@@ -79,5 +76,19 @@ public interface IWorkerThreadPoolContext {
      * @since 0.0.9
      */
     ITaskLogStore taskLogStore();
+
+    /**
+     * 触发器详情持久化类
+     * @return 持久化类
+     * @since 1.0.0
+     */
+    ITriggerDetailStore triggerDetailStore();
+
+    /**
+     * 任务详情持久化类
+     * @return 持久化类
+     * @since 1.0.0
+     */
+    IJobDetailStore jobDetailStore();
 
 }

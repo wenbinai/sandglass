@@ -15,7 +15,7 @@ public class DateJob extends AbstractJob {
     private static final Log LOG = LogFactory.getLog(DateJob.class);
 
     @Override
-    protected void doExecute(IJobContext context) {
+    public void execute(IJobContext context) {
         LOG.info("TIME: {}" + System.currentTimeMillis());
     }
 

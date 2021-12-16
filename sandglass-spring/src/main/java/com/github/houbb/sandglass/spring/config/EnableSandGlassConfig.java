@@ -1,11 +1,12 @@
 package com.github.houbb.sandglass.spring.config;
 
+import com.github.houbb.heaven.support.tuple.impl.Pair;
 import com.github.houbb.heaven.util.lang.reflect.ClassUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
-import com.github.houbb.sandglass.api.api.IJob;
-import com.github.houbb.sandglass.api.api.ITrigger;
+import com.github.houbb.sandglass.api.dto.mixed.JobAndDetailDto;
+import com.github.houbb.sandglass.api.dto.mixed.TriggerAndDetailDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
@@ -39,13 +40,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 启用时间调度配置
- *
+ * <p>
  * 1. 获取所有 bean 指定的注解的方法。构建对应的 IJob+Trigger
  * 2. 构建初始化的任务调度类
  *
@@ -63,30 +63,35 @@ public class EnableSandGlassConfig implements ImportAware,
 
     /**
      * 环境
+     *
      * @since 0.0.5
      */
     private Environment environment;
 
     /**
      * 应用上下文
+     *
      * @since 0.0.5
      */
     private ApplicationContext applicationContext;
 
     /**
      * bean 工厂
+     *
      * @since 0.0.5
      */
     private ConfigurableListableBeanFactory beanFactory;
 
     /**
      * 触发 map
+     *
      * @since 0.0.5
      */
-    private Map<ITrigger, IJob> triggerIJobMap = new HashMap<>();
+    private List<Pair<JobAndDetailDto, TriggerAndDetailDto>> triggerAndJobList = new ArrayList<>();
 
     /**
      * 调度实现
+     *
      * @since 0.0.5
      */
     private Scheduler scheduler;
@@ -167,18 +172,18 @@ public class EnableSandGlassConfig implements ImportAware,
             CronSchedule cronSchedule = method.getAnnotation(CronSchedule.class);
             PeriodSchedule periodSchedule = method.getAnnotation(PeriodSchedule.class);
 
-            if(cronSchedule != null) {
-                ITrigger cronTrigger = InnerSpringTriggerUtils.buildTrigger(bean, method, cronSchedule);
+            if (cronSchedule != null) {
+                TriggerAndDetailDto cronTrigger = InnerSpringTriggerUtils.buildTrigger(bean, method, cronSchedule);
                 boolean allowConcurrentExecute = cronSchedule.allowConcurrentExecute();
-                IJob job = InnerSpringJobUtils.buildJob(bean, method, allowConcurrentExecute);
+                JobAndDetailDto job = InnerSpringJobUtils.buildJob(beanName, bean, method, allowConcurrentExecute);
 
-                triggerIJobMap.put(cronTrigger, job);
-            } else if(periodSchedule != null) {
-                ITrigger periodTrigger = InnerSpringTriggerUtils.buildTrigger(bean, method, periodSchedule);
+                triggerAndJobList.add(Pair.of(job, cronTrigger));
+            } else if (periodSchedule != null) {
+                TriggerAndDetailDto periodTrigger = InnerSpringTriggerUtils.buildTrigger(bean, method, periodSchedule);
                 boolean allowConcurrentExecute = periodSchedule.allowConcurrentExecute();
-                IJob job = InnerSpringJobUtils.buildJob(bean, method, allowConcurrentExecute);
+                JobAndDetailDto job = InnerSpringJobUtils.buildJob(beanName, bean, method, allowConcurrentExecute);
 
-                triggerIJobMap.put(periodTrigger, job);
+                triggerAndJobList.add(Pair.of(job, periodTrigger));
             }
         }
     }
@@ -197,11 +202,12 @@ public class EnableSandGlassConfig implements ImportAware,
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         // 加载所有的调度方法
-        for(Map.Entry<ITrigger, IJob> entry : triggerIJobMap.entrySet()) {
-            ITrigger trigger = entry.getKey();
-            IJob job = entry.getValue();
+        for (Pair<JobAndDetailDto, TriggerAndDetailDto> entry : triggerAndJobList) {
+            JobAndDetailDto jobAndDetailDto = entry.getValueOne();
+            TriggerAndDetailDto triggerAndDetailDto = entry.getValueTwo();
 
-            this.scheduler.schedule(job, trigger);
+            this.scheduler.schedule(jobAndDetailDto.job(), triggerAndDetailDto.trigger(),
+                    jobAndDetailDto.jobDetailDto(), triggerAndDetailDto.triggerDetailDto());
         }
 
         // 加载完成后启动

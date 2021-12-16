@@ -53,7 +53,6 @@ public interface IScheduler {
      * @param trigger 触发器
      * @since 0.0.2
      */
-    @Deprecated
     void schedule(final IJob job,
                   final ITrigger trigger);
 
@@ -63,7 +62,6 @@ public interface IScheduler {
      * @param trigger 触发器
      * @since 0.0.2
      */
-    @Deprecated
     void schedule(final IJob job,
                   final ITrigger trigger,
                   final JobDetailDto jobDetailDto,

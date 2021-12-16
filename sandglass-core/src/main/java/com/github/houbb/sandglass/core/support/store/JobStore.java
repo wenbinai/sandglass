@@ -2,10 +2,8 @@ package com.github.houbb.sandglass.core.support.store;
 
 import com.github.houbb.heaven.annotation.NotThreadSafe;
 import com.github.houbb.sandglass.api.api.IJob;
-import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 import com.github.houbb.sandglass.api.support.store.IJobStore;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
