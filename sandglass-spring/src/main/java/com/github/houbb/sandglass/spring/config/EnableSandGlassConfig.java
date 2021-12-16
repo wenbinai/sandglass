@@ -112,6 +112,9 @@ public class EnableSandGlassConfig implements ImportAware,
         IJobTriggerStoreListener jobTriggerStoreListener = beanFactory.getBean(enableSandGlassAttributes.getString("jobTriggerStoreListener"), IJobTriggerStoreListener.class);
         IOutOfDateStrategy outOfDateStrategy = beanFactory.getBean(enableSandGlassAttributes.getString("outOfDateStrategy"), IOutOfDateStrategy.class);
         ITaskLogStore taskLogStore = beanFactory.getBean(enableSandGlassAttributes.getString("taskLogStore"), ITaskLogStore.class);
+        IJobDetailStore jobDetailStore = beanFactory.getBean(enableSandGlassAttributes.getString("jobDetailStore"), IJobDetailStore.class);
+        ITriggerDetailStore triggerDetailStore = beanFactory.getBean(enableSandGlassAttributes.getString("triggerDetailStore"), ITriggerDetailStore.class);
+
 
         SandGlassBs sandGlassBs = SandGlassBs.newInstance()
                 .workPoolSize(workPoolSize)
@@ -125,7 +128,9 @@ public class EnableSandGlassConfig implements ImportAware,
                 .jobTriggerStoreListener(jobTriggerStoreListener)
                 .jobListener(jobListener)
                 .outOfDateStrategy(outOfDateStrategy)
-                .taskLogStore(taskLogStore);
+                .taskLogStore(taskLogStore)
+                .jobDetailStore(jobDetailStore)
+                .triggerDetailStore(triggerDetailStore);
 
         sandGlassBs.init();
 

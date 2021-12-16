@@ -93,4 +93,26 @@ public class SandGlassComponentScan {
     public ITaskLogStore taskLogStore() {
         return new TaskLogStore();
     }
+
+    /**
+     * 任务详情持久化
+     * @return 过期策略
+     * @since 0.0.8
+     */
+    @Bean("sandglass-jobDetailStore")
+    public IJobDetailStore jobDetailStore() {
+        return  new JobDetailStore();
+    }
+
+
+    /**
+     * 任务详情持久化
+     * @return 过期策略
+     * @since 0.0.8
+     */
+    @Bean("sandglass-triggerDetailStore")
+    public ITriggerDetailStore triggerDetailStore() {
+        return  new TriggerDetailStore();
+    }
+
 }

@@ -43,6 +43,22 @@ public @interface EnableSandGlass {
     String triggerStore() default "sandglass-triggerStore";
 
     /**
+     * 任务持久化实体 bean
+     * @return 任务持久化
+     * @since 1.0.0
+     * @see com.github.houbb.sandglass.api.support.store.IJobStore 接口
+     */
+    String jobDetailStore() default "sandglass-jobDetailStore";
+
+    /**
+     * 触发器持久化 bean
+     * @return bean
+     * @since 1.0.0
+     * @see com.github.houbb.sandglass.api.support.store.ITriggerStore 接口
+     */
+    String triggerDetailStore() default "sandglass-triggerDetailStore";
+
+    /**
      * 任务触发器持久化类
      * @return bean
      * @since 0.0.5
