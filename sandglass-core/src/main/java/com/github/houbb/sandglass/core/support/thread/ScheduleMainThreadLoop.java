@@ -26,6 +26,7 @@ import com.github.houbb.sandglass.core.support.listener.JobListener;
 import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
 import com.github.houbb.sandglass.core.support.listener.TriggerListener;
 import com.github.houbb.sandglass.core.support.outOfDate.OutOfDateStrategies;
+import com.github.houbb.sandglass.core.support.store.JobTriggerStoreContext;
 import com.github.houbb.sandglass.core.util.InnerJobTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
@@ -124,6 +125,12 @@ public class ScheduleMainThreadLoop extends Thread {
      */
     protected ITaskLogStore taskLogStore;
 
+    /**
+     * 任务触发器持久化监听类
+     * @since 1.1.0
+     */
+    private IJobTriggerStoreListener jobTriggerStoreListener;
+
     public ScheduleMainThreadLoop startFlag(boolean startFlag) {
         this.startFlag = startFlag;
         return this;
@@ -210,6 +217,13 @@ public class ScheduleMainThreadLoop extends Thread {
         return this;
     }
 
+    public ScheduleMainThreadLoop jobTriggerStoreListener(IJobTriggerStoreListener jobTriggerStoreListener) {
+        ArgUtil.notNull(jobTriggerStoreListener, "jobTriggerStoreListener");
+
+        this.jobTriggerStoreListener = jobTriggerStoreListener;
+        return this;
+    }
+
     @Override
     public void run() {
         this.startFlag = true;
@@ -225,7 +239,14 @@ public class ScheduleMainThreadLoop extends Thread {
                 }
 
                 //1. 如果 acquireLock 成功，从 trigger queue 中获取最新的一个
-                JobTriggerDto jobTriggerDto = this.jobTriggerStore.take();
+                // 上下文
+                IJobTriggerStoreContext jobTriggerStoreContext = JobTriggerStoreContext.newInstance()
+                        .listener(jobTriggerStoreListener)
+                        .timer(timer)
+                        .triggerDetailStore(triggerDetailStore)
+                        .jobDetailStore(jobDetailStore);
+
+                JobTriggerDto jobTriggerDto = this.jobTriggerStore.take(jobTriggerStoreContext);
                 if(jobTriggerDto == null) {
                     LOG.info("jobTriggerDto 信息为空");
                     this.triggerLock.unlock(triggerLockKey);
@@ -266,7 +287,8 @@ public class ScheduleMainThreadLoop extends Thread {
                         .taskLogDto(taskLogDto)
                         .taskLogStore(taskLogStore)
                         .jobDetailStore(jobDetailStore)
-                        .triggerDetailStore(triggerDetailStore);
+                        .triggerDetailStore(triggerDetailStore)
+                        .jobTriggerStoreListener(jobTriggerStoreListener);
 
                 //3.2 任务并发处理的判断
                 boolean allowConcurrentExecute = jobDetailDto.allowConcurrentExecute();
@@ -325,7 +347,7 @@ public class ScheduleMainThreadLoop extends Thread {
         final long time = timer.time();
 
         TaskLogDto taskLogDto = new TaskLogDto();
-        taskLogDto.taskStatus(TaskStatusEnum.INIT);
+        taskLogDto.taskStatus(TaskStatusEnum.INIT.getCode());
         taskLogDto.jobId(jobTriggerDto.jobId());
         taskLogDto.triggerId(jobTriggerDto.triggerId());
         taskLogDto.order(jobTriggerDto.order());

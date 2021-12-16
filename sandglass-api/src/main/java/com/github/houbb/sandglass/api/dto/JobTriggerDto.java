@@ -6,7 +6,7 @@ package com.github.houbb.sandglass.api.dto;
  * @author binbin.hou
  * @since 0.0.2
  */
-public class JobTriggerDto implements Comparable<JobTriggerDto> {
+public class JobTriggerDto extends BaseDto implements Comparable<JobTriggerDto> {
 
     /**
      * 任务标识
@@ -88,7 +88,7 @@ public class JobTriggerDto implements Comparable<JobTriggerDto> {
                 ", triggerId='" + triggerId + '\'' +
                 ", nextTime=" + nextTime +
                 ", order=" + order +
-                '}';
+                "} " + super.toString();
     }
 
 }

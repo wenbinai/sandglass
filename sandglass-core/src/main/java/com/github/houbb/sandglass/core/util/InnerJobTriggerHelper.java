@@ -10,6 +10,7 @@ import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
 import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.api.scheduler.TriggerContext;
+import com.github.houbb.sandglass.core.support.store.JobTriggerStoreContext;
 import com.github.houbb.timer.api.ITimer;
 
 /**
@@ -115,7 +116,15 @@ public class InnerJobTriggerHelper {
 
         // 任务应该什么时候放入队列？
         // 真正完成的时候，还是开始处理的时候？
-        jobTriggerStore.put(newDto);
+        // 上下文
+        IJobTriggerStoreContext jobTriggerStoreContext = JobTriggerStoreContext
+                .newInstance()
+                .jobDetailStore(jobDetailStore)
+                .triggerDetailStore(triggerDetailStore)
+                .timer(timer)
+                .listener(context.jobTriggerStoreListener());
+
+        jobTriggerStore.put(newDto, jobTriggerStoreContext);
     }
 
     /**

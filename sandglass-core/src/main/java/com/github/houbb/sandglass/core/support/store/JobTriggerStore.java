@@ -33,68 +33,20 @@ public class JobTriggerStore implements IJobTriggerStore {
      */
     private final PriorityBlockingQueue<JobTriggerDto> queue;
 
-    /**
-     * 监听器
-     * @since 0.0.4
-     */
-    private IJobTriggerStoreListener listener = new JobTriggerStoreListener();
-
-    /**
-     * 时间策略
-     * @since 0.0.5
-     */
-    private ITimer timer = SystemTimer.getInstance();
-
-    /**
-     * 任务持久化
-     * @since 0.0.8
-     */
-    private IJobDetailStore jobDetailStore;
-
-    /**
-     * 触发器持久化
-     * @since 0.0.8
-     */
-    private ITriggerDetailStore triggerDetailStore;
-
     public JobTriggerStore() {
         this.queue = new PriorityBlockingQueue<>(64);
     }
 
     @Override
-    public JobTriggerStore listener(IJobTriggerStoreListener listener) {
-        this.listener = listener;
-        return this;
-    }
-
-    @Override
-    public JobTriggerStore timer(ITimer timer) {
-        this.timer = timer;
-        return this;
-    }
-
-    @Override
-    public JobTriggerStore jobDetailStore(IJobDetailStore jobDetailStore) {
-        this.jobDetailStore = jobDetailStore;
-        return this;
-    }
-
-    @Override
-    public JobTriggerStore triggerDetailStore(ITriggerDetailStore triggerDetailStore) {
-        this.triggerDetailStore = triggerDetailStore;
-        return this;
-    }
-
-    @Override
-    public IJobTriggerStore put(JobTriggerDto dto) {
+    public IJobTriggerStore put(JobTriggerDto dto, IJobTriggerStoreContext context) {
         queue.put(dto);
 
-        listener.put(dto);
+        context.listener().put(dto);
         return this;
     }
 
     @Override
-    public JobTriggerDto take() {
+    public JobTriggerDto take(IJobTriggerStoreContext context) {
         try {
             // 这里应该首先得到第一个，查看执行时间是否为将要执行的，如果不是，就则返回 null。
             // 原因：避免获取第一个，loop 循环等待，导致后续加入的快要执行的被阻塞。
@@ -102,15 +54,15 @@ public class JobTriggerStore implements IJobTriggerStore {
 
             //1.1 如果是暂停的任务，继续执行
             //1.2 如果还未到等待时间，继续执行
-            while (isPausedJobOrTrigger(peekDto)
-                    || !isAroundTheLoopTime(peekDto)) {
+            while (isPausedJobOrTrigger(peekDto, context.jobDetailStore(), context.triggerDetailStore())
+                    || !isAroundTheLoopTime(peekDto, context.timer())) {
                 TimeUnit.MILLISECONDS.sleep(1);
                 peekDto = queue.peek();
             }
 
             JobTriggerDto dto = queue.take();
 
-            listener.take(dto);
+            context.listener().take(dto);
             return dto;
         } catch (InterruptedException e) {
             throw new SandGlassException(e);
@@ -121,13 +73,14 @@ public class JobTriggerStore implements IJobTriggerStore {
      * 判断是否接近 loop 时间
      *
      * 原因：避免获取的头一个元素 loop 等待时间过长，后续新加入的元素错过执行的最佳时机。
-     * ps: 这个策略可以放在 {@link IJobTriggerStore#take()} 中判断，也可以放在这里。为保证 store 逻辑的简单，这里做统一处理。
+     * ps: 这个策略可以放在 {@link IJobTriggerStore#take(IJobTriggerStoreContext)} ()} 中判断，也可以放在这里。为保证 store 逻辑的简单，这里做统一处理。
      *
      * @param jobTriggerDto 元素
+     * @param timer 时间类
      * @return 是否
      * @since 0.0.5
      */
-    private boolean isAroundTheLoopTime(JobTriggerDto jobTriggerDto) {
+    private boolean isAroundTheLoopTime(JobTriggerDto jobTriggerDto, final ITimer timer) {
         if(jobTriggerDto == null) {
             return false;
         }
@@ -146,9 +99,13 @@ public class JobTriggerStore implements IJobTriggerStore {
      * 1. 如果是，则从队列中移除当前元素。
      *
      * @param jobTriggerDto 对象
+     * @param jobDetailStore 任务详情持久化
+     * @param triggerDetailStore 触发器详情持久化
      * @return 结果
      */
-    private boolean isPausedJobOrTrigger(JobTriggerDto jobTriggerDto) {
+    private boolean isPausedJobOrTrigger(JobTriggerDto jobTriggerDto,
+                                         IJobDetailStore jobDetailStore,
+                                         ITriggerDetailStore triggerDetailStore) {
         if(jobTriggerDto == null) {
             return false;
         }

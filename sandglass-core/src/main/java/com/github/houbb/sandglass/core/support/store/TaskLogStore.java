@@ -19,14 +19,15 @@ public class TaskLogStore implements ITaskLogStore {
 
     /**
      * 固定大小的列表
+     *
+     * ps: 避免对内存造成较大压力
+     * @since 0.0.9
      */
     private static final List<TaskLogDto> LIST = new FixedLinkedList<>(10);
 
     @Override
     public synchronized ITaskLogStore add(TaskLogDto dto) {
         LIST.add(dto);
-
-        LOG.debug("任务日志队列信息 {}", list());
         return this;
     }
 

@@ -93,7 +93,7 @@ public class WorkerThreadPool implements IWorkerThreadPool {
 
                         // 操作日志
                         taskLogDto.executeEndTime(timer.time());
-                        taskLogDto.taskStatus(TaskStatusEnum.SUCCESS);
+                        taskLogDto.taskStatus(TaskStatusEnum.SUCCESS.getCode());
                         taskLogStore.add(taskLogDto);
                     } catch (Exception exception) {
                         // 任务异常
@@ -107,7 +107,7 @@ public class WorkerThreadPool implements IWorkerThreadPool {
 
                         // 操作日志
                         taskLogDto.executeEndTime(timer.time());
-                        taskLogDto.taskStatus(TaskStatusEnum.FAILED);
+                        taskLogDto.taskStatus(TaskStatusEnum.FAILED.getCode());
                         taskLogStore.add(taskLogDto);
 
                         // 异常执行对应的 handler

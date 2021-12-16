@@ -8,7 +8,7 @@ import com.github.houbb.sandglass.api.constant.TaskStatusEnum;
  * @author binbin.hou
  * @since 0.0.2
  */
-public class TaskLogDto {
+public class TaskLogDto extends BaseDto {
 
     /**
      * 任务标识
@@ -31,8 +31,9 @@ public class TaskLogDto {
     /**
      * 任务执行状态
      * @since 0.0.9
+     * @see TaskStatusEnum 任务状态枚举
      */
-    private TaskStatusEnum taskStatus;
+    private String taskStatus;
 
     /**
      * 触发时间
@@ -94,11 +95,11 @@ public class TaskLogDto {
         return this;
     }
 
-    public TaskStatusEnum taskStatus() {
+    public String taskStatus() {
         return taskStatus;
     }
 
-    public TaskLogDto taskStatus(TaskStatusEnum taskStatus) {
+    public TaskLogDto taskStatus(String taskStatus) {
         this.taskStatus = taskStatus;
         return this;
     }

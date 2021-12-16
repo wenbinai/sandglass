@@ -51,55 +51,66 @@ public interface IScheduler {
      * 任务调度
      * @param job 任务
      * @param trigger 触发器
+     * @param context 上下文
      * @since 0.0.2
      */
     void schedule(final IJob job,
-                  final ITrigger trigger);
+                  final ITrigger trigger,
+                  final ISchedulerContext context);
 
     /**
      * 任务调度
      * @param job 任务
      * @param trigger 触发器
+     * @param jobDetailDto 任务详情
+     * @param triggerDetailDto 触发器详情
+     * @param context 上下文
      * @since 0.0.2
      */
     void schedule(final IJob job,
                   final ITrigger trigger,
                   final JobDetailDto jobDetailDto,
-                  final TriggerDetailDto triggerDetailDto);
+                  final TriggerDetailDto triggerDetailDto,
+                  final ISchedulerContext context);
 
     /**
      * 执行任务调度
+     * @param context 上下文
      * @since 0.0.2
      */
-    void start();
+    void start(final ISchedulerContext context);
 
     /**
      * 执行任务调度
+     * @param context 上下文
      * @since 0.0.2
      */
-    void shutdown();
+    void shutdown(final ISchedulerContext context);
 
     /**
      * 取消调度
      * @param jobId 任务标识
      * @param triggerId 触发器标识
+     * @param context 上下文
      */
-    void unSchedule(String jobId, String triggerId);
+    void unSchedule(String jobId, String triggerId, final ISchedulerContext context);
 
     /**
      * 暂停
      * @param jobId 任务
      * @param triggerId 触发器
+     * @param context 上下文
      * @since 0.0.4
      */
-    void pause(String jobId, String triggerId);
+    void pause(String jobId, String triggerId, final ISchedulerContext context);
 
     /**
      * 恢复
      * @param jobId 任务
      * @param triggerId 触发器
+     * @param context 上下文
      * @since 0.0.4
      */
-    void resume(String jobId, String triggerId);
+    void resume(String jobId, String triggerId, final ISchedulerContext context);
 
 }

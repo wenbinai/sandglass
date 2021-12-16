@@ -5,6 +5,7 @@ import com.github.houbb.heaven.util.lang.reflect.ClassUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
+import com.github.houbb.sandglass.api.api.IScheduler;
 import com.github.houbb.sandglass.api.dto.mixed.JobAndDetailDto;
 import com.github.houbb.sandglass.api.dto.mixed.TriggerAndDetailDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
@@ -12,7 +13,7 @@ import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
 import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
 import com.github.houbb.sandglass.api.support.store.*;
-import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
+import com.github.houbb.sandglass.core.api.scheduler.SchedulerContext;
 import com.github.houbb.sandglass.core.bs.SandGlassBs;
 import com.github.houbb.sandglass.spring.annotation.CronSchedule;
 import com.github.houbb.sandglass.spring.annotation.EnableSandGlass;
@@ -94,11 +95,17 @@ public class EnableSandGlassConfig implements ImportAware,
      *
      * @since 0.0.5
      */
-    private Scheduler scheduler;
+    private IScheduler scheduler;
+
+    /**
+     * 任务调度上下文
+     * @since 1.1.0
+     */
+    private SchedulerContext schedulerContext;
 
     @Bean(name = "sandglass-scheduler")
     @Order(Ordered.LOWEST_PRECEDENCE)
-    public Scheduler scheduler() {
+    public IScheduler scheduler() {
         // 初始化 schedule
         int workPoolSize = enableSandGlassAttributes.<Integer>getNumber("workPoolSize");
         IJobStore jobStore = beanFactory.getBean(enableSandGlassAttributes.getString("jobStore"), IJobStore.class);
@@ -114,7 +121,6 @@ public class EnableSandGlassConfig implements ImportAware,
         ITaskLogStore taskLogStore = beanFactory.getBean(enableSandGlassAttributes.getString("taskLogStore"), ITaskLogStore.class);
         IJobDetailStore jobDetailStore = beanFactory.getBean(enableSandGlassAttributes.getString("jobDetailStore"), IJobDetailStore.class);
         ITriggerDetailStore triggerDetailStore = beanFactory.getBean(enableSandGlassAttributes.getString("triggerDetailStore"), ITriggerDetailStore.class);
-
 
         SandGlassBs sandGlassBs = SandGlassBs.newInstance()
                 .workPoolSize(workPoolSize)
@@ -136,6 +142,10 @@ public class EnableSandGlassConfig implements ImportAware,
 
         // 获取 scheduler
         this.scheduler = sandGlassBs.scheduler();
+
+        //调度类
+        this.schedulerContext = sandGlassBs.schedulerContext();
+
         return this.scheduler;
     }
 
@@ -212,11 +222,12 @@ public class EnableSandGlassConfig implements ImportAware,
             TriggerAndDetailDto triggerAndDetailDto = entry.getValueTwo();
 
             this.scheduler.schedule(jobAndDetailDto.job(), triggerAndDetailDto.trigger(),
-                    jobAndDetailDto.jobDetailDto(), triggerAndDetailDto.triggerDetailDto());
+                    jobAndDetailDto.jobDetailDto(), triggerAndDetailDto.triggerDetailDto(),
+                    schedulerContext);
         }
 
         // 加载完成后启动
-        this.scheduler.start();
+        this.scheduler.start(schedulerContext);
     }
 
     @Override

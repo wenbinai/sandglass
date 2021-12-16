@@ -11,19 +11,22 @@ import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 import com.github.houbb.sandglass.api.dto.JobDetailDto;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
-import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
-import com.github.houbb.sandglass.api.support.store.*;
+import com.github.houbb.sandglass.api.support.store.IJobDetailStore;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreContext;
+import com.github.houbb.sandglass.api.support.store.ITriggerDetailStore;
 import com.github.houbb.sandglass.core.exception.SandGlassException;
-import com.github.houbb.sandglass.core.support.store.*;
+import com.github.houbb.sandglass.core.support.store.JobTriggerStoreContext;
 import com.github.houbb.sandglass.core.support.thread.NamedThreadFactory;
-import com.github.houbb.sandglass.core.support.thread.ScheduleMainThreadLoop;
 import com.github.houbb.sandglass.core.support.trigger.CronTrigger;
 import com.github.houbb.sandglass.core.support.trigger.PeriodTrigger;
 import com.github.houbb.sandglass.core.util.InnerJobTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
-import com.github.houbb.timer.core.timer.SystemTimer;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 1. 异常处理
@@ -48,121 +51,14 @@ public class Scheduler implements IScheduler {
      */
     private final ExecutorService executorService;
 
-    /**
-     * 调度主线程
-     * @since 0.0.2
-     */
-    private ScheduleMainThreadLoop scheduleMainThreadLoop;
-
-    /**
-     * 任务管理类
-     * @since 0.0.2
-     */
-    private IJobStore jobStore;
-
-    /**
-     * 触发器管理类
-     * @since 0.0.2
-     */
-    private ITriggerStore triggerStore;
-
-    /**
-     * 时钟
-     * @since 0.0.2
-     */
-    protected ITimer timer;
-
-    /**
-     * 任务调度队列
-     * @since 0.0.2
-     */
-    protected IJobTriggerStore jobTriggerStore;
-
-    /**
-     * 任务调度监听类
-     * @since 0.0.4
-     */
-    private IScheduleListener scheduleListener;
-
-    /**
-     * 任务详情持久化类
-     * @since 1.0.0
-     */
-    private IJobDetailStore jobDetailStore;
-
-    /**
-     * 触发详情持久化类
-     * @since 1.0.0
-     */
-    private ITriggerDetailStore triggerDetailStore;
-
     public Scheduler() {
         executorService = new ThreadPoolExecutor(1, 1,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(64), new NamedThreadFactory("SG-SCHEDULER"));
     }
 
-    public Scheduler scheduleMainThreadLoop(ScheduleMainThreadLoop scheduleMainThreadLoop) {
-        ArgUtil.notNull(scheduleMainThreadLoop, "scheduleMainThreadLoop");
-
-        this.scheduleMainThreadLoop = scheduleMainThreadLoop;
-        return this;
-    }
-
-    public Scheduler jobStore(IJobStore jobStore) {
-        ArgUtil.notNull(jobStore, "jobStore");
-
-        this.jobStore = jobStore;
-        return this;
-    }
-
-    public Scheduler triggerStore(ITriggerStore triggerStore) {
-        ArgUtil.notNull(triggerStore, "triggerStore");
-
-        this.triggerStore = triggerStore;
-        return this;
-    }
-
-    public Scheduler jobDetailStore(IJobDetailStore jobDetailStore) {
-        ArgUtil.notNull(jobDetailStore, "jobDetailStore");
-
-        this.jobDetailStore = jobDetailStore;
-        return this;
-    }
-
-    public Scheduler triggerDetailStore(ITriggerDetailStore triggerDetailStore) {
-        ArgUtil.notNull(triggerDetailStore, "triggerDetailStore");
-
-        this.triggerDetailStore = triggerDetailStore;
-        return this;
-    }
-
-    public Scheduler timer(ITimer timer) {
-        ArgUtil.notNull(timer, "timer");
-
-        this.timer = timer;
-        return this;
-    }
-
-    public Scheduler jobTriggerStore(IJobTriggerStore jobTriggerStore) {
-        ArgUtil.notNull(jobTriggerStore, "jobTriggerStore");
-
-        this.jobTriggerStore = jobTriggerStore;
-        return this;
-    }
-
-    public Scheduler scheduleListener(IScheduleListener scheduleListener) {
-        ArgUtil.notNull(scheduleListener, "scheduleListener");
-
-        this.scheduleListener = scheduleListener;
-
-        return this;
-    }
-
     @Override
-    public synchronized void start() {
-        ArgUtil.notNull(scheduleMainThreadLoop, "scheduleMainThreadLoop");
-
+    public synchronized void start(final ISchedulerContext context) {
         if(startFlag) {
             return;
         }
@@ -170,25 +66,22 @@ public class Scheduler implements IScheduler {
         this.startFlag = true;
 
         // 异步执行
-        executorService.submit(scheduleMainThreadLoop);
-
-        scheduleListener.start();
+        executorService.submit(context.mainThreadLoop());
+        context.scheduleListener().start();
     }
 
     @Override
-    public void shutdown() {
+    public void shutdown(final ISchedulerContext context) {
         this.startFlag = false;
-        scheduleMainThreadLoop.startFlag(startFlag);
-
-        scheduleListener.shutdown();
+        context.scheduleListener().shutdown();
     }
 
     @Override
-    public void schedule(IJob job, ITrigger trigger) {
+    public void schedule(IJob job, ITrigger trigger, final ISchedulerContext context) {
         JobDetailDto jobDetailDto = buildJobDetail(job);
         TriggerDetailDto triggerDetailDto = buildTriggerDetailDto(trigger);
 
-        this.addJobAndTrigger(job, trigger, jobDetailDto, triggerDetailDto);
+        this.addJobAndTrigger(job, trigger, jobDetailDto, triggerDetailDto, context);
     }
 
     private TriggerDetailDto buildTriggerDetailDto(ITrigger trigger) {
@@ -228,10 +121,12 @@ public class Scheduler implements IScheduler {
 
     @Override
     public void schedule(IJob job, ITrigger trigger,
-                         JobDetailDto jobDetailDto, TriggerDetailDto triggerDetailDto) {
-        this.addJobAndTrigger(job, trigger, jobDetailDto, triggerDetailDto);
+                         JobDetailDto jobDetailDto,
+                         TriggerDetailDto triggerDetailDto,
+                         final ISchedulerContext context) {
+        this.addJobAndTrigger(job, trigger, jobDetailDto, triggerDetailDto, context);
 
-        scheduleListener.schedule(jobDetailDto, triggerDetailDto);
+        context.scheduleListener().schedule(jobDetailDto, triggerDetailDto);
     }
 
     /**
@@ -240,22 +135,29 @@ public class Scheduler implements IScheduler {
      * @param trigger 触发器
      * @param jobDetailDto 任务详情
      * @param triggerDetailDto 触发器详情
+     * @param schedulerContext 上下文
      * @since 0.0.4
      */
-    private void addJobAndTrigger(IJob job, ITrigger trigger,
+    private void addJobAndTrigger(IJob job,
+                                  ITrigger trigger,
                                   JobDetailDto jobDetailDto,
-                                  TriggerDetailDto triggerDetailDto) {
+                                  TriggerDetailDto triggerDetailDto,
+                                  final ISchedulerContext schedulerContext) {
         this.paramCheck(job, trigger);
         paramCheck(jobDetailDto, triggerDetailDto);
 
         jobDetailDto.status(JobStatusEnum.WAIT_TRIGGER.getCode());
         triggerDetailDto.status(TriggerStatusEnum.WAIT_TRIGGER.getCode());
 
-        this.jobStore.add(jobDetailDto.jobId(), job);
-        this.triggerStore.add(triggerDetailDto.triggerId(), trigger);
+        final ITimer timer = schedulerContext.timer();
+        final IJobDetailStore jobDetailStore = schedulerContext.jobDetailStore();
+        final ITriggerDetailStore triggerDetailStore = schedulerContext.triggerDetailStore();
+        final IJobTriggerStore jobTriggerStore = schedulerContext.jobTriggerStore();
 
-        this.jobDetailStore.add(jobDetailDto);
-        this.triggerDetailStore.add(triggerDetailDto);
+        schedulerContext.jobStore().add(jobDetailDto.jobId(), job);
+        schedulerContext.triggerStore().add(triggerDetailDto.triggerId(), trigger);
+        jobDetailStore.add(jobDetailDto);
+        triggerDetailStore.add(triggerDetailDto);
 
         // 结束时间判断
         if(InnerJobTriggerHelper.hasMeetEndTime(timer, triggerDetailDto)) {
@@ -263,48 +165,56 @@ public class Scheduler implements IScheduler {
         }
 
         // 把 trigger.nextTime + jobId triggerId 放入到调度队列中
-        ITriggerContext context = TriggerContext.newInstance()
+        ITriggerContext triggerContext = TriggerContext.newInstance()
                 .timer(timer);
-        JobTriggerDto triggerDto = InnerJobTriggerHelper.buildJobTriggerDto(jobDetailDto, trigger, triggerDetailDto, context);
-        jobTriggerStore.put(triggerDto);
+        JobTriggerDto triggerDto = InnerJobTriggerHelper.buildJobTriggerDto(jobDetailDto, trigger, triggerDetailDto, triggerContext);
+
+        // 上下文
+        IJobTriggerStoreContext jobTriggerStoreContext = JobTriggerStoreContext
+                .newInstance()
+                .jobDetailStore(jobDetailStore)
+                .triggerDetailStore(triggerDetailStore)
+                .timer(timer)
+                .listener(schedulerContext.jobTriggerStoreListener());
+        jobTriggerStore.put(triggerDto, jobTriggerStoreContext);
     }
 
 
     @Override
-    public void unSchedule(String jobId, String triggerId) {
+    public void unSchedule(String jobId, String triggerId, final ISchedulerContext schedulerContext) {
         paramCheck(jobId, triggerId);
 
-        JobDetailDto jobDetailDto = jobDetailStore.detail(jobId);
-        TriggerDetailDto triggerDetailDto = triggerDetailStore.detail(triggerId);
+        JobDetailDto jobDetailDto = schedulerContext.jobDetailStore().detail(jobId);
+        TriggerDetailDto triggerDetailDto = schedulerContext.triggerDetailStore().detail(triggerId);
 
-        scheduleListener.unSchedule(jobDetailDto, triggerDetailDto);
+        schedulerContext.scheduleListener().unSchedule(jobDetailDto, triggerDetailDto);
     }
 
     @Override
-    public void pause(String jobId, String triggerId) {
+    public void pause(String jobId, String triggerId, final ISchedulerContext schedulerContext) {
         paramCheck(jobId, triggerId);
 
-        JobDetailDto job = jobDetailStore.pause(jobId);
-        TriggerDetailDto trigger = triggerDetailStore.pause(triggerId);
+        JobDetailDto job = schedulerContext.jobDetailStore().pause(jobId);
+        TriggerDetailDto trigger = schedulerContext.triggerDetailStore().pause(triggerId);
 
-        scheduleListener.pause(job, trigger);
+        schedulerContext.scheduleListener().pause(job, trigger);
     }
 
     @Override
-    public void resume(String jobId, String triggerId) {
+    public void resume(String jobId, String triggerId, final ISchedulerContext schedulerContext) {
         paramCheck(jobId, triggerId);
 
-        JobDetailDto jobDetailDto = jobDetailStore.resume(jobId);
-        TriggerDetailDto triggerDetailDto = triggerDetailStore.resume(triggerId);
+        JobDetailDto jobDetailDto = schedulerContext.jobDetailStore().resume(jobId);
+        TriggerDetailDto triggerDetailDto = schedulerContext.triggerDetailStore().resume(triggerId);
 
-        IJob job = jobStore.remove(jobId);
-        ITrigger trigger = triggerStore.remove(triggerId);
+        IJob job = schedulerContext.jobStore().remove(jobId);
+        ITrigger trigger = schedulerContext.triggerStore().remove(triggerId);
 
         // 重新放入任务
-        this.addJobAndTrigger(job, trigger, jobDetailDto, triggerDetailDto);
+        this.addJobAndTrigger(job, trigger, jobDetailDto, triggerDetailDto, schedulerContext);
 
         // 监听器
-        scheduleListener.resume(jobDetailDto, triggerDetailDto);
+        schedulerContext.scheduleListener().resume(jobDetailDto, triggerDetailDto);
     }
 
 

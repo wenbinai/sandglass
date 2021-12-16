@@ -79,6 +79,12 @@ public class WorkerThreadPoolContext implements IWorkerThreadPoolContext {
      */
     private IJobDetailStore jobDetailStore;
 
+    /**
+     * 任务触发器持久化监听器
+     * @since 1.1.0
+     */
+    private IJobTriggerStoreListener jobTriggerStoreListener;
+
     public static WorkerThreadPoolContext newInstance() {
         return new WorkerThreadPoolContext();
     }
@@ -190,6 +196,16 @@ public class WorkerThreadPoolContext implements IWorkerThreadPoolContext {
 
     public WorkerThreadPoolContext jobDetailStore(IJobDetailStore jobDetailStore) {
         this.jobDetailStore = jobDetailStore;
+        return this;
+    }
+
+    @Override
+    public IJobTriggerStoreListener jobTriggerStoreListener() {
+        return jobTriggerStoreListener;
+    }
+
+    public WorkerThreadPoolContext jobTriggerStoreListener(IJobTriggerStoreListener jobTriggerStoreListener) {
+        this.jobTriggerStoreListener = jobTriggerStoreListener;
         return this;
     }
 }

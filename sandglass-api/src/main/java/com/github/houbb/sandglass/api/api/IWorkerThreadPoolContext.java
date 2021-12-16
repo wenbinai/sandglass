@@ -91,4 +91,11 @@ public interface IWorkerThreadPoolContext {
      */
     IJobDetailStore jobDetailStore();
 
+    /**
+     * 任务触发器持久化监听类
+     * @return 监听类
+     * @since 1.1.0
+     */
+    IJobTriggerStoreListener jobTriggerStoreListener();
+
 }

@@ -10,6 +10,7 @@ import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
 import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
 import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
+import com.github.houbb.sandglass.core.api.scheduler.SchedulerContext;
 import com.github.houbb.sandglass.core.support.listener.JobListener;
 import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
 import com.github.houbb.sandglass.core.support.listener.TriggerListener;
@@ -102,7 +103,13 @@ public final class SandGlassBs {
     /**
      * 任务调度实现类
      */
-    private Scheduler scheduler = new Scheduler();
+    private IScheduler scheduler = new Scheduler();
+
+    /**
+     * 任务调度上下文
+     * @since 1.1.0
+     */
+    private SchedulerContext schedulerContext = new SchedulerContext();
 
     /**
      * 执行任务过期策略
@@ -226,6 +233,22 @@ public final class SandGlassBs {
         return this;
     }
 
+    public SandGlassBs scheduler(Scheduler scheduler) {
+        ArgUtil.notNull(scheduler, "scheduler");
+
+        this.scheduler = scheduler;
+
+        return this;
+    }
+
+    public IScheduler scheduler() {
+        return scheduler;
+    }
+
+    public SchedulerContext schedulerContext() {
+        return schedulerContext;
+    }
+
     /**
      * 线程启动
      * @return this
@@ -235,7 +258,7 @@ public final class SandGlassBs {
         this.init();
 
         // 执行
-        this.scheduler.start();
+        this.scheduler.start(schedulerContext);
 
         return this;
     }
@@ -245,11 +268,6 @@ public final class SandGlassBs {
      * @return 初始化
      */
     public SandGlassBs init() {
-        this.jobTriggerStore.listener(this.jobTriggerStoreListener);
-        this.jobTriggerStore.timer(this.timer);
-        this.jobTriggerStore.jobDetailStore(this.jobDetailStore);
-        this.jobTriggerStore.triggerDetailStore(this.triggerDetailStore);
-
         //调度类主线程
         IWorkerThreadPool workerThreadPool = new WorkerThreadPool(workPoolSize);
         ScheduleMainThreadLoop scheduleMainThreadLoop = new ScheduleMainThreadLoop();
@@ -268,34 +286,21 @@ public final class SandGlassBs {
                 .jobStore(jobStore)
                 .triggerStore(triggerStore)
                 .timer(timer)
+                .jobTriggerStoreListener(jobTriggerStoreListener);
                 ;
 
         //调度类
-        scheduler.jobDetailStore(jobDetailStore)
+        schedulerContext.jobDetailStore(jobDetailStore)
                 .triggerDetailStore(triggerDetailStore)
                 .jobStore(jobStore)
                 .triggerStore(triggerStore)
                 .jobTriggerStore(jobTriggerStore)
                 .timer(timer)
                 .scheduleListener(scheduleListener)
-                .scheduleMainThreadLoop(scheduleMainThreadLoop);
+                .jobTriggerStoreListener(jobTriggerStoreListener)
+                .mainThreadLoop(scheduleMainThreadLoop);
 
         return this;
-    }
-
-    public SandGlassBs setScheduler(Scheduler scheduler) {
-        this.scheduler = scheduler;
-
-        return this;
-    }
-
-    /**
-     * 获取调度实现类
-     * @return 调度实现类
-     * @since 0.0.4
-     */
-    public Scheduler scheduler() {
-        return scheduler;
     }
 
     /**
@@ -308,7 +313,7 @@ public final class SandGlassBs {
     public SandGlassBs schedule(final IJob job, final ITrigger trigger) {
         ArgUtil.notNull(scheduler, "scheduler");
 
-        this.scheduler.schedule(job, trigger);
+        this.scheduler.schedule(job, trigger, schedulerContext);
 
         return this;
     }
