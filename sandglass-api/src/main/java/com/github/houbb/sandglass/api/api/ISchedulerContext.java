@@ -45,19 +45,19 @@ import com.github.houbb.timer.api.ITimer;
 public interface ISchedulerContext {
 
     /**
-     * 调度主线程
+     * @return 调度主线程
      * @since 0.0.2
      */
     Runnable mainThreadLoop();
 
     /**
-     * 任务管理类
+     * @return 任务管理类
      * @since 0.0.2
      */
     IJobStore jobStore();
 
     /**
-     * 触发器管理类
+     * @return 触发器管理类
      * @since 0.0.2
      */
     ITriggerStore triggerStore();
@@ -65,60 +65,66 @@ public interface ISchedulerContext {
     /**
      * 时钟
      * @since 0.0.2
+     * @return 时钟
      */
     ITimer timer();
 
     /**
      * 任务调度队列
      * @since 0.0.2
+     * @return 持久化类
      */
     IJobTriggerStore jobTriggerStore();
 
     /**
      * 任务调度监听类
      * @since 0.0.4
+     * @return 监听类
      */
     IScheduleListener scheduleListener();
 
     /**
      * 任务详情持久化类
      * @since 1.0.0
+     * @return 持久化类
      */
     IJobDetailStore jobDetailStore();
 
     /**
      * 触发详情持久化类
      * @since 1.0.0
+     * @return 持久化类
      */
     ITriggerDetailStore triggerDetailStore();
 
     /**
      * 任务触发器持久化监听器
      * @since 1.1.0
+     * @return 监听器
      */
     IJobTriggerStoreListener jobTriggerStoreListener();
 
     /**
-     * 应用名称
+     * @return 应用名称
      * @since 1.2.0
      */
     String appName();
 
     /**
-     * 环境名称
+     * @return 环境名称
      * @since 1.2.0
      */
     String envName();
 
     /**
-     * 机器标识
+     * @return 机器标识
      * @since 1.2.0
      */
     String machineIp();
 
     /**
-     * 机器端口
-     * @return 1.3.0
+     * @return 机器端口
+     * @since 1.3.0
      */
     int machinePort();
 
