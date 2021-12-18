@@ -188,4 +188,23 @@ public class TriggerDetailDto extends BaseDto {
         this.fixedRate = fixedRate;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "TriggerDetailDto{" +
+                "triggerId='" + triggerId + '\'' +
+                ", status='" + status + '\'' +
+                ", remark='" + remark + '\'' +
+                ", triggerType='" + triggerType + '\'' +
+                ", triggerOrder=" + triggerOrder +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", cron='" + cron + '\'' +
+                ", triggerPeriod=" + triggerPeriod +
+                ", initialDelay=" + initialDelay +
+                ", timeUint=" + timeUint +
+                ", fixedRate=" + fixedRate +
+                "} " + super.toString();
+    }
+
 }

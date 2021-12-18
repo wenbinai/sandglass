@@ -208,4 +208,23 @@ public class WorkerThreadPoolContext implements IWorkerThreadPoolContext {
         this.jobTriggerStoreListener = jobTriggerStoreListener;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "WorkerThreadPoolContext{" +
+                "triggerContext=" + triggerContext +
+                ", jobTriggerStore=" + jobTriggerStore +
+                ", jobStore=" + jobStore +
+                ", triggerStore=" + triggerStore +
+                ", timer=" + timer +
+                ", preJobTriggerDto=" + preJobTriggerDto +
+                ", jobListener=" + jobListener +
+                ", taskLogDto=" + taskLogDto +
+                ", taskLogStore=" + taskLogStore +
+                ", triggerDetailStore=" + triggerDetailStore +
+                ", jobDetailStore=" + jobDetailStore +
+                ", jobTriggerStoreListener=" + jobTriggerStoreListener +
+                '}';
+    }
+
 }

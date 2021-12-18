@@ -149,6 +149,14 @@ public class Scheduler implements IScheduler {
         jobDetailDto.status(JobStatusEnum.WAIT_TRIGGER.getCode());
         triggerDetailDto.status(TriggerStatusEnum.WAIT_TRIGGER.getCode());
 
+        //应用基本信息
+        jobDetailDto.appName(schedulerContext.appName());
+        jobDetailDto.envName(schedulerContext.envName());
+        jobDetailDto.machineIp(schedulerContext.machineIp());
+        triggerDetailDto.appName(schedulerContext.appName());
+        triggerDetailDto.envName(schedulerContext.envName());
+        triggerDetailDto.machineIp(schedulerContext.machineIp());
+
         final ITimer timer = schedulerContext.timer();
         final IJobDetailStore jobDetailStore = schedulerContext.jobDetailStore();
         final ITriggerDetailStore triggerDetailStore = schedulerContext.triggerDetailStore();

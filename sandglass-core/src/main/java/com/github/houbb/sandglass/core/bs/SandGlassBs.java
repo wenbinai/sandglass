@@ -1,6 +1,7 @@
 package com.github.houbb.sandglass.core.bs;
 
 import com.github.houbb.heaven.util.common.ArgUtil;
+import com.github.houbb.heaven.util.net.NetUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.lock.redis.core.Locks;
 import com.github.houbb.sandglass.api.api.*;
@@ -39,6 +40,24 @@ public final class SandGlassBs {
     public static SandGlassBs newInstance() {
         return new SandGlassBs();
     }
+
+    /**
+     * 应用名称
+     * @since 1.2.0
+     */
+    private String appName = "default";
+
+    /**
+     * 环境名称
+     * @since 1.2.0
+     */
+    private String envName = "default";
+
+    /**
+     * 机器标识
+     * @since 1.2.0
+     */
+    private String machineIp = NetUtil.getLocalHost();
 
     /**
      * 工作线程池大小
@@ -134,6 +153,27 @@ public final class SandGlassBs {
      * @since 1.0.0
      */
     private ITriggerDetailStore triggerDetailStore = new TriggerDetailStore();
+
+    public SandGlassBs appName(String appName) {
+        ArgUtil.notEmpty(appName, "appName");
+
+        this.appName = appName;
+        return this;
+    }
+
+    public SandGlassBs envName(String envName) {
+        ArgUtil.notEmpty(envName, "envName");
+
+        this.envName = envName;
+        return this;
+    }
+
+    public SandGlassBs machineIp(String machineIp) {
+        ArgUtil.notEmpty(machineIp, "machineIp");
+
+        this.machineIp = machineIp;
+        return this;
+    }
 
     public SandGlassBs workPoolSize(int workPoolSize) {
         ArgUtil.gte("workPoolSize", workPoolSize, 1);
@@ -286,8 +326,10 @@ public final class SandGlassBs {
                 .jobStore(jobStore)
                 .triggerStore(triggerStore)
                 .timer(timer)
-                .jobTriggerStoreListener(jobTriggerStoreListener);
-                ;
+                .jobTriggerStoreListener(jobTriggerStoreListener)
+                .appName(appName)
+                .envName(envName)
+                .machineIp(machineIp);
 
         //调度类
         schedulerContext.jobDetailStore(jobDetailStore)
@@ -298,7 +340,10 @@ public final class SandGlassBs {
                 .timer(timer)
                 .scheduleListener(scheduleListener)
                 .jobTriggerStoreListener(jobTriggerStoreListener)
-                .mainThreadLoop(scheduleMainThreadLoop);
+                .mainThreadLoop(scheduleMainThreadLoop)
+                .appName(appName)
+                .envName(envName)
+                .machineIp(machineIp);
 
         return this;
     }

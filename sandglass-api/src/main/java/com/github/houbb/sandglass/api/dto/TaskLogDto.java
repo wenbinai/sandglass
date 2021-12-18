@@ -182,7 +182,7 @@ public class TaskLogDto extends BaseDto {
                 "jobId='" + jobId + '\'' +
                 ", triggerId='" + triggerId + '\'' +
                 ", order=" + order +
-                ", taskStatus=" + taskStatus +
+                ", taskStatus='" + taskStatus + '\'' +
                 ", triggeredTime=" + triggeredTime +
                 ", triggerDifferTime=" + triggerDifferTime +
                 ", executeStartTime=" + executeStartTime +
@@ -190,7 +190,7 @@ public class TaskLogDto extends BaseDto {
                 ", outOfDate=" + outOfDate +
                 ", concurrentExecute=" + concurrentExecute +
                 ", allowConcurrentExecute=" + allowConcurrentExecute +
-                '}';
+                "} " + super.toString();
     }
 
 }

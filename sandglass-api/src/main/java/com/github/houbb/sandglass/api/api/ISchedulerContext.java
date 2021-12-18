@@ -98,4 +98,22 @@ public interface ISchedulerContext {
      */
     IJobTriggerStoreListener jobTriggerStoreListener();
 
+    /**
+     * 应用名称
+     * @since 1.2.0
+     */
+    String appName();
+
+    /**
+     * 环境名称
+     * @since 1.2.0
+     */
+    String envName();
+
+    /**
+     * 机器标识
+     * @since 1.2.0
+     */
+    String machineIp();
+
 }

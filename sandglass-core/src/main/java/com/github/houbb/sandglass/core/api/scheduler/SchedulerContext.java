@@ -65,6 +65,24 @@ public class SchedulerContext implements ISchedulerContext {
      */
     private IJobTriggerStoreListener jobTriggerStoreListener;
 
+    /**
+     * 应用名称
+     * @since 1.2.0
+     */
+    private String appName;
+
+    /**
+     * 环境名称
+     * @since 1.2.0
+     */
+    private String envName;
+
+    /**
+     * 机器标识
+     * @since 1.2.0
+     */
+    private String machineIp;
+
     @Override
     public Runnable mainThreadLoop() {
         return mainThreadLoop;
@@ -152,6 +170,33 @@ public class SchedulerContext implements ISchedulerContext {
 
     public SchedulerContext jobTriggerStoreListener(IJobTriggerStoreListener jobTriggerStoreListener) {
         this.jobTriggerStoreListener = jobTriggerStoreListener;
+        return this;
+    }
+
+    public String appName() {
+        return appName;
+    }
+
+    public SchedulerContext appName(String appName) {
+        this.appName = appName;
+        return this;
+    }
+
+    public String envName() {
+        return envName;
+    }
+
+    public SchedulerContext envName(String envName) {
+        this.envName = envName;
+        return this;
+    }
+
+    public String machineIp() {
+        return machineIp;
+    }
+
+    public SchedulerContext machineIp(String machineIp) {
+        this.machineIp = machineIp;
         return this;
     }
 }

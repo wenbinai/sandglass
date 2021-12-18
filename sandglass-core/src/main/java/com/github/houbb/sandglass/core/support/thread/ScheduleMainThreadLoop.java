@@ -131,6 +131,24 @@ public class ScheduleMainThreadLoop extends Thread {
      */
     private IJobTriggerStoreListener jobTriggerStoreListener;
 
+    /**
+     * 应用名称
+     * @since 1.2.0
+     */
+    private String appName;
+
+    /**
+     * 环境名称
+     * @since 1.2.0
+     */
+    private String envName;
+
+    /**
+     * 机器标识
+     * @since 1.2.0
+     */
+    private String machineIp;
+
     public ScheduleMainThreadLoop startFlag(boolean startFlag) {
         this.startFlag = startFlag;
         return this;
@@ -221,6 +239,27 @@ public class ScheduleMainThreadLoop extends Thread {
         ArgUtil.notNull(jobTriggerStoreListener, "jobTriggerStoreListener");
 
         this.jobTriggerStoreListener = jobTriggerStoreListener;
+        return this;
+    }
+
+    public ScheduleMainThreadLoop appName(String appName) {
+        ArgUtil.notEmpty(appName, "appName");
+
+        this.appName = appName;
+        return this;
+    }
+
+    public ScheduleMainThreadLoop envName(String envName) {
+        ArgUtil.notEmpty(envName, "envName");
+
+        this.envName = envName;
+        return this;
+    }
+
+    public ScheduleMainThreadLoop machineIp(String machineIp) {
+        ArgUtil.notEmpty(machineIp, "machineIp");
+
+        this.machineIp = machineIp;
         return this;
     }
 
@@ -355,6 +394,9 @@ public class ScheduleMainThreadLoop extends Thread {
         taskLogDto.allowConcurrentExecute(jobDetailDto.allowConcurrentExecute());
         long triggerDifferTime = time - jobTriggerDto.nextTime();
         taskLogDto.triggerDifferTime(triggerDifferTime);
+        taskLogDto.appName(this.appName);
+        taskLogDto.envName(this.envName);
+        taskLogDto.machineIp(this.machineIp);
 
         return taskLogDto;
     }

@@ -50,4 +50,12 @@ public class JobContext implements IJobContext {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return "JobContext{" +
+                "traceId='" + traceId + '\'' +
+                ", dataMap=" + dataMap +
+                '}';
+    }
+
 }

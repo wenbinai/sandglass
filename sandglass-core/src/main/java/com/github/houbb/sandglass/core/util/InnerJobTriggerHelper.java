@@ -56,6 +56,11 @@ public class InnerJobTriggerHelper {
         dto.triggerId(triggerDetailDto.triggerId());
         dto.order(triggerDetailDto.triggerOrder());
 
+        // 应用基本信息
+        dto.appName(jobDetail.appName());
+        dto.envName(jobDetail.envName());
+        dto.machineIp(jobDetail.machineIp());
+
         long nextTime = trigger.nextTime(context);
         dto.nextTime(nextTime);
 

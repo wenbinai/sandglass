@@ -19,6 +19,12 @@ import java.lang.annotation.*;
 public @interface EnableSandGlass {
 
     /**
+     * 应用名称
+     * @since 1.2.0
+     */
+    String appName() default "default";
+
+    /**
      * 工作线程池大小
      * @return 工作线程
      * @since 0.0.5

@@ -1,7 +1,9 @@
 package com.github.houbb.sandglass.spring.config;
 
 import com.github.houbb.heaven.support.tuple.impl.Pair;
+import com.github.houbb.heaven.util.lang.StringUtil;
 import com.github.houbb.heaven.util.lang.reflect.ClassUtil;
+import com.github.houbb.heaven.util.net.NetUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
@@ -23,6 +25,7 @@ import com.github.houbb.sandglass.spring.utils.InnerSpringTriggerUtils;
 import com.github.houbb.timer.api.ITimer;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -33,6 +36,7 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -107,6 +111,10 @@ public class EnableSandGlassConfig implements ImportAware,
     @Order(Ordered.LOWEST_PRECEDENCE)
     public IScheduler scheduler() {
         // 初始化 schedule
+        String appName = enableSandGlassAttributes.getString("appName");
+        String envName = environment.getProperty("sandglass-envName", "default");
+        String machineIp = environment.getProperty("sandglass-machineIp", NetUtil.getLocalHost());
+
         int workPoolSize = enableSandGlassAttributes.<Integer>getNumber("workPoolSize");
         IJobStore jobStore = beanFactory.getBean(enableSandGlassAttributes.getString("jobStore"), IJobStore.class);
         ITriggerStore triggerStore = beanFactory.getBean(enableSandGlassAttributes.getString("triggerStore"), ITriggerStore.class);
@@ -136,7 +144,11 @@ public class EnableSandGlassConfig implements ImportAware,
                 .outOfDateStrategy(outOfDateStrategy)
                 .taskLogStore(taskLogStore)
                 .jobDetailStore(jobDetailStore)
-                .triggerDetailStore(triggerDetailStore);
+                .triggerDetailStore(triggerDetailStore)
+                .appName(appName)
+                .envName(envName)
+                .machineIp(machineIp)
+                ;
 
         sandGlassBs.init();
 
