@@ -15,6 +15,7 @@ public interface IJobStore {
 
     /**
      * 新增
+     * @param jobId 任务标识
      * @param job 任务
      * @since 0.0.2
      */

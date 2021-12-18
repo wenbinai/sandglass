@@ -39,6 +39,7 @@ public interface ITriggerDetailStore {
      * @param triggerId 触发器标识
      * @param triggerStatusEnum 触发器状态
      * @since 1.0.0
+     * @return 对象
      */
     TriggerDetailDto editStatus(String triggerId, String triggerStatusEnum);
 

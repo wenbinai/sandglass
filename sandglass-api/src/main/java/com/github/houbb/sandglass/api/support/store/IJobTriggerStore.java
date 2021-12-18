@@ -14,6 +14,7 @@ public interface IJobTriggerStore {
     /**
      * 添加任务
      * @param dto 任务
+     * @param context 上下文
      * @return 结果
      * @since 0.0.2
      */
@@ -22,6 +23,7 @@ public interface IJobTriggerStore {
     /**
      * 获取最近的一个，获取不到则阻塞
      *
+     * @param context 上下文
      * @return 结果
      * @since 0.0.2
      */
