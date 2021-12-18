@@ -1,5 +1,6 @@
 package com.github.houbb.sandglass.spring.annotation;
 
+import com.github.houbb.sandglass.core.constant.SandGlassConst;
 import com.github.houbb.sandglass.spring.config.EnableSandGlassConfig;
 import com.github.houbb.sandglass.spring.config.SandGlassComponentScan;
 import org.springframework.context.annotation.Import;
@@ -22,7 +23,7 @@ public @interface EnableSandGlass {
      * 应用名称
      * @since 1.2.0
      */
-    String appName() default "default";
+    String appName() default SandGlassConst.DEFAULT_APP_NAME;
 
     /**
      * 工作线程池大小
@@ -30,7 +31,7 @@ public @interface EnableSandGlass {
      * @since 0.0.5
      * @see com.github.houbb.sandglass.api.api.IWorkerThreadPool 接口
      */
-    int workPoolSize() default 10;
+    int workPoolSize() default SandGlassConst.DEFAULT_WORKER_POOL_SIZE;
 
     /**
      * 任务持久化实体 bean

@@ -83,6 +83,12 @@ public class SchedulerContext implements ISchedulerContext {
      */
     private String machineIp;
 
+    /**
+     * 机器端口
+     * @since 1.3.0
+     */
+    private int machinePort;
+
     @Override
     public Runnable mainThreadLoop() {
         return mainThreadLoop;
@@ -197,6 +203,16 @@ public class SchedulerContext implements ISchedulerContext {
 
     public SchedulerContext machineIp(String machineIp) {
         this.machineIp = machineIp;
+        return this;
+    }
+
+    @Override
+    public int machinePort() {
+        return machinePort;
+    }
+
+    public SchedulerContext machinePort(int machinePort) {
+        this.machinePort = machinePort;
         return this;
     }
 }

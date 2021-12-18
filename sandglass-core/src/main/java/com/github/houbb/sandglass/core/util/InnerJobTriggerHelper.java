@@ -60,6 +60,7 @@ public class InnerJobTriggerHelper {
         dto.appName(jobDetail.appName());
         dto.envName(jobDetail.envName());
         dto.machineIp(jobDetail.machineIp());
+        dto.machinePort(jobDetail.machinePort());
 
         long nextTime = trigger.nextTime(context);
         dto.nextTime(nextTime);

@@ -116,4 +116,10 @@ public interface ISchedulerContext {
      */
     String machineIp();
 
+    /**
+     * 机器端口
+     * @return 1.3.0
+     */
+    int machinePort();
+
 }

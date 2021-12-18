@@ -17,6 +17,7 @@ import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
 import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.api.scheduler.SchedulerContext;
 import com.github.houbb.sandglass.core.bs.SandGlassBs;
+import com.github.houbb.sandglass.core.constant.SandGlassConst;
 import com.github.houbb.sandglass.spring.annotation.CronSchedule;
 import com.github.houbb.sandglass.spring.annotation.EnableSandGlass;
 import com.github.houbb.sandglass.spring.annotation.PeriodSchedule;
@@ -112,8 +113,9 @@ public class EnableSandGlassConfig implements ImportAware,
     public IScheduler scheduler() {
         // 初始化 schedule
         String appName = enableSandGlassAttributes.getString("appName");
-        String envName = environment.getProperty("sandglass-envName", "default");
-        String machineIp = environment.getProperty("sandglass-machineIp", NetUtil.getLocalHost());
+        String envName = environment.getProperty("sandglass-envName", SandGlassConst.DEFAULT_ENV_NAME);
+        String machineIp = environment.getProperty("sandglass-machineIp", SandGlassConst.DEFAULT_MACHINE_IP);
+        String machinePort = environment.getProperty("sandglass-machinePort", SandGlassConst.DEFAULT_MACHINE_PORT+"");
 
         int workPoolSize = enableSandGlassAttributes.<Integer>getNumber("workPoolSize");
         IJobStore jobStore = beanFactory.getBean(enableSandGlassAttributes.getString("jobStore"), IJobStore.class);
@@ -148,6 +150,7 @@ public class EnableSandGlassConfig implements ImportAware,
                 .appName(appName)
                 .envName(envName)
                 .machineIp(machineIp)
+                .machinePort(Integer.parseInt(machinePort))
                 ;
 
         sandGlassBs.init();

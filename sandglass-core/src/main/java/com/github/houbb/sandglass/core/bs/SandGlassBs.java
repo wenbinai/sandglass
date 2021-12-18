@@ -12,6 +12,7 @@ import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
 import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
 import com.github.houbb.sandglass.core.api.scheduler.SchedulerContext;
+import com.github.houbb.sandglass.core.constant.SandGlassConst;
 import com.github.houbb.sandglass.core.support.listener.JobListener;
 import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
 import com.github.houbb.sandglass.core.support.listener.TriggerListener;
@@ -45,25 +46,31 @@ public final class SandGlassBs {
      * 应用名称
      * @since 1.2.0
      */
-    private String appName = "default";
+    private String appName = SandGlassConst.DEFAULT_APP_NAME;
 
     /**
      * 环境名称
      * @since 1.2.0
      */
-    private String envName = "default";
+    private String envName = SandGlassConst.DEFAULT_ENV_NAME;
 
     /**
      * 机器标识
      * @since 1.2.0
      */
-    private String machineIp = NetUtil.getLocalHost();
+    private String machineIp = SandGlassConst.DEFAULT_MACHINE_IP;
+
+    /**
+     * 机器运行端口
+     * @since 1.3.0
+     */
+    private int machinePort = SandGlassConst.DEFAULT_MACHINE_PORT;
 
     /**
      * 工作线程池大小
      * @since 0.0.5
      */
-    private int workPoolSize = 10;
+    private int workPoolSize = SandGlassConst.DEFAULT_WORKER_POOL_SIZE;
 
     /**
      * 任务管理类
@@ -175,8 +182,15 @@ public final class SandGlassBs {
         return this;
     }
 
+    public SandGlassBs machinePort(int machinePort) {
+        ArgUtil.gt("machinePort", machinePort, 0);
+
+        this.machinePort = machinePort;
+        return this;
+    }
+
     public SandGlassBs workPoolSize(int workPoolSize) {
-        ArgUtil.gte("workPoolSize", workPoolSize, 1);
+        ArgUtil.gt("workPoolSize", workPoolSize, 0);
 
         this.workPoolSize = workPoolSize;
         return this;
@@ -329,7 +343,8 @@ public final class SandGlassBs {
                 .jobTriggerStoreListener(jobTriggerStoreListener)
                 .appName(appName)
                 .envName(envName)
-                .machineIp(machineIp);
+                .machineIp(machineIp)
+                .machinePort(machinePort);
 
         //调度类
         schedulerContext.jobDetailStore(jobDetailStore)
@@ -343,7 +358,8 @@ public final class SandGlassBs {
                 .mainThreadLoop(scheduleMainThreadLoop)
                 .appName(appName)
                 .envName(envName)
-                .machineIp(machineIp);
+                .machineIp(machineIp)
+                .machinePort(machinePort);
 
         return this;
     }

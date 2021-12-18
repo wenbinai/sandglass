@@ -79,14 +79,15 @@ public class Scheduler implements IScheduler {
     @Override
     public void schedule(IJob job, ITrigger trigger, final ISchedulerContext context) {
         JobDetailDto jobDetailDto = buildJobDetail(job);
-        TriggerDetailDto triggerDetailDto = buildTriggerDetailDto(trigger);
+        TriggerDetailDto triggerDetailDto = buildTriggerDetailDto(jobDetailDto.jobId(), trigger);
 
         this.addJobAndTrigger(job, trigger, jobDetailDto, triggerDetailDto, context);
     }
 
-    private TriggerDetailDto buildTriggerDetailDto(ITrigger trigger) {
+    private TriggerDetailDto buildTriggerDetailDto(String jobId, ITrigger trigger) {
         TriggerDetailDto dto = new TriggerDetailDto();
-        dto.triggerId(IdHelper.uuid32());
+        // 此处任务触发器和任务绑定，使用同一个标识
+        dto.triggerId(jobId);
 
         if(trigger instanceof PeriodTrigger) {
             PeriodTrigger periodTrigger = (PeriodTrigger) trigger;
@@ -114,7 +115,7 @@ public class Scheduler implements IScheduler {
     private JobDetailDto buildJobDetail(IJob job) {
         String classFullName = job.getClass().getName();
         JobDetailDto detailDto = new JobDetailDto();
-        detailDto.jobId(IdHelper.uuid32());
+        detailDto.jobId(classFullName);
         detailDto.classFullName(classFullName);
         return detailDto;
     }
@@ -153,9 +154,11 @@ public class Scheduler implements IScheduler {
         jobDetailDto.appName(schedulerContext.appName());
         jobDetailDto.envName(schedulerContext.envName());
         jobDetailDto.machineIp(schedulerContext.machineIp());
+        jobDetailDto.machinePort(schedulerContext.machinePort());
         triggerDetailDto.appName(schedulerContext.appName());
         triggerDetailDto.envName(schedulerContext.envName());
         triggerDetailDto.machineIp(schedulerContext.machineIp());
+        triggerDetailDto.machinePort(schedulerContext.machinePort());
 
         final ITimer timer = schedulerContext.timer();
         final IJobDetailStore jobDetailStore = schedulerContext.jobDetailStore();

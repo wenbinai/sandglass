@@ -21,6 +21,11 @@ public class BaseDto {
      */
     private String machineIp;
 
+    /**
+     * 机器端口
+     */
+    private int machinePort;
+
     public String appName() {
         return appName;
     }
@@ -48,12 +53,22 @@ public class BaseDto {
         return this;
     }
 
+    public int machinePort() {
+        return machinePort;
+    }
+
+    public BaseDto machinePort(int machinePort) {
+        this.machinePort = machinePort;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "BaseDto{" +
                 "appName='" + appName + '\'' +
                 ", envName='" + envName + '\'' +
                 ", machineIp='" + machineIp + '\'' +
+                ", machinePort=" + machinePort +
                 '}';
     }
 

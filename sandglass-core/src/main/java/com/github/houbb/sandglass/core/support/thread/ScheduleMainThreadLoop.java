@@ -149,6 +149,12 @@ public class ScheduleMainThreadLoop extends Thread {
      */
     private String machineIp;
 
+    /**
+     * 机器端口
+     * @since 1.3.0
+     */
+    private int machinePort;
+
     public ScheduleMainThreadLoop startFlag(boolean startFlag) {
         this.startFlag = startFlag;
         return this;
@@ -260,6 +266,13 @@ public class ScheduleMainThreadLoop extends Thread {
         ArgUtil.notEmpty(machineIp, "machineIp");
 
         this.machineIp = machineIp;
+        return this;
+    }
+
+    public ScheduleMainThreadLoop machinePort(int machinePort) {
+        ArgUtil.gt("machinePort", machinePort, 0);
+
+        this.machinePort = machinePort;
         return this;
     }
 
@@ -394,9 +407,12 @@ public class ScheduleMainThreadLoop extends Thread {
         taskLogDto.allowConcurrentExecute(jobDetailDto.allowConcurrentExecute());
         long triggerDifferTime = time - jobTriggerDto.nextTime();
         taskLogDto.triggerDifferTime(triggerDifferTime);
+
+        // 应用基本信息
         taskLogDto.appName(this.appName);
         taskLogDto.envName(this.envName);
         taskLogDto.machineIp(this.machineIp);
+        taskLogDto.machinePort(this.machinePort);
 
         return taskLogDto;
     }
