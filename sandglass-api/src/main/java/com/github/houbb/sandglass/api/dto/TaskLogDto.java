@@ -24,9 +24,9 @@ public class TaskLogDto extends BaseDto {
 
     /**
      * 优先级
-     * @since 0.0.9
+     * @since 1.3.2
      */
-    private int order;
+    private int triggerOrder;
 
     /**
      * 任务执行状态
@@ -42,10 +42,10 @@ public class TaskLogDto extends BaseDto {
     private long triggeredTime;
 
     /**
-     * 预期的差值时间
+     * 触发与预期的差值时间
      * @since 0.0.9
      */
-    private long triggerDifferTime;
+    private long triggeredDifferTime;
 
     /**
      * 执行开始时间
@@ -93,12 +93,12 @@ public class TaskLogDto extends BaseDto {
         this.triggerId = triggerId;
     }
 
-    public int getOrder() {
-        return order;
+    public int getTriggerOrder() {
+        return triggerOrder;
     }
 
-    public void setOrder(int order) {
-        this.order = order;
+    public void setTriggerOrder(int triggerOrder) {
+        this.triggerOrder = triggerOrder;
     }
 
     public String getTaskStatus() {
@@ -117,12 +117,12 @@ public class TaskLogDto extends BaseDto {
         this.triggeredTime = triggeredTime;
     }
 
-    public long getTriggerDifferTime() {
-        return triggerDifferTime;
+    public long getTriggeredDifferTime() {
+        return triggeredDifferTime;
     }
 
-    public void setTriggerDifferTime(long triggerDifferTime) {
-        this.triggerDifferTime = triggerDifferTime;
+    public void setTriggeredDifferTime(long triggeredDifferTime) {
+        this.triggeredDifferTime = triggeredDifferTime;
     }
 
     public long getExecuteStartTime() {
@@ -170,10 +170,10 @@ public class TaskLogDto extends BaseDto {
         return "TaskLogDto{" +
                 "jobId='" + jobId + '\'' +
                 ", triggerId='" + triggerId + '\'' +
-                ", order=" + order +
+                ", triggerOrder=" + triggerOrder +
                 ", taskStatus='" + taskStatus + '\'' +
                 ", triggeredTime=" + triggeredTime +
-                ", triggerDifferTime=" + triggerDifferTime +
+                ", triggeredDifferTime=" + triggeredDifferTime +
                 ", executeStartTime=" + executeStartTime +
                 ", executeEndTime=" + executeEndTime +
                 ", outOfDate=" + outOfDate +

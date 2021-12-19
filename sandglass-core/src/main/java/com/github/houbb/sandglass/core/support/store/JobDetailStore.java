@@ -1,9 +1,7 @@
 package com.github.houbb.sandglass.core.support.store;
 
 import com.github.houbb.heaven.annotation.NotThreadSafe;
-import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 import com.github.houbb.sandglass.api.dto.JobDetailDto;
-import com.github.houbb.sandglass.api.support.store.IJobDetailStore;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +11,7 @@ import java.util.Map;
  * @since 0.0.2
  */
 @NotThreadSafe
-public class JobDetailStore implements IJobDetailStore {
+public class JobDetailStore extends AbstractJobDetailStore {
 
     private final Map<String, JobDetailDto> map;
 
@@ -38,29 +36,8 @@ public class JobDetailStore implements IJobDetailStore {
     }
 
     @Override
-    public JobDetailDto editStatus(String jobId, String jobStatus) {
-        JobDetailDto detailDto = detail(jobId);
-
-        if(detailDto != null) {
-            detailDto.setStatus(jobStatus);
-            edit(detailDto);
-        }
-        return detailDto;
-    }
-
-    @Override
     public JobDetailDto detail(String id) {
         return map.get(id);
-    }
-
-    @Override
-    public JobDetailDto pause(String id) {
-        return editStatus(id, JobStatusEnum.PAUSE.getCode());
-    }
-
-    @Override
-    public JobDetailDto resume(String id) {
-        return editStatus(id, JobStatusEnum.WAIT_TRIGGER.getCode());
     }
 
 }

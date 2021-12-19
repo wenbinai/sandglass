@@ -21,16 +21,16 @@ public class JobTriggerDto extends BaseDto implements Comparable<JobTriggerDto> 
     private String triggerId;
 
     /**
+     * 触发优先级
+     * @since 1.3.2
+     */
+    private int triggerOrder;
+
+    /**
      * 下一次触发时间
      * @since 0.0.2
      */
     private long nextTime;
-
-    /**
-     * 优先级
-     * @since 0.0.2
-     */
-    private int order;
 
     public String getJobId() {
         return jobId;
@@ -56,25 +56,25 @@ public class JobTriggerDto extends BaseDto implements Comparable<JobTriggerDto> 
         this.nextTime = nextTime;
     }
 
-    public int getOrder() {
-        return order;
+    public int getTriggerOrder() {
+        return triggerOrder;
     }
 
-    public void setOrder(int order) {
-        this.order = order;
+    public void setTriggerOrder(int triggerOrder) {
+        this.triggerOrder = triggerOrder;
     }
 
     @Override
     public int compareTo(JobTriggerDto o) {
         long nextTimeOther = o.nextTime;
-        long orderOther = o.order;
+        long orderOther = o.triggerOrder;
 
         //如果时间不等
         if(this.nextTime != nextTimeOther) {
             return (int) (nextTime - nextTimeOther);
         }
         // 如果时间相等，则比较 order
-        return (int) (this.order - orderOther);
+        return (int) (this.triggerOrder - orderOther);
     }
 
     @Override
@@ -82,8 +82,8 @@ public class JobTriggerDto extends BaseDto implements Comparable<JobTriggerDto> 
         return "JobTriggerDto{" +
                 "jobId='" + jobId + '\'' +
                 ", triggerId='" + triggerId + '\'' +
+                ", triggerOrder=" + triggerOrder +
                 ", nextTime=" + nextTime +
-                ", order=" + order +
                 "} " + super.toString();
     }
 

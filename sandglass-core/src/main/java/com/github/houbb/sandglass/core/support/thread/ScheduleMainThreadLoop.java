@@ -396,11 +396,11 @@ public class ScheduleMainThreadLoop extends Thread {
         taskLogDto.setTaskStatus(TaskStatusEnum.INIT.getCode());
         taskLogDto.setJobId(jobTriggerDto.getJobId());
         taskLogDto.setTriggerId(jobTriggerDto.getTriggerId());
-        taskLogDto.setOrder(jobTriggerDto.getOrder());
+        taskLogDto.setTriggerOrder(jobTriggerDto.getTriggerOrder());
         taskLogDto.setTriggeredTime(time);
         taskLogDto.setAllowConcurrentExecute(jobDetailDto.isAllowConcurrentExecute());
         long triggerDifferTime = time - jobTriggerDto.getNextTime();
-        taskLogDto.setTriggerDifferTime(triggerDifferTime);
+        taskLogDto.setTriggeredDifferTime(triggerDifferTime);
 
         // 应用基本信息
         taskLogDto.setAppName(this.appName);

@@ -55,7 +55,7 @@ public class InnerJobTriggerHelper {
         JobTriggerDto dto = new JobTriggerDto();
         dto.setJobId(jobDetail.getJobId());
         dto.setTriggerId(triggerDetailDto.getTriggerId());
-        dto.setOrder(triggerDetailDto.getTriggerOrder());
+        dto.setTriggerOrder(triggerDetailDto.getTriggerOrder());
 
         // 应用基本信息
         dto.setAppName(jobDetail.getAppName());
