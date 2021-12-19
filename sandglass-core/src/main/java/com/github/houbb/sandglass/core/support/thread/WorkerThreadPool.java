@@ -3,7 +3,10 @@ package com.github.houbb.sandglass.core.support.thread;
 import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
-import com.github.houbb.sandglass.api.api.*;
+import com.github.houbb.sandglass.api.api.IJob;
+import com.github.houbb.sandglass.api.api.IJobContext;
+import com.github.houbb.sandglass.api.api.IWorkerThreadPool;
+import com.github.houbb.sandglass.api.api.IWorkerThreadPoolContext;
 import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 import com.github.houbb.sandglass.api.constant.TaskStatusEnum;
 import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
@@ -13,7 +16,6 @@ import com.github.houbb.sandglass.api.dto.TaskLogDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.store.IJobStore;
 import com.github.houbb.sandglass.api.support.store.ITaskLogStore;
-import com.github.houbb.sandglass.api.support.store.ITriggerStore;
 import com.github.houbb.sandglass.core.api.job.JobContext;
 import com.github.houbb.sandglass.core.util.InnerJobTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
@@ -60,7 +62,7 @@ public class WorkerThreadPool implements IWorkerThreadPool {
                     // 记录实际执行时间
                     JobTriggerDto jobTriggerDto = context.preJobTriggerDto();
                     IJobStore jobStore = context.jobStore();
-                    String jobId = jobTriggerDto.jobId();
+                    String jobId = jobTriggerDto.getJobId();
                     final IJob job = jobStore.job(jobId);
                     final JobDetailDto jobDetailDto = context.jobDetailStore().detail(jobId);
                     final IJobListener jobListener = context.jobListener();
@@ -71,7 +73,7 @@ public class WorkerThreadPool implements IWorkerThreadPool {
                     final ITaskLogStore taskLogStore = context.taskLogStore();
                     try {
                         // 任务开始执行
-                        taskLogDto.executeStartTime(timer.time());
+                        taskLogDto.setExecuteStartTime(timer.time());
 
                         // 任务更新为处理中
                         InnerJobTriggerHelper.updateJobAndTriggerStatus(context,
@@ -92,8 +94,8 @@ public class WorkerThreadPool implements IWorkerThreadPool {
                         InnerJobTriggerHelper.handleJobAndTriggerNextFire(context, fireTime);
 
                         // 操作日志
-                        taskLogDto.executeEndTime(timer.time());
-                        taskLogDto.taskStatus(TaskStatusEnum.SUCCESS.getCode());
+                        taskLogDto.setExecuteEndTime(timer.time());
+                        taskLogDto.setTaskStatus(TaskStatusEnum.SUCCESS.getCode());
                         taskLogStore.add(taskLogDto);
                     } catch (Exception exception) {
                         // 任务异常
@@ -106,8 +108,8 @@ public class WorkerThreadPool implements IWorkerThreadPool {
                         InnerJobTriggerHelper.handleJobAndTriggerNextFire(context, fireTime);
 
                         // 操作日志
-                        taskLogDto.executeEndTime(timer.time());
-                        taskLogDto.taskStatus(TaskStatusEnum.FAILED.getCode());
+                        taskLogDto.setExecuteEndTime(timer.time());
+                        taskLogDto.setTaskStatus(TaskStatusEnum.FAILED.getCode());
                         taskLogStore.add(taskLogDto);
 
                         // 异常执行对应的 handler
@@ -134,7 +136,7 @@ public class WorkerThreadPool implements IWorkerThreadPool {
      */
     private IJobContext buildJobContext(String traceId, JobDetailDto jobDetailDto) {
         JobContext jobContext = new JobContext();
-        jobContext.dataMap(jobDetailDto.dataMap());
+        jobContext.dataMap(jobDetailDto.getDataMap());
         jobContext.traceId(traceId);
         return jobContext;
     }

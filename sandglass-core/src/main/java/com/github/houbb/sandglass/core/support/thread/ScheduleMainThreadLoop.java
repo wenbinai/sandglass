@@ -3,7 +3,6 @@ package com.github.houbb.sandglass.core.support.thread;
 import com.github.houbb.heaven.util.common.ArgUtil;
 import com.github.houbb.heaven.util.util.DateUtil;
 import com.github.houbb.lock.api.core.ILock;
-import com.github.houbb.lock.redis.core.Locks;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.IJob;
@@ -22,14 +21,9 @@ import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
 import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
 import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
-import com.github.houbb.sandglass.core.support.listener.JobListener;
-import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
-import com.github.houbb.sandglass.core.support.listener.TriggerListener;
-import com.github.houbb.sandglass.core.support.outOfDate.OutOfDateStrategies;
 import com.github.houbb.sandglass.core.support.store.JobTriggerStoreContext;
 import com.github.houbb.sandglass.core.util.InnerJobTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
-import com.github.houbb.timer.core.timer.SystemTimer;
 
 import java.util.concurrent.TimeUnit;
 
@@ -308,8 +302,8 @@ public class ScheduleMainThreadLoop extends Thread {
                 this.triggerLock.unlock(triggerLockKey);
 
                 //1.1 任务是否存在
-                String jobId = jobTriggerDto.jobId();
-                String triggerId = jobTriggerDto.triggerId();
+                String jobId = jobTriggerDto.getJobId();
+                String triggerId = jobTriggerDto.getTriggerId();
                 IJob job = jobStore.job(jobId);
                 ITrigger trigger = triggerStore.trigger(triggerId);
                 JobDetailDto jobDetailDto = jobDetailStore.detail(jobId);
@@ -343,17 +337,17 @@ public class ScheduleMainThreadLoop extends Thread {
                         .jobTriggerStoreListener(jobTriggerStoreListener);
 
                 //3.2 任务并发处理的判断
-                boolean allowConcurrentExecute = jobDetailDto.allowConcurrentExecute();
+                boolean allowConcurrentExecute = jobDetailDto.isAllowConcurrentExecute();
                 if(!allowConcurrentExecute) {
                     //3.2.1 是否有执行中的任务
                     JobDetailDto currentJob = jobDetailStore.detail(jobId);
 
-                    if(JobStatusEnum.isInProgress(currentJob.status())) {
+                    if(JobStatusEnum.isInProgress(currentJob.getStatus())) {
                         LOG.warn("任务 {} 禁止并发执行，且有执行中的任务，下一次执行。",
                                 jobId);
                         InnerJobTriggerHelper.handleJobAndTriggerNextFire(workerThreadPoolContext, timer.time());
                         // 添加日志
-                        taskLogDto.concurrentExecute(true);
+                        taskLogDto.setConcurrentExecute(true);
                         taskLogStore.add(taskLogDto);
 
                         continue;
@@ -366,7 +360,7 @@ public class ScheduleMainThreadLoop extends Thread {
 
                 this.triggerListener.beforeWaitFired(workerThreadPoolContext);
                 //3.3 while 等待任务执行时间
-                this.loopWaitUntilFiredTime(jobTriggerDto.nextTime());
+                this.loopWaitUntilFiredTime(jobTriggerDto.getNextTime());
                 this.triggerListener.afterWaitFired(workerThreadPoolContext);
 
                 //3.4 添加过期策略处理
@@ -375,7 +369,7 @@ public class ScheduleMainThreadLoop extends Thread {
                     outOfDateStrategy.handleOutOfDate(workerThreadPoolContext);
 
                     // 添加日志
-                    taskLogDto.outOfDate(true);
+                    taskLogDto.setOutOfDate(true);
                     taskLogStore.add(taskLogDto);
                 } else {
                     workerThreadPool.commit(workerThreadPoolContext);
@@ -399,20 +393,20 @@ public class ScheduleMainThreadLoop extends Thread {
         final long time = timer.time();
 
         TaskLogDto taskLogDto = new TaskLogDto();
-        taskLogDto.taskStatus(TaskStatusEnum.INIT.getCode());
-        taskLogDto.jobId(jobTriggerDto.jobId());
-        taskLogDto.triggerId(jobTriggerDto.triggerId());
-        taskLogDto.order(jobTriggerDto.order());
-        taskLogDto.triggeredTime(time);
-        taskLogDto.allowConcurrentExecute(jobDetailDto.allowConcurrentExecute());
-        long triggerDifferTime = time - jobTriggerDto.nextTime();
-        taskLogDto.triggerDifferTime(triggerDifferTime);
+        taskLogDto.setTaskStatus(TaskStatusEnum.INIT.getCode());
+        taskLogDto.setJobId(jobTriggerDto.getJobId());
+        taskLogDto.setTriggerId(jobTriggerDto.getTriggerId());
+        taskLogDto.setOrder(jobTriggerDto.getOrder());
+        taskLogDto.setTriggeredTime(time);
+        taskLogDto.setAllowConcurrentExecute(jobDetailDto.isAllowConcurrentExecute());
+        long triggerDifferTime = time - jobTriggerDto.getNextTime();
+        taskLogDto.setTriggerDifferTime(triggerDifferTime);
 
         // 应用基本信息
-        taskLogDto.appName(this.appName);
-        taskLogDto.envName(this.envName);
-        taskLogDto.machineIp(this.machineIp);
-        taskLogDto.machinePort(this.machinePort);
+        taskLogDto.setAppName(this.appName);
+        taskLogDto.setEnvName(this.envName);
+        taskLogDto.setMachineIp(this.machineIp);
+        taskLogDto.setMachinePort(this.machinePort);
 
         return taskLogDto;
     }

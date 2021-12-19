@@ -26,40 +26,36 @@ public class BaseDto {
      */
     private int machinePort;
 
-    public String appName() {
+    public String getAppName() {
         return appName;
     }
 
-    public BaseDto appName(String appName) {
+    public void setAppName(String appName) {
         this.appName = appName;
-        return this;
     }
 
-    public String envName() {
+    public String getEnvName() {
         return envName;
     }
 
-    public BaseDto envName(String envName) {
+    public void setEnvName(String envName) {
         this.envName = envName;
-        return this;
     }
 
-    public String machineIp() {
+    public String getMachineIp() {
         return machineIp;
     }
 
-    public BaseDto machineIp(String machineIp) {
+    public void setMachineIp(String machineIp) {
         this.machineIp = machineIp;
-        return this;
     }
 
-    public int machinePort() {
+    public int getMachinePort() {
         return machinePort;
     }
 
-    public BaseDto machinePort(int machinePort) {
+    public void setMachinePort(int machinePort) {
         this.machinePort = machinePort;
-        return this;
     }
 
     @Override

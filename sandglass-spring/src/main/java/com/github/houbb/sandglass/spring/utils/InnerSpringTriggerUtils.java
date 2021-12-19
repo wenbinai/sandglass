@@ -40,9 +40,9 @@ public final class InnerSpringTriggerUtils {
         ITrigger trigger = Triggers.cron(cronValue);
 
         TriggerDetailDto triggerDetailDto = new TriggerDetailDto();
-        triggerDetailDto.triggerId(id);
-        triggerDetailDto.triggerType(TriggerTypeEnum.CRON.code());
-        triggerDetailDto.cron(cronValue);
+        triggerDetailDto.setTriggerId(id);
+        triggerDetailDto.setTriggerType(TriggerTypeEnum.CRON.code());
+        triggerDetailDto.setCron(cronValue);
 
         return TriggerAndDetailDto.of(trigger, triggerDetailDto);
     }
@@ -69,12 +69,12 @@ public final class InnerSpringTriggerUtils {
         periodTrigger.initialDelay(periodSchedule.initialDelay());
 
         TriggerDetailDto triggerDetailDto = new TriggerDetailDto();
-        triggerDetailDto.triggerId(id);
-        triggerDetailDto.triggerType(TriggerTypeEnum.PERIOD.code());
-        triggerDetailDto.triggerPeriod(periodSchedule.value());
-        triggerDetailDto.timeUint(periodSchedule.timeUnit());
-        triggerDetailDto.fixedRate(periodSchedule.fixedRate());
-        triggerDetailDto.initialDelay(periodSchedule.initialDelay());
+        triggerDetailDto.setTriggerId(id);
+        triggerDetailDto.setTriggerType(TriggerTypeEnum.PERIOD.code());
+        triggerDetailDto.setTriggerPeriod(periodSchedule.value());
+        triggerDetailDto.setTimeUint(periodSchedule.timeUnit());
+        triggerDetailDto.setFixedRate(periodSchedule.fixedRate());
+        triggerDetailDto.setInitialDelay(periodSchedule.initialDelay());
 
         return TriggerAndDetailDto.of(periodTrigger, triggerDetailDto);
     }

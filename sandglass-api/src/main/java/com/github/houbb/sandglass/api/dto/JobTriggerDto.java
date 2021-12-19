@@ -32,40 +32,36 @@ public class JobTriggerDto extends BaseDto implements Comparable<JobTriggerDto> 
      */
     private int order;
 
-    public String jobId() {
+    public String getJobId() {
         return jobId;
     }
 
-    public JobTriggerDto jobId(String jobId) {
+    public void setJobId(String jobId) {
         this.jobId = jobId;
-        return this;
     }
 
-    public String triggerId() {
+    public String getTriggerId() {
         return triggerId;
     }
 
-    public JobTriggerDto triggerId(String triggerId) {
+    public void setTriggerId(String triggerId) {
         this.triggerId = triggerId;
-        return this;
     }
 
-    public long nextTime() {
+    public long getNextTime() {
         return nextTime;
     }
 
-    public JobTriggerDto nextTime(long nextTime) {
+    public void setNextTime(long nextTime) {
         this.nextTime = nextTime;
-        return this;
     }
 
-    public int order() {
+    public int getOrder() {
         return order;
     }
 
-    public JobTriggerDto order(int order) {
+    public void setOrder(int order) {
         this.order = order;
-        return this;
     }
 
     @Override

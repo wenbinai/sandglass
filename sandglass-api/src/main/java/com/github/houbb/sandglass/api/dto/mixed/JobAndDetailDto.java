@@ -15,27 +15,25 @@ public class JobAndDetailDto {
 
     public static JobAndDetailDto of(IJob job, JobDetailDto jobDetailDto) {
         JobAndDetailDto detailDto = new JobAndDetailDto();
-        detailDto.job(job);
-        detailDto.jobDetailDto(jobDetailDto);
+        detailDto.setJob(job);
+        detailDto.setJobDetailDto(jobDetailDto);
         return detailDto;
     }
 
-    public IJob job() {
+    public IJob getJob() {
         return job;
     }
 
-    public JobAndDetailDto job(IJob job) {
+    public void setJob(IJob job) {
         this.job = job;
-        return this;
     }
 
-    public JobDetailDto jobDetailDto() {
+    public JobDetailDto getJobDetailDto() {
         return jobDetailDto;
     }
 
-    public JobAndDetailDto jobDetailDto(JobDetailDto jobDetailDto) {
+    public void setJobDetailDto(JobDetailDto jobDetailDto) {
         this.jobDetailDto = jobDetailDto;
-        return this;
     }
 
     @Override

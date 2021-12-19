@@ -31,7 +31,7 @@ public class OutOfDateStrategyFireNextTime implements IOutOfDateStrategy {
     public boolean hasOutOfDate(IWorkerThreadPoolContext workerThreadPoolContext) {
         //1. 判断时间的阈值
         long currentTime = workerThreadPoolContext.timer().time();
-        long nextTime = workerThreadPoolContext.preJobTriggerDto().nextTime();
+        long nextTime = workerThreadPoolContext.preJobTriggerDto().getNextTime();
 
         return currentTime - nextTime > outOfDateMills;
     }

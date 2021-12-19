@@ -37,12 +37,12 @@ public final class InnerSpringJobUtils {
 
         final String jobId = buildJobId(className, methodName);
         JobDetailDto jobDetailDto = new JobDetailDto();
-        jobDetailDto.allowConcurrentExecute(allowConcurrentExecuteVal);
-        jobDetailDto.jobId(jobId);
-        jobDetailDto.jobType(JobTypeEnum.SPRING.code());
-        jobDetailDto.classFullName(className);
-        jobDetailDto.springBeanName(beanName);
-        jobDetailDto.springMethodName(methodName);
+        jobDetailDto.setAllowConcurrentExecute(allowConcurrentExecuteVal);
+        jobDetailDto.setJobId(jobId);
+        jobDetailDto.setJobType(JobTypeEnum.SPRING.code());
+        jobDetailDto.setClassFullName(className);
+        jobDetailDto.setSpringBeanName(beanName);
+        jobDetailDto.setSpringMethodName(methodName);
 
         final IJob job = new AbstractJob() {
             @Override

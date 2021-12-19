@@ -2,17 +2,17 @@ package com.github.houbb.sandglass.core.support.store;
 
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
-import com.github.houbb.sandglass.api.api.IJob;
-import com.github.houbb.sandglass.api.api.ITrigger;
 import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 import com.github.houbb.sandglass.api.dto.JobDetailDto;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
-import com.github.houbb.sandglass.api.support.store.*;
+import com.github.houbb.sandglass.api.support.store.IJobDetailStore;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
+import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreContext;
+import com.github.houbb.sandglass.api.support.store.ITriggerDetailStore;
 import com.github.houbb.sandglass.core.exception.SandGlassException;
 import com.github.houbb.timer.api.ITimer;
-import com.github.houbb.timer.core.timer.SystemTimer;
 
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -88,7 +88,7 @@ public class JobTriggerStore implements IJobTriggerStore {
         // quartz 是这个时间，感觉可以略微做调整
         final long limitMills = 30;
 
-        long nextTime = jobTriggerDto.nextTime();
+        long nextTime = jobTriggerDto.getNextTime();
         long currentTime = timer.time();
 
         return nextTime - currentTime <= limitMills;
@@ -110,18 +110,18 @@ public class JobTriggerStore implements IJobTriggerStore {
             return false;
         }
 
-        String jobId = jobTriggerDto.jobId();
-        String triggerId = jobTriggerDto.triggerId();
+        String jobId = jobTriggerDto.getJobId();
+        String triggerId = jobTriggerDto.getTriggerId();
 
         JobDetailDto jobDetailDto = jobDetailStore.detail(jobId);
-        if(JobStatusEnum.PAUSE.getCode().equals(jobDetailDto.status())) {
+        if(JobStatusEnum.PAUSE.getCode().equals(jobDetailDto.getStatus())) {
             // 移除队首的元素
             removeHeadAndRePut(jobTriggerDto);
 
             return true;
         }
         TriggerDetailDto triggerDetailDto = triggerDetailStore.detail(triggerId);
-        if(TriggerStatusEnum.PAUSE.getCode().equals(triggerDetailDto.status())) {
+        if(TriggerStatusEnum.PAUSE.getCode().equals(triggerDetailDto.getStatus())) {
             // 移除队首的元素
             removeHeadAndRePut(jobTriggerDto);
 
@@ -141,8 +141,8 @@ public class JobTriggerStore implements IJobTriggerStore {
             JobTriggerDto jobTriggerDtoOld = this.queue.take();
             LOG.debug("移除队首元素 {}", jobTriggerDtoOld);
 
-            long nextTime = jobTriggerDto.nextTime() + 1000;
-            jobTriggerDto.nextTime(nextTime);
+            long nextTime = jobTriggerDto.getNextTime() + 1000;
+            jobTriggerDto.setNextTime(nextTime);
             LOG.debug("重新放入元素 {}", jobTriggerDto);
             this.queue.put(jobTriggerDto);
         } catch (InterruptedException e) {

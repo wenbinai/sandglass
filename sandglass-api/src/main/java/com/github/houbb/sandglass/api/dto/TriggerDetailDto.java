@@ -81,112 +81,100 @@ public class TriggerDetailDto extends BaseDto {
      */
     private boolean fixedRate = false;
 
-    public String triggerId() {
+    public String getTriggerId() {
         return triggerId;
     }
 
-    public TriggerDetailDto triggerId(String triggerId) {
+    public void setTriggerId(String triggerId) {
         this.triggerId = triggerId;
-        return this;
     }
 
-    public String status() {
+    public String getStatus() {
         return status;
     }
 
-    public TriggerDetailDto status(String status) {
+    public void setStatus(String status) {
         this.status = status;
-        return this;
     }
 
-    public String remark() {
+    public String getRemark() {
         return remark;
     }
 
-    public TriggerDetailDto remark(String remark) {
+    public void setRemark(String remark) {
         this.remark = remark;
-        return this;
     }
 
-    public String triggerType() {
+    public String getTriggerType() {
         return triggerType;
     }
 
-    public TriggerDetailDto triggerType(String triggerType) {
+    public void setTriggerType(String triggerType) {
         this.triggerType = triggerType;
-        return this;
     }
 
-    public int triggerOrder() {
+    public int getTriggerOrder() {
         return triggerOrder;
     }
 
-    public TriggerDetailDto triggerOrder(int triggerOrder) {
+    public void setTriggerOrder(int triggerOrder) {
         this.triggerOrder = triggerOrder;
-        return this;
     }
 
-    public long startTime() {
+    public long getStartTime() {
         return startTime;
     }
 
-    public TriggerDetailDto startTime(long startTime) {
+    public void setStartTime(long startTime) {
         this.startTime = startTime;
-        return this;
     }
 
-    public long endTime() {
+    public long getEndTime() {
         return endTime;
     }
 
-    public TriggerDetailDto endTime(long endTime) {
+    public void setEndTime(long endTime) {
         this.endTime = endTime;
-        return this;
     }
 
-    public String cron() {
+    public String getCron() {
         return cron;
     }
 
-    public TriggerDetailDto cron(String cron) {
+    public void setCron(String cron) {
         this.cron = cron;
-        return this;
     }
 
-    public long triggerPeriod() {
+    public long getTriggerPeriod() {
         return triggerPeriod;
     }
 
-    public TriggerDetailDto triggerPeriod(long triggerPeriod) {
+    public void setTriggerPeriod(long triggerPeriod) {
         this.triggerPeriod = triggerPeriod;
-        return this;
     }
 
-    public long initialDelay() {
+    public long getInitialDelay() {
         return initialDelay;
     }
 
-    public TriggerDetailDto initialDelay(long initialDelay) {
+    public void setInitialDelay(long initialDelay) {
         this.initialDelay = initialDelay;
-        return this;
     }
 
-    public TimeUnit timeUint() {
+    public TimeUnit getTimeUint() {
         return timeUint;
     }
 
-    public TriggerDetailDto timeUint(TimeUnit timeUint) {
+    public void setTimeUint(TimeUnit timeUint) {
         this.timeUint = timeUint;
-        return this;
     }
 
-    public boolean fixedRate() {
+    public boolean isFixedRate() {
         return fixedRate;
     }
 
-    public TriggerDetailDto fixedRate(boolean fixedRate) {
+    public void setFixedRate(boolean fixedRate) {
         this.fixedRate = fixedRate;
-        return this;
     }
 
     @Override

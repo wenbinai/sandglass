@@ -77,103 +77,92 @@ public class TaskLogDto extends BaseDto {
      */
     private boolean allowConcurrentExecute;
 
-    public String jobId() {
+    public String getJobId() {
         return jobId;
     }
 
-    public TaskLogDto jobId(String jobId) {
+    public void setJobId(String jobId) {
         this.jobId = jobId;
-        return this;
     }
 
-    public String triggerId() {
+    public String getTriggerId() {
         return triggerId;
     }
 
-    public TaskLogDto triggerId(String triggerId) {
+    public void setTriggerId(String triggerId) {
         this.triggerId = triggerId;
-        return this;
     }
 
-    public String taskStatus() {
-        return taskStatus;
-    }
-
-    public TaskLogDto taskStatus(String taskStatus) {
-        this.taskStatus = taskStatus;
-        return this;
-    }
-
-    public int order() {
+    public int getOrder() {
         return order;
     }
 
-    public TaskLogDto order(int order) {
+    public void setOrder(int order) {
         this.order = order;
-        return this;
     }
 
-    public long triggeredTime() {
+    public String getTaskStatus() {
+        return taskStatus;
+    }
+
+    public void setTaskStatus(String taskStatus) {
+        this.taskStatus = taskStatus;
+    }
+
+    public long getTriggeredTime() {
         return triggeredTime;
     }
 
-    public TaskLogDto triggeredTime(long triggeredTime) {
+    public void setTriggeredTime(long triggeredTime) {
         this.triggeredTime = triggeredTime;
-        return this;
     }
 
-    public long triggerDifferTime() {
+    public long getTriggerDifferTime() {
         return triggerDifferTime;
     }
 
-    public TaskLogDto triggerDifferTime(long triggerDifferTime) {
+    public void setTriggerDifferTime(long triggerDifferTime) {
         this.triggerDifferTime = triggerDifferTime;
-        return this;
     }
 
-    public long executeStartTime() {
+    public long getExecuteStartTime() {
         return executeStartTime;
     }
 
-    public TaskLogDto executeStartTime(long executeStartTime) {
+    public void setExecuteStartTime(long executeStartTime) {
         this.executeStartTime = executeStartTime;
-        return this;
     }
 
-    public long executeEndTime() {
+    public long getExecuteEndTime() {
         return executeEndTime;
     }
 
-    public TaskLogDto executeEndTime(long executeEndTime) {
+    public void setExecuteEndTime(long executeEndTime) {
         this.executeEndTime = executeEndTime;
-        return this;
     }
 
-    public boolean outOfDate() {
+    public boolean isOutOfDate() {
         return outOfDate;
     }
 
-    public TaskLogDto outOfDate(boolean outOfDate) {
+    public void setOutOfDate(boolean outOfDate) {
         this.outOfDate = outOfDate;
-        return this;
     }
 
-    public boolean concurrentExecute() {
+    public boolean isConcurrentExecute() {
         return concurrentExecute;
     }
 
-    public TaskLogDto concurrentExecute(boolean concurrentExecute) {
+    public void setConcurrentExecute(boolean concurrentExecute) {
         this.concurrentExecute = concurrentExecute;
-        return this;
     }
 
-    public boolean allowConcurrentExecute() {
+    public boolean isAllowConcurrentExecute() {
         return allowConcurrentExecute;
     }
 
-    public TaskLogDto allowConcurrentExecute(boolean allowConcurrentExecute) {
+    public void setAllowConcurrentExecute(boolean allowConcurrentExecute) {
         this.allowConcurrentExecute = allowConcurrentExecute;
-        return this;
     }
 
     @Override

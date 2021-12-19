@@ -21,12 +21,4 @@ public interface ITaskLogStore {
      */
     ITaskLogStore add(TaskLogDto dto);
 
-    /**
-     * 获取日志列表
-     *
-     * @return 结果
-     * @since 0.0.2
-     */
-    List<TaskLogDto> list();
-
 }

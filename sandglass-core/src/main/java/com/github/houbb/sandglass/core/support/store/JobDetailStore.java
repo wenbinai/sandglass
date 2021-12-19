@@ -1,13 +1,10 @@
 package com.github.houbb.sandglass.core.support.store;
 
 import com.github.houbb.heaven.annotation.NotThreadSafe;
-import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 import com.github.houbb.sandglass.api.dto.JobDetailDto;
 import com.github.houbb.sandglass.api.support.store.IJobDetailStore;
-import com.github.houbb.sandglass.api.support.store.IJobStore;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +24,7 @@ public class JobDetailStore implements IJobDetailStore {
 
     @Override
     public void add(JobDetailDto job) {
-        map.put(job.jobId(), job);
+        map.put(job.getJobId(), job);
     }
 
     @Override
@@ -37,7 +34,7 @@ public class JobDetailStore implements IJobDetailStore {
 
     @Override
     public void edit(JobDetailDto job) {
-        map.put(job.jobId(), job);
+        map.put(job.getJobId(), job);
     }
 
     @Override
@@ -45,7 +42,7 @@ public class JobDetailStore implements IJobDetailStore {
         JobDetailDto detailDto = detail(jobId);
 
         if(detailDto != null) {
-            detailDto.status(jobStatus);
+            detailDto.setStatus(jobStatus);
             edit(detailDto);
         }
         return detailDto;

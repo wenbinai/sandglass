@@ -2,7 +2,6 @@ package com.github.houbb.sandglass.core.api.scheduler;
 
 import com.github.houbb.heaven.annotation.NotThreadSafe;
 import com.github.houbb.heaven.util.common.ArgUtil;
-import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.*;
@@ -11,10 +10,7 @@ import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 import com.github.houbb.sandglass.api.dto.JobDetailDto;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
-import com.github.houbb.sandglass.api.support.store.IJobDetailStore;
-import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
-import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreContext;
-import com.github.houbb.sandglass.api.support.store.ITriggerDetailStore;
+import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.exception.SandGlassException;
 import com.github.houbb.sandglass.core.support.store.JobTriggerStoreContext;
 import com.github.houbb.sandglass.core.support.thread.NamedThreadFactory;
@@ -79,7 +75,7 @@ public class Scheduler implements IScheduler {
     @Override
     public void schedule(IJob job, ITrigger trigger, final ISchedulerContext context) {
         JobDetailDto jobDetailDto = buildJobDetail(job);
-        TriggerDetailDto triggerDetailDto = buildTriggerDetailDto(jobDetailDto.jobId(), trigger);
+        TriggerDetailDto triggerDetailDto = buildTriggerDetailDto(jobDetailDto.getJobId(), trigger);
 
         this.addJobAndTrigger(job, trigger, jobDetailDto, triggerDetailDto, context);
     }
@@ -87,17 +83,17 @@ public class Scheduler implements IScheduler {
     private TriggerDetailDto buildTriggerDetailDto(String jobId, ITrigger trigger) {
         TriggerDetailDto dto = new TriggerDetailDto();
         // 此处任务触发器和任务绑定，使用同一个标识
-        dto.triggerId(jobId);
+        dto.setTriggerId(jobId);
 
         if(trigger instanceof PeriodTrigger) {
             PeriodTrigger periodTrigger = (PeriodTrigger) trigger;
-            dto.fixedRate(periodTrigger.fixedRate());
-            dto.initialDelay(periodTrigger.initialDelay());
-            dto.triggerPeriod(periodTrigger.period());
-            dto.timeUint(periodTrigger.timeUnit());
+            dto.setFixedRate(periodTrigger.fixedRate());
+            dto.setInitialDelay(periodTrigger.initialDelay());
+            dto.setTriggerPeriod(periodTrigger.period());
+            dto.setTimeUint(periodTrigger.timeUnit());
         } else if(trigger instanceof CronTrigger) {
             CronTrigger cronTrigger = (CronTrigger) trigger;
-            dto.cron(cronTrigger.cronExpressionString());
+            dto.setCron(cronTrigger.cronExpressionString());
         } else {
             // 抛出异常
             throw new SandGlassException("默认调度模式不支持的 trigger 类型!");
@@ -115,8 +111,8 @@ public class Scheduler implements IScheduler {
     private JobDetailDto buildJobDetail(IJob job) {
         String classFullName = job.getClass().getName();
         JobDetailDto detailDto = new JobDetailDto();
-        detailDto.jobId(classFullName);
-        detailDto.classFullName(classFullName);
+        detailDto.setJobId(classFullName);
+        detailDto.setClassFullName(classFullName);
         return detailDto;
     }
 
@@ -130,73 +126,22 @@ public class Scheduler implements IScheduler {
         context.scheduleListener().schedule(jobDetailDto, triggerDetailDto);
     }
 
-    /**
-     * 放入任务和触发器
-     * @param job 任务
-     * @param trigger 触发器
-     * @param jobDetailDto 任务详情
-     * @param triggerDetailDto 触发器详情
-     * @param schedulerContext 上下文
-     * @since 0.0.4
-     */
-    private void addJobAndTrigger(IJob job,
-                                  ITrigger trigger,
-                                  JobDetailDto jobDetailDto,
-                                  TriggerDetailDto triggerDetailDto,
-                                  final ISchedulerContext schedulerContext) {
-        this.paramCheck(job, trigger);
-        paramCheck(jobDetailDto, triggerDetailDto);
-
-        jobDetailDto.status(JobStatusEnum.WAIT_TRIGGER.getCode());
-        triggerDetailDto.status(TriggerStatusEnum.WAIT_TRIGGER.getCode());
-
-        //应用基本信息
-        jobDetailDto.appName(schedulerContext.appName());
-        jobDetailDto.envName(schedulerContext.envName());
-        jobDetailDto.machineIp(schedulerContext.machineIp());
-        jobDetailDto.machinePort(schedulerContext.machinePort());
-        triggerDetailDto.appName(schedulerContext.appName());
-        triggerDetailDto.envName(schedulerContext.envName());
-        triggerDetailDto.machineIp(schedulerContext.machineIp());
-        triggerDetailDto.machinePort(schedulerContext.machinePort());
-
-        final ITimer timer = schedulerContext.timer();
-        final IJobDetailStore jobDetailStore = schedulerContext.jobDetailStore();
-        final ITriggerDetailStore triggerDetailStore = schedulerContext.triggerDetailStore();
-        final IJobTriggerStore jobTriggerStore = schedulerContext.jobTriggerStore();
-
-        schedulerContext.jobStore().add(jobDetailDto.jobId(), job);
-        schedulerContext.triggerStore().add(triggerDetailDto.triggerId(), trigger);
-        jobDetailStore.add(jobDetailDto);
-        triggerDetailStore.add(triggerDetailDto);
-
-        // 结束时间判断
-        if(InnerJobTriggerHelper.hasMeetEndTime(timer, triggerDetailDto)) {
-            return;
-        }
-
-        // 把 trigger.nextTime + jobId triggerId 放入到调度队列中
-        ITriggerContext triggerContext = TriggerContext.newInstance()
-                .timer(timer);
-        JobTriggerDto triggerDto = InnerJobTriggerHelper.buildJobTriggerDto(jobDetailDto, trigger, triggerDetailDto, triggerContext);
-
-        // 上下文
-        IJobTriggerStoreContext jobTriggerStoreContext = JobTriggerStoreContext
-                .newInstance()
-                .jobDetailStore(jobDetailStore)
-                .triggerDetailStore(triggerDetailStore)
-                .timer(timer)
-                .listener(schedulerContext.jobTriggerStoreListener());
-        jobTriggerStore.put(triggerDto, jobTriggerStoreContext);
-    }
-
-
     @Override
     public void unSchedule(String jobId, String triggerId, final ISchedulerContext schedulerContext) {
         paramCheck(jobId, triggerId);
 
-        JobDetailDto jobDetailDto = schedulerContext.jobDetailStore().detail(jobId);
-        TriggerDetailDto triggerDetailDto = schedulerContext.triggerDetailStore().detail(triggerId);
+        final IJobStore jobStore = schedulerContext.jobStore();
+        final ITriggerStore triggerStore = schedulerContext.triggerStore();
+        final IJobDetailStore jobDetailStore = schedulerContext.jobDetailStore();
+        final ITriggerDetailStore triggerDetailStore = schedulerContext.triggerDetailStore();
+
+        JobDetailDto jobDetailDto = jobDetailStore.detail(jobId);
+        TriggerDetailDto triggerDetailDto = triggerDetailStore.detail(triggerId);
+
+        jobStore.remove(jobId);
+        triggerStore.remove(triggerId);
+        jobDetailStore.remove(jobId);
+        triggerDetailStore.remove(triggerId);
 
         schedulerContext.scheduleListener().unSchedule(jobDetailDto, triggerDetailDto);
     }
@@ -218,8 +163,8 @@ public class Scheduler implements IScheduler {
         JobDetailDto jobDetailDto = schedulerContext.jobDetailStore().resume(jobId);
         TriggerDetailDto triggerDetailDto = schedulerContext.triggerDetailStore().resume(triggerId);
 
-        IJob job = schedulerContext.jobStore().remove(jobId);
-        ITrigger trigger = schedulerContext.triggerStore().remove(triggerId);
+        IJob job = schedulerContext.jobStore().job(jobId);
+        ITrigger trigger = schedulerContext.triggerStore().trigger(triggerId);
 
         // 重新放入任务
         this.addJobAndTrigger(job, trigger, jobDetailDto, triggerDetailDto, schedulerContext);
@@ -244,8 +189,69 @@ public class Scheduler implements IScheduler {
         ArgUtil.notNull(jobDetailDto, "jobDetailDto");
         ArgUtil.notNull(triggerDetailDto, "triggerDetailDto");
 
-        ArgUtil.notEmpty(jobDetailDto.jobId(), "jobId");
-        ArgUtil.notEmpty(triggerDetailDto.triggerId(), "triggerId");
+        ArgUtil.notEmpty(jobDetailDto.getJobId(), "jobId");
+        ArgUtil.notEmpty(triggerDetailDto.getTriggerId(), "triggerId");
+    }
+
+
+    /**
+     * 放入任务和触发器
+     * @param job 任务
+     * @param trigger 触发器
+     * @param jobDetailDto 任务详情
+     * @param triggerDetailDto 触发器详情
+     * @param schedulerContext 上下文
+     * @since 0.0.4
+     */
+    private void addJobAndTrigger(IJob job,
+                                  ITrigger trigger,
+                                  JobDetailDto jobDetailDto,
+                                  TriggerDetailDto triggerDetailDto,
+                                  final ISchedulerContext schedulerContext) {
+        this.paramCheck(job, trigger);
+        paramCheck(jobDetailDto, triggerDetailDto);
+
+        jobDetailDto.setStatus(JobStatusEnum.WAIT_TRIGGER.getCode());
+        triggerDetailDto.setStatus(TriggerStatusEnum.WAIT_TRIGGER.getCode());
+
+        //应用基本信息
+        jobDetailDto.setAppName(schedulerContext.appName());
+        jobDetailDto.setEnvName(schedulerContext.envName());
+        jobDetailDto.setMachineIp(schedulerContext.machineIp());
+        jobDetailDto.setMachinePort(schedulerContext.machinePort());
+        triggerDetailDto.setAppName(schedulerContext.appName());
+        triggerDetailDto.setEnvName(schedulerContext.envName());
+        triggerDetailDto.setMachineIp(schedulerContext.machineIp());
+        triggerDetailDto.setMachinePort(schedulerContext.machinePort());
+
+        final ITimer timer = schedulerContext.timer();
+        final IJobDetailStore jobDetailStore = schedulerContext.jobDetailStore();
+        final ITriggerDetailStore triggerDetailStore = schedulerContext.triggerDetailStore();
+        final IJobTriggerStore jobTriggerStore = schedulerContext.jobTriggerStore();
+
+        schedulerContext.jobStore().add(jobDetailDto.getJobId(), job);
+        schedulerContext.triggerStore().add(triggerDetailDto.getTriggerId(), trigger);
+        jobDetailStore.add(jobDetailDto);
+        triggerDetailStore.add(triggerDetailDto);
+
+        // 结束时间判断
+        if(InnerJobTriggerHelper.hasMeetEndTime(timer, triggerDetailDto)) {
+            return;
+        }
+
+        // 把 trigger.nextTime + jobId triggerId 放入到调度队列中
+        ITriggerContext triggerContext = TriggerContext.newInstance()
+                .timer(timer);
+        JobTriggerDto triggerDto = InnerJobTriggerHelper.buildJobTriggerDto(jobDetailDto, trigger, triggerDetailDto, triggerContext);
+
+        // 上下文
+        IJobTriggerStoreContext jobTriggerStoreContext = JobTriggerStoreContext
+                .newInstance()
+                .jobDetailStore(jobDetailStore)
+                .triggerDetailStore(triggerDetailStore)
+                .timer(timer)
+                .listener(schedulerContext.jobTriggerStoreListener());
+        jobTriggerStore.put(triggerDto, jobTriggerStoreContext);
     }
 
 }

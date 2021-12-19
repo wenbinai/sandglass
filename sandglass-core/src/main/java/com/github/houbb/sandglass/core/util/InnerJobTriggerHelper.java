@@ -34,7 +34,7 @@ public class InnerJobTriggerHelper {
     public static boolean hasMeetEndTime(final ITimer timer, TriggerDetailDto trigger) {
         // 当前时间
         long currentTime = timer.time();
-        long endTime = trigger.endTime();
+        long endTime = trigger.getEndTime();
 
         return currentTime >= endTime;
     }
@@ -52,18 +52,18 @@ public class InnerJobTriggerHelper {
                                                    TriggerDetailDto triggerDetailDto,
                                                    ITriggerContext context) {
         JobTriggerDto dto = new JobTriggerDto();
-        dto.jobId(jobDetail.jobId());
-        dto.triggerId(triggerDetailDto.triggerId());
-        dto.order(triggerDetailDto.triggerOrder());
+        dto.setJobId(jobDetail.getJobId());
+        dto.setTriggerId(triggerDetailDto.getTriggerId());
+        dto.setOrder(triggerDetailDto.getTriggerOrder());
 
         // 应用基本信息
-        dto.appName(jobDetail.appName());
-        dto.envName(jobDetail.envName());
-        dto.machineIp(jobDetail.machineIp());
-        dto.machinePort(jobDetail.machinePort());
+        dto.setAppName(jobDetail.getAppName());
+        dto.setEnvName(jobDetail.getEnvName());
+        dto.setMachineIp(jobDetail.getMachineIp());
+        dto.setMachinePort(jobDetail.getMachinePort());
 
         long nextTime = trigger.nextTime(context);
-        dto.nextTime(nextTime);
+        dto.setNextTime(nextTime);
 
         return dto;
     }
@@ -80,8 +80,8 @@ public class InnerJobTriggerHelper {
     public static void handleJobAndTriggerNextFire(IWorkerThreadPoolContext context,
                                                    final long actualFiredTime) {
         JobTriggerDto jobTriggerDto = context.preJobTriggerDto();
-        final String jobId = jobTriggerDto.jobId();
-        final String triggerId = jobTriggerDto.triggerId();
+        final String jobId = jobTriggerDto.getJobId();
+        final String triggerId = jobTriggerDto.getTriggerId();
 
         final IJob job = context.jobStore().job(jobId);
         LOG.debug("更新任务和触发器的状态 {}", jobTriggerDto.toString());
@@ -89,7 +89,7 @@ public class InnerJobTriggerHelper {
 
         final ITriggerStore triggerStore = context.triggerStore();
         final ITimer timer = context.timer();
-        final ITrigger trigger = triggerStore.trigger(jobTriggerDto.triggerId());
+        final ITrigger trigger = triggerStore.trigger(jobTriggerDto.getTriggerId());
         final IJobTriggerStore jobTriggerStore = context.jobTriggerStore();
 
         // 更新状态为已完成
@@ -109,7 +109,7 @@ public class InnerJobTriggerHelper {
 
         // 存放下一次的执行时间
         ITriggerContext triggerContext = TriggerContext.newInstance()
-                .lastScheduleTime(jobTriggerDto.nextTime())
+                .lastScheduleTime(jobTriggerDto.getNextTime())
                 .lastActualFiredTime(actualFiredTime)
                 .lastCompleteTime(timer.time())
                 .timer(timer);
@@ -144,8 +144,8 @@ public class InnerJobTriggerHelper {
                                            final JobStatusEnum jobStatusEnum,
                                            final TriggerStatusEnum triggerStatusEnum) {
         JobTriggerDto jobTriggerDto = context.preJobTriggerDto();
-        final String jobId = jobTriggerDto.jobId();
-        final String triggerId = jobTriggerDto.triggerId();
+        final String jobId = jobTriggerDto.getJobId();
+        final String triggerId = jobTriggerDto.getTriggerId();
 
         final IJobDetailStore jobDetailStore = context.jobDetailStore();
         final ITriggerDetailStore triggerDetailStore = context.triggerDetailStore();

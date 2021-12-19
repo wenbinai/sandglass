@@ -15,27 +15,25 @@ public class TriggerAndDetailDto {
 
     public static TriggerAndDetailDto of(ITrigger trigger, TriggerDetailDto triggerDetailDto) {
         TriggerAndDetailDto detailDto = new TriggerAndDetailDto();
-        detailDto.trigger(trigger);
-        detailDto.triggerDetailDto(triggerDetailDto);
+        detailDto.setTrigger(trigger);
+        detailDto.setTriggerDetailDto(triggerDetailDto);
         return detailDto;
     }
 
-    public ITrigger trigger() {
+    public ITrigger getTrigger() {
         return trigger;
     }
 
-    public TriggerAndDetailDto trigger(ITrigger trigger) {
+    public void setTrigger(ITrigger trigger) {
         this.trigger = trigger;
-        return this;
     }
 
-    public TriggerDetailDto triggerDetailDto() {
+    public TriggerDetailDto getTriggerDetailDto() {
         return triggerDetailDto;
     }
 
-    public TriggerAndDetailDto triggerDetailDto(TriggerDetailDto triggerDetailDto) {
+    public void setTriggerDetailDto(TriggerDetailDto triggerDetailDto) {
         this.triggerDetailDto = triggerDetailDto;
-        return this;
     }
 
     @Override

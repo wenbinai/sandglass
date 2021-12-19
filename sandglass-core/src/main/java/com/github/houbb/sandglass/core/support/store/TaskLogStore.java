@@ -6,7 +6,6 @@ import com.github.houbb.sandglass.api.dto.TaskLogDto;
 import com.github.houbb.sandglass.api.support.store.ITaskLogStore;
 import com.github.houbb.sandglass.core.support.struct.FixedLinkedList;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -29,11 +28,6 @@ public class TaskLogStore implements ITaskLogStore {
     public synchronized ITaskLogStore add(TaskLogDto dto) {
         LIST.add(dto);
         return this;
-    }
-
-    @Override
-    public List<TaskLogDto> list() {
-        return Collections.unmodifiableList(LIST);
     }
 
 }

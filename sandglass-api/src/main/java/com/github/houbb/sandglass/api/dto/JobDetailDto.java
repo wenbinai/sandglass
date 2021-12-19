@@ -68,85 +68,76 @@ public class JobDetailDto extends BaseDto {
      */
     private String springMethodName = "";
 
-    public String jobId() {
+    public String getJobId() {
         return jobId;
     }
 
-    public JobDetailDto jobId(String jobId) {
+    public void setJobId(String jobId) {
         this.jobId = jobId;
-        return this;
     }
 
-    public String status() {
+    public String getStatus() {
         return status;
     }
 
-    public JobDetailDto status(String status) {
+    public void setStatus(String status) {
         this.status = status;
-        return this;
     }
 
-    public String remark() {
+    public String getRemark() {
         return remark;
     }
 
-    public JobDetailDto remark(String remark) {
+    public void setRemark(String remark) {
         this.remark = remark;
-        return this;
     }
 
-    public Map<String, String> dataMap() {
+    public Map<String, String> getDataMap() {
         return dataMap;
     }
 
-    public JobDetailDto dataMap(Map<String, String> dataMap) {
+    public void setDataMap(Map<String, String> dataMap) {
         this.dataMap = dataMap;
-        return this;
     }
 
-    public boolean allowConcurrentExecute() {
+    public boolean isAllowConcurrentExecute() {
         return allowConcurrentExecute;
     }
 
-    public JobDetailDto allowConcurrentExecute(boolean allowConcurrentExecute) {
+    public void setAllowConcurrentExecute(boolean allowConcurrentExecute) {
         this.allowConcurrentExecute = allowConcurrentExecute;
-        return this;
     }
 
-    public String jobType() {
+    public String getJobType() {
         return jobType;
     }
 
-    public JobDetailDto jobType(String jobType) {
+    public void setJobType(String jobType) {
         this.jobType = jobType;
-        return this;
     }
 
-    public String classFullName() {
+    public String getClassFullName() {
         return classFullName;
     }
 
-    public JobDetailDto classFullName(String classFullName) {
+    public void setClassFullName(String classFullName) {
         this.classFullName = classFullName;
-        return this;
     }
 
-    public String springBeanName() {
+    public String getSpringBeanName() {
         return springBeanName;
     }
 
-    public JobDetailDto springBeanName(String springBeanName) {
+    public void setSpringBeanName(String springBeanName) {
         this.springBeanName = springBeanName;
-        return this;
     }
 
-    public String springMethodName() {
+    public String getSpringMethodName() {
         return springMethodName;
     }
 
-    public JobDetailDto springMethodName(String springMethodName) {
+    public void setSpringMethodName(String springMethodName) {
         this.springMethodName = springMethodName;
-        return this;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.github.houbb.sandglass.core.support.store;
 
-import com.github.houbb.sandglass.api.api.ITrigger;
 import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
 import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
 import com.github.houbb.sandglass.api.support.store.ITriggerDetailStore;
@@ -22,7 +21,7 @@ public class TriggerDetailStore implements ITriggerDetailStore {
 
     @Override
     public void add(TriggerDetailDto triggerDetailDto) {
-        map.put(triggerDetailDto.triggerId(), triggerDetailDto);
+        map.put(triggerDetailDto.getTriggerId(), triggerDetailDto);
     }
 
     @Override
@@ -32,14 +31,14 @@ public class TriggerDetailStore implements ITriggerDetailStore {
 
     @Override
     public void edit(TriggerDetailDto detailDto) {
-        map.put(detailDto.triggerId(), detailDto);
+        map.put(detailDto.getTriggerId(), detailDto);
     }
 
     @Override
     public TriggerDetailDto editStatus(String triggerId, String triggerStatusEnum) {
         TriggerDetailDto detailDto = detail(triggerId);
         if(detailDto != null) {
-            detailDto.status(triggerStatusEnum);
+            detailDto.setStatus(triggerStatusEnum);
             edit(detailDto);
         }
         return detailDto;
