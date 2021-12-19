@@ -43,6 +43,7 @@ public class InnerJobTriggerHelper {
      * 构建任务触发对象
      * @param jobDetail 任务
      * @param trigger 触发器
+     * @param triggerDetailDto 详情信息
      * @param context 触发器上下文
      * @return 实现
      * @since 0.0.3

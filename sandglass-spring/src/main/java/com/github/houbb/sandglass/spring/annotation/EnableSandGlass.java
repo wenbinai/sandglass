@@ -20,7 +20,7 @@ import java.lang.annotation.*;
 public @interface EnableSandGlass {
 
     /**
-     * 应用名称
+     * @return 应用名称
      * @since 1.2.0
      */
     String appName() default SandGlassConst.DEFAULT_APP_NAME;

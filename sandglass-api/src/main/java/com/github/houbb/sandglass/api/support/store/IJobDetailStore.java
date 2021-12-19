@@ -21,6 +21,7 @@ public interface IJobDetailStore {
      * 删除
      * @param id 标识
      * @since 1.0.0
+     * @return 结果
      */
     JobDetailDto remove(String id);
 
@@ -36,6 +37,7 @@ public interface IJobDetailStore {
      * @param jobId 任务标识
      * @param jobStatus 任务状态枚举
      * @since 1.0.0
+     * @return 结果
      */
     JobDetailDto editStatus(String jobId, String jobStatus);
 
