@@ -259,6 +259,7 @@ public class SpringConfig {
 sandglass 共计 5 个子模块：
 
 | 名称 | 说明 | 作用 |
+|:---|:---|:---|
 | sandglass-api | 接口模块 | 定义标准 |
 | sandglass-core | 核心模块 | 核心实现，可完全独立 spring 运行 |
 | sandglass-spring | spring 模块 | 整合 spring，便于使用  |
