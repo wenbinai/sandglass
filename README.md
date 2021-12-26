@@ -252,11 +252,24 @@ public class SpringConfig {
 
 > [https://gitee.com/houbinbin/sandglass](https://gitee.com/houbinbin/sandglass)
 
-# 拓展阅读
+# 模块介绍
 
+## 子模块
 
+sandglass 共计 5 个子模块：
 
-# 产品矩阵
+| 名称 | 说明 | 作用 |
+| sandglass-api | 接口模块 | 定义标准 |
+| sandglass-core | 核心模块 | 核心实现，可完全独立 spring 运行 |
+| sandglass-spring | spring 模块 | 整合 spring，便于使用  |
+| sandglass-springboot-starter | springboot 模块 | 整合 springboot，便于使用  |
+| sandglass-test | 测试模块 | 功能测试，便于用户编写用例参考  |
+
+采用渐进式的 MVP 设计理念，基本可以满足日常开发中的常见场景。
+
+当然，分布式的任务调度服务会复杂的多，将会以 sandglass 为基础进行拓展实现。
+
+## 产品矩阵
 
 | 名称 | 说明 | 状态 |
 |:---|:---|:---|
