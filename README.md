@@ -27,6 +27,29 @@
 
 - 真正意义上的分布式任务调度系统
 
+# 创作目的
+
+定时任务是业务需求中非常常见的，比如在 [为了吃瓜通宵7天写了一个网站](https://mp.weixin.qq.com/s/lYtxWur2-WJhbOKYx98pBA) 中，
+每天定时的邮件推送就是使用的 sandglass 实现。
+
+为什么需要重新实现一个任务调度框架呢？
+
+java 已有的实现任务调度的主流工具如下：
+
+| 名称 | 多线程执行 | cron 表达式 | 使用难度 | 可独立 spring 运行 | 任务执行等持久化 | 分布式支持 |
+|:----|:----|:----|:----|:----|:----|:----|
+| Timer | 否 | 否 | 简单 | 是 | 需自己实现 | 否 |
+| ScheduledExecutor | 否 | 否 | 一般 | 是 | 需自己实现 | 否 |
+| Quartz | 是 | 是 | 麻烦 | 是 | 是 | 较差 |
+| Spring Schedule | 是 | 是 | 简单 | 否 | 否 | 否 |
+| Sandglass | 是 | 是 | 简单 | 是 | 是 | 是 |
+
+- sandglass 拥有 quartz 的强大功能，spring schedule 的使用便捷性。
+
+- sandglass 的实现简洁，便于系统学习调度系统的原理。
+
+- sandglass 基于分布式理念设计，便于作为分布式调度系统的实现基石。
+
 # 快速开始
 
 ## maven 引入
@@ -220,6 +243,27 @@ public class SpringConfig {
 ## 方法定义
 
 同 spring 整合
+
+# 开源地址
+
+为了便于大家共同学习，开源地址如下：
+
+> [https://github.com/houbb/sandglass](https://github.com/houbb/sandglass) 
+
+> [https://gitee.com/houbinbin/sandglass](https://gitee.com/houbinbin/sandglass)
+
+# 拓展阅读
+
+
+
+# 产品矩阵
+
+| 名称 | 说明 | 状态 |
+|:---|:---|:---|
+| sandglass | 核心实现 | 已开源 |
+| sandglass-web | 任务调度控台 | 开发中 |
+| sandglass-client | 任务调度客户端 | 开发中 |
+| sandglass-socket | 底层通讯协议 | 开发中 |
 
 # Road-Map
 
