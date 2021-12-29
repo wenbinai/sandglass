@@ -3,7 +3,9 @@ package com.github.houbb.sandglass.core.support.store;
 import com.github.houbb.heaven.annotation.NotThreadSafe;
 import com.github.houbb.sandglass.api.dto.JobDetailDto;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,6 +40,11 @@ public class JobDetailStore extends AbstractJobDetailStore {
     @Override
     public JobDetailDto detail(String id) {
         return map.get(id);
+    }
+
+    @Override
+    public Collection<JobDetailDto> list() {
+        return map.values();
     }
 
 }

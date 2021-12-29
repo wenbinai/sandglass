@@ -1,10 +1,13 @@
 package com.github.houbb.sandglass.core.bs;
 
+import com.github.houbb.heaven.support.tuple.impl.Pair;
 import com.github.houbb.heaven.util.common.ArgUtil;
 import com.github.houbb.heaven.util.net.NetUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.lock.redis.core.Locks;
 import com.github.houbb.sandglass.api.api.*;
+import com.github.houbb.sandglass.api.dto.JobDetailDto;
+import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
@@ -22,6 +25,10 @@ import com.github.houbb.sandglass.core.support.thread.ScheduleMainThreadLoop;
 import com.github.houbb.sandglass.core.support.thread.WorkerThreadPool;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 引导类
@@ -398,11 +405,11 @@ public final class SandGlassBs {
     /**
      * 任务调度
      * @param jobId 任务
-     * @param triggerId 触发器
      * @return this
      * @since 1.4.0
      */
-    public SandGlassBs unSchedule(final String jobId, final String triggerId) {
+    public SandGlassBs unSchedule(final String jobId) {
+        String triggerId = getTriggerId(jobId);
         paramCheck(jobId, triggerId);
 
         this.scheduler.unSchedule(jobId, triggerId, schedulerContext);
@@ -412,11 +419,11 @@ public final class SandGlassBs {
     /**
      * 任务暂停
      * @param jobId 任务
-     * @param triggerId 触发器
      * @return this
      * @since 1.4.1
      */
-    public SandGlassBs pause(final String jobId, final String triggerId) {
+    public SandGlassBs pause(final String jobId) {
+        String triggerId = getTriggerId(jobId);
         paramCheck(jobId, triggerId);
 
         this.scheduler.pause(jobId, triggerId, schedulerContext);
@@ -426,15 +433,46 @@ public final class SandGlassBs {
     /**
      * 任务恢复
      * @param jobId 任务
-     * @param triggerId 触发器
      * @return this
      * @since 1.4.1
      */
-    public SandGlassBs resume(final String jobId, final String triggerId) {
+    public SandGlassBs resume(final String jobId) {
+        String triggerId = getTriggerId(jobId);
         paramCheck(jobId, triggerId);
 
         this.scheduler.resume(jobId, triggerId, schedulerContext);
         return this;
+    }
+
+    /**
+     * 查询任务明细+触发器明细的列表
+     * @return 结果
+     * @since 1.4.2
+     */
+    public List<Pair<JobDetailDto, TriggerDetailDto>> jobAndTriggerDetailList() {
+        //1. 查询 job
+        Collection<JobDetailDto> jobDetailDtoCollection = this.jobDetailStore.list();
+
+        List<Pair<JobDetailDto, TriggerDetailDto>> resultList = new ArrayList<>();
+
+        for(JobDetailDto jobDetailDto : jobDetailDtoCollection) {
+            String jobId = jobDetailDto.getJobId();
+            String triggerId = getTriggerId(jobId);
+            TriggerDetailDto triggerDetailDto = triggerDetailStore.detail(triggerId);
+
+            resultList.add(Pair.of(jobDetailDto, triggerDetailDto));
+        }
+        return resultList;
+    }
+
+    /**
+     * 获取对应的触发器标识
+     * @param jobId 任务标识
+     * @return 结果
+     * @since 1.4.2
+     */
+    private String getTriggerId(final String jobId) {
+        return jobTriggerMappingStore.get(jobId);
     }
 
     /**

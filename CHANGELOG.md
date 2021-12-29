@@ -129,3 +129,12 @@
 | 1 | A | 添加 SandglassBs#pause | 2021-12-29 21:55:32 | |
 | 2 | A | 添加 SandglassBs#resume | 2021-12-29 21:55:32 | |
 | 3 | A | 添加 SandglassBs#unSchedule | 2021-12-29 21:55:32 | |
+
+# release_1.4.2
+
+| 序号 | 变更类型 | 说明 | 时间 | 备注 |
+|:---|:---|:---|:---|:--|
+| 1 | O | 优化 SandglassBs#pause | 2021-12-29 21:55:32 | |
+| 2 | O | 优化 SandglassBs#resume | 2021-12-29 21:55:32 | |
+| 3 | O | 优化 SandglassBs#unSchedule | 2021-12-29 21:55:32 | |
+| 4 | A | 新增 SandglassBs#jobAndTriggerDetailList | 2021-12-29 21:55:32 | |

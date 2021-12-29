@@ -2,6 +2,9 @@ package com.github.houbb.sandglass.api.support.store;
 
 import com.github.houbb.sandglass.api.dto.JobDetailDto;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * 任务详情管理
  *
@@ -64,5 +67,12 @@ public interface IJobDetailStore {
      * @since 1.0.0
      */
     JobDetailDto resume(String id);
+
+    /**
+     * 列表
+     * @return 列表
+     * @since 1.4.2
+     */
+    Collection<JobDetailDto> list();
 
 }

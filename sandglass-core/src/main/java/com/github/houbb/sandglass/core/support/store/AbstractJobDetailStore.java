@@ -6,6 +6,7 @@ import com.github.houbb.sandglass.api.dto.JobDetailDto;
 import com.github.houbb.sandglass.api.support.store.IJobDetailStore;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
