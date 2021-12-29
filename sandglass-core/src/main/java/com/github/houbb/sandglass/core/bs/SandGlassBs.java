@@ -387,10 +387,67 @@ public final class SandGlassBs {
      */
     public SandGlassBs schedule(final IJob job, final ITrigger trigger) {
         ArgUtil.notNull(scheduler, "scheduler");
+        ArgUtil.notNull(job, "job");
+        ArgUtil.notNull(trigger, "trigger");
 
         this.scheduler.schedule(job, trigger, schedulerContext);
 
         return this;
+    }
+
+    /**
+     * 任务调度
+     * @param jobId 任务
+     * @param triggerId 触发器
+     * @return this
+     * @since 1.4.0
+     */
+    public SandGlassBs unSchedule(final String jobId, final String triggerId) {
+        paramCheck(jobId, triggerId);
+
+        this.scheduler.unSchedule(jobId, triggerId, schedulerContext);
+        return this;
+    }
+
+    /**
+     * 任务暂停
+     * @param jobId 任务
+     * @param triggerId 触发器
+     * @return this
+     * @since 1.4.1
+     */
+    public SandGlassBs pause(final String jobId, final String triggerId) {
+        paramCheck(jobId, triggerId);
+
+        this.scheduler.pause(jobId, triggerId, schedulerContext);
+        return this;
+    }
+
+    /**
+     * 任务恢复
+     * @param jobId 任务
+     * @param triggerId 触发器
+     * @return this
+     * @since 1.4.1
+     */
+    public SandGlassBs resume(final String jobId, final String triggerId) {
+        paramCheck(jobId, triggerId);
+
+        this.scheduler.resume(jobId, triggerId, schedulerContext);
+        return this;
+    }
+
+    /**
+     * 参数校验
+     * @param jobId 任务
+     * @param triggerId 触发器
+     * @since 1
+     * 1.4.1
+     */
+    private void paramCheck(final String jobId, final String triggerId) {
+        ArgUtil.notNull(scheduler, "scheduler");
+        ArgUtil.notEmpty(jobId, "jobId");
+        ArgUtil.notEmpty(triggerId, "triggerId");
     }
 
 }
