@@ -38,8 +38,6 @@ import java.util.List;
  */
 public final class SandGlassBs {
 
-    private SandGlassBs(){}
-
     /**
      * 新建对象实例
      * @return 实例
@@ -323,6 +321,84 @@ public final class SandGlassBs {
         return schedulerContext;
     }
 
+
+    // 对应的 getter
+    public String appName() {
+        return appName;
+    }
+
+    public String envName() {
+        return envName;
+    }
+
+    public String machineIp() {
+        return machineIp;
+    }
+
+    public int machinePort() {
+        return machinePort;
+    }
+
+    public int workPoolSize() {
+        return workPoolSize;
+    }
+
+    public IJobStore jobStore() {
+        return jobStore;
+    }
+
+    public ITriggerStore triggerStore() {
+        return triggerStore;
+    }
+
+    public ITimer timer() {
+        return timer;
+    }
+
+    public ILock triggerLock() {
+        return triggerLock;
+    }
+
+    public IJobTriggerStore jobTriggerStore() {
+        return jobTriggerStore;
+    }
+
+    public IScheduleListener scheduleListener() {
+        return scheduleListener;
+    }
+
+    public IJobListener jobListener() {
+        return jobListener;
+    }
+
+    public ITriggerListener triggerListener() {
+        return triggerListener;
+    }
+
+    public IJobTriggerStoreListener jobTriggerStoreListener() {
+        return jobTriggerStoreListener;
+    }
+
+    public IOutOfDateStrategy outOfDateStrategy() {
+        return outOfDateStrategy;
+    }
+
+    public ITaskLogStore taskLogStore() {
+        return taskLogStore;
+    }
+
+    public IJobDetailStore jobDetailStore() {
+        return jobDetailStore;
+    }
+
+    public ITriggerDetailStore triggerDetailStore() {
+        return triggerDetailStore;
+    }
+
+    public IJobTriggerMappingStore jobTriggerMappingStore() {
+        return jobTriggerMappingStore;
+    }
+
     /**
      * 线程启动
      * @return this
@@ -400,92 +476,6 @@ public final class SandGlassBs {
         this.scheduler.schedule(job, trigger, schedulerContext);
 
         return this;
-    }
-
-    /**
-     * 任务调度
-     * @param jobId 任务
-     * @return this
-     * @since 1.4.0
-     */
-    public SandGlassBs unSchedule(final String jobId) {
-        String triggerId = getTriggerId(jobId);
-        paramCheck(jobId, triggerId);
-
-        this.scheduler.unSchedule(jobId, triggerId, schedulerContext);
-        return this;
-    }
-
-    /**
-     * 任务暂停
-     * @param jobId 任务
-     * @return this
-     * @since 1.4.1
-     */
-    public SandGlassBs pause(final String jobId) {
-        String triggerId = getTriggerId(jobId);
-        paramCheck(jobId, triggerId);
-
-        this.scheduler.pause(jobId, triggerId, schedulerContext);
-        return this;
-    }
-
-    /**
-     * 任务恢复
-     * @param jobId 任务
-     * @return this
-     * @since 1.4.1
-     */
-    public SandGlassBs resume(final String jobId) {
-        String triggerId = getTriggerId(jobId);
-        paramCheck(jobId, triggerId);
-
-        this.scheduler.resume(jobId, triggerId, schedulerContext);
-        return this;
-    }
-
-    /**
-     * 查询任务明细+触发器明细的列表
-     * @return 结果
-     * @since 1.4.2
-     */
-    public List<Pair<JobDetailDto, TriggerDetailDto>> jobAndTriggerDetailList() {
-        //1. 查询 job
-        Collection<JobDetailDto> jobDetailDtoCollection = this.jobDetailStore.list();
-
-        List<Pair<JobDetailDto, TriggerDetailDto>> resultList = new ArrayList<>();
-
-        for(JobDetailDto jobDetailDto : jobDetailDtoCollection) {
-            String jobId = jobDetailDto.getJobId();
-            String triggerId = getTriggerId(jobId);
-            TriggerDetailDto triggerDetailDto = triggerDetailStore.detail(triggerId);
-
-            resultList.add(Pair.of(jobDetailDto, triggerDetailDto));
-        }
-        return resultList;
-    }
-
-    /**
-     * 获取对应的触发器标识
-     * @param jobId 任务标识
-     * @return 结果
-     * @since 1.4.2
-     */
-    private String getTriggerId(final String jobId) {
-        return jobTriggerMappingStore.get(jobId);
-    }
-
-    /**
-     * 参数校验
-     * @param jobId 任务
-     * @param triggerId 触发器
-     * @since 1
-     * 1.4.1
-     */
-    private void paramCheck(final String jobId, final String triggerId) {
-        ArgUtil.notNull(scheduler, "scheduler");
-        ArgUtil.notEmpty(jobId, "jobId");
-        ArgUtil.notEmpty(triggerId, "triggerId");
     }
 
 }

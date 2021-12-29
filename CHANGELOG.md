@@ -138,3 +138,9 @@
 | 2 | O | 优化 SandglassBs#resume | 2021-12-29 21:55:32 | |
 | 3 | O | 优化 SandglassBs#unSchedule | 2021-12-29 21:55:32 | |
 | 4 | A | 新增 SandglassBs#jobAndTriggerDetailList | 2021-12-29 21:55:32 | |
+
+# release_1.4.3
+
+| 序号 | 变更类型 | 说明 | 时间 | 备注 |
+|:---|:---|:---|:---|:--|
+| 1 | O | 依赖优化，便于 sandglass-socket 优化 | 2021-12-29 21:55:32 | |
