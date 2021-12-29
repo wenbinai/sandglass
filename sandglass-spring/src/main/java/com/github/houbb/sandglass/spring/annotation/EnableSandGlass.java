@@ -135,4 +135,10 @@ public @interface EnableSandGlass {
      */
     String taskLogStore() default "sandglass-taskLogStore";
 
+    /**
+     * 任务触发器映射关系持久化
+     * @return 1.4.0
+     */
+    String jobTriggerMappingStore() default "sandglass-jobTriggerMappingStore";
+
 }

@@ -161,6 +161,12 @@ public final class SandGlassBs {
      */
     private ITriggerDetailStore triggerDetailStore = new TriggerDetailStore();
 
+    /**
+     * 任务触发器映射持久化类
+     * @since 1.4.0
+     */
+    private IJobTriggerMappingStore jobTriggerMappingStore = new JobTriggerMappingStore();
+
     public SandGlassBs appName(String appName) {
         ArgUtil.notEmpty(appName, "appName");
 
@@ -295,6 +301,13 @@ public final class SandGlassBs {
         return this;
     }
 
+    public SandGlassBs jobTriggerMappingStore(IJobTriggerMappingStore jobTriggerMappingStore) {
+        ArgUtil.notNull(jobTriggerMappingStore, "jobTriggerMappingStore");
+
+        this.jobTriggerMappingStore = jobTriggerMappingStore;
+        return this;
+    }
+
     public IScheduler scheduler() {
         return scheduler;
     }
@@ -359,7 +372,8 @@ public final class SandGlassBs {
                 .appName(appName)
                 .envName(envName)
                 .machineIp(machineIp)
-                .machinePort(machinePort);
+                .machinePort(machinePort)
+                .jobTriggerMappingStore(jobTriggerMappingStore);
 
         return this;
     }

@@ -127,6 +127,7 @@ public class EnableSandGlassConfig implements ImportAware,
         ITaskLogStore taskLogStore = beanFactory.getBean(enableSandGlassAttributes.getString("taskLogStore"), ITaskLogStore.class);
         IJobDetailStore jobDetailStore = beanFactory.getBean(enableSandGlassAttributes.getString("jobDetailStore"), IJobDetailStore.class);
         ITriggerDetailStore triggerDetailStore = beanFactory.getBean(enableSandGlassAttributes.getString("triggerDetailStore"), ITriggerDetailStore.class);
+        IJobTriggerMappingStore jobTriggerMappingStore = beanFactory.getBean(enableSandGlassAttributes.getString("jobTriggerMappingStore"), IJobTriggerMappingStore.class);
 
         SandGlassBs sandGlassBs = SandGlassBs.newInstance()
                 .workPoolSize(workPoolSize)
@@ -147,6 +148,7 @@ public class EnableSandGlassConfig implements ImportAware,
                 .envName(envName)
                 .machineIp(machineIp)
                 .machinePort(Integer.parseInt(machinePort))
+                .jobTriggerMappingStore(jobTriggerMappingStore)
                 ;
 
         sandGlassBs.init();

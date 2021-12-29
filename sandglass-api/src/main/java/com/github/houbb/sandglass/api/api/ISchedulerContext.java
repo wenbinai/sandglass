@@ -105,27 +105,38 @@ public interface ISchedulerContext {
     IJobTriggerStoreListener jobTriggerStoreListener();
 
     /**
+     * 应用名称
      * @return 应用名称
      * @since 1.2.0
      */
     String appName();
 
     /**
+     * 环境名称
      * @return 环境名称
      * @since 1.2.0
      */
     String envName();
 
     /**
+     * 机器标识
      * @return 机器标识
      * @since 1.2.0
      */
     String machineIp();
 
     /**
+     * 机器端口
      * @return 机器端口
      * @since 1.3.0
      */
     int machinePort();
+
+    /**
+     * 任务与触发器映射管理器
+     * @return 结果
+     * @since 1.4.0
+     */
+    IJobTriggerMappingStore jobTriggerMappingStore();
 
 }

@@ -89,6 +89,12 @@ public class SchedulerContext implements ISchedulerContext {
      */
     private int machinePort;
 
+    /**
+     * 任务与触发器映射管理器
+     * @since 1.4.0
+     */
+    private IJobTriggerMappingStore jobTriggerMappingStore;
+
     @Override
     public Runnable mainThreadLoop() {
         return mainThreadLoop;
@@ -179,6 +185,7 @@ public class SchedulerContext implements ISchedulerContext {
         return this;
     }
 
+    @Override
     public String appName() {
         return appName;
     }
@@ -188,6 +195,7 @@ public class SchedulerContext implements ISchedulerContext {
         return this;
     }
 
+    @Override
     public String envName() {
         return envName;
     }
@@ -197,6 +205,7 @@ public class SchedulerContext implements ISchedulerContext {
         return this;
     }
 
+    @Override
     public String machineIp() {
         return machineIp;
     }
@@ -213,6 +222,16 @@ public class SchedulerContext implements ISchedulerContext {
 
     public SchedulerContext machinePort(int machinePort) {
         this.machinePort = machinePort;
+        return this;
+    }
+
+    @Override
+    public IJobTriggerMappingStore jobTriggerMappingStore() {
+        return jobTriggerMappingStore;
+    }
+
+    public SchedulerContext jobTriggerMappingStore(IJobTriggerMappingStore jobTriggerMappingStore) {
+        this.jobTriggerMappingStore = jobTriggerMappingStore;
         return this;
     }
 }

@@ -143,6 +143,10 @@ public class Scheduler implements IScheduler {
         jobDetailStore.remove(jobId);
         triggerDetailStore.remove(triggerId);
 
+        // 移除 trigger 映射
+        final IJobTriggerMappingStore mappingStore = schedulerContext.jobTriggerMappingStore();
+        mappingStore.remove(jobDetailDto.getJobId());
+
         schedulerContext.scheduleListener().unSchedule(jobDetailDto, triggerDetailDto);
     }
 
@@ -233,6 +237,10 @@ public class Scheduler implements IScheduler {
         schedulerContext.triggerStore().add(triggerDetailDto.getTriggerId(), trigger);
         jobDetailStore.add(jobDetailDto);
         triggerDetailStore.add(triggerDetailDto);
+
+        // 添加对应的映射关系
+        final IJobTriggerMappingStore mappingStore = schedulerContext.jobTriggerMappingStore();
+        mappingStore.put(jobDetailDto.getJobId(), triggerDetailDto.getTriggerId());
 
         // 结束时间判断
         if(InnerJobTriggerHelper.hasMeetEndTime(timer, triggerDetailDto)) {
