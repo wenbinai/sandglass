@@ -95,6 +95,12 @@ public class SchedulerContext implements ISchedulerContext {
      */
     private IJobTriggerMappingStore jobTriggerMappingStore;
 
+    /**
+     * 任务调度获取间隔
+     * @since 1.5.0
+     */
+    private long scheduleTakeIntervalMills;
+
     @Override
     public Runnable mainThreadLoop() {
         return mainThreadLoop;
@@ -232,6 +238,16 @@ public class SchedulerContext implements ISchedulerContext {
 
     public SchedulerContext jobTriggerMappingStore(IJobTriggerMappingStore jobTriggerMappingStore) {
         this.jobTriggerMappingStore = jobTriggerMappingStore;
+        return this;
+    }
+
+    @Override
+    public long scheduleTakeIntervalMills() {
+        return scheduleTakeIntervalMills;
+    }
+
+    public SchedulerContext scheduleTakeIntervalMills(long scheduleTakeIntervalMills) {
+        this.scheduleTakeIntervalMills = scheduleTakeIntervalMills;
         return this;
     }
 }

@@ -139,4 +139,11 @@ public interface ISchedulerContext {
      */
     IJobTriggerMappingStore jobTriggerMappingStore();
 
+    /**
+     * 获取调度的时间间隔
+     * @return 时间间隔
+     * @since 1.5.0
+     */
+    long scheduleTakeIntervalMills();
+
 }
