@@ -155,4 +155,21 @@ public class InnerJobTriggerHelper {
         triggerDetailStore.editStatus(triggerId, triggerStatusEnum.getCode());
     }
 
+    /**
+     * 重新放入触发任务
+     * @param jobTriggerDto 对象
+     * @param jobTriggerStore 持久化类
+     * @param jobTriggerStoreContext 上下文
+     * @since 1.4.4
+     */
+    public static void rePutJobTrigger(JobTriggerDto jobTriggerDto,
+                                       IJobTriggerStore jobTriggerStore,
+                                       IJobTriggerStoreContext jobTriggerStoreContext) {
+        // 添加 10S 延迟，重新放入。
+        long nextTime = jobTriggerDto.getNextTime() + 10000;
+        jobTriggerDto.setNextTime(nextTime);
+        LOG.debug("重新放入元素 {}", jobTriggerDto);
+        jobTriggerStore.put(jobTriggerDto, jobTriggerStoreContext);
+    }
+
 }

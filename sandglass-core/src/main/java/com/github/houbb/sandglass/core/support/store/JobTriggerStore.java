@@ -12,6 +12,7 @@ import com.github.houbb.sandglass.api.support.store.IJobTriggerStore;
 import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreContext;
 import com.github.houbb.sandglass.api.support.store.ITriggerDetailStore;
 import com.github.houbb.sandglass.core.exception.SandGlassException;
+import com.github.houbb.sandglass.core.util.InnerJobTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
 
 import java.util.concurrent.PriorityBlockingQueue;
@@ -54,7 +55,7 @@ public class JobTriggerStore implements IJobTriggerStore {
 
             //1.1 如果是暂停的任务，继续执行
             //1.2 如果还未到等待时间，继续执行
-            while (isPausedJobOrTrigger(peekDto, context.jobDetailStore(), context.triggerDetailStore())
+            while (isPausedJobOrTrigger(peekDto, context)
                     || !isAroundTheLoopTime(peekDto, context.timer())) {
                 TimeUnit.MILLISECONDS.sleep(1);
                 peekDto = queue.peek();
@@ -99,13 +100,14 @@ public class JobTriggerStore implements IJobTriggerStore {
      * 1. 如果是，则从队列中移除当前元素。
      *
      * @param jobTriggerDto 对象
-     * @param jobDetailStore 任务详情持久化
-     * @param triggerDetailStore 触发器详情持久化
+     * @param context 上下文
      * @return 结果
      */
     private boolean isPausedJobOrTrigger(JobTriggerDto jobTriggerDto,
-                                         IJobDetailStore jobDetailStore,
-                                         ITriggerDetailStore triggerDetailStore) {
+                                         IJobTriggerStoreContext context) {
+        IJobDetailStore jobDetailStore = context.jobDetailStore();
+        ITriggerDetailStore triggerDetailStore = context.triggerDetailStore();
+
         if(jobTriggerDto == null) {
             return false;
         }
@@ -116,14 +118,14 @@ public class JobTriggerStore implements IJobTriggerStore {
         JobDetailDto jobDetailDto = jobDetailStore.detail(jobId);
         if(JobStatusEnum.PAUSE.getCode().equals(jobDetailDto.getStatus())) {
             // 移除队首的元素
-            removeHeadAndRePut(jobTriggerDto);
+            removeHeadAndRePut(jobTriggerDto, context);
 
             return true;
         }
         TriggerDetailDto triggerDetailDto = triggerDetailStore.detail(triggerId);
         if(TriggerStatusEnum.PAUSE.getCode().equals(triggerDetailDto.getStatus())) {
             // 移除队首的元素
-            removeHeadAndRePut(jobTriggerDto);
+            removeHeadAndRePut(jobTriggerDto, context);
 
             return true;
         }
@@ -136,15 +138,14 @@ public class JobTriggerStore implements IJobTriggerStore {
      * @param jobTriggerDto 临时对象
      * @since 0.0.8
      */
-    private void removeHeadAndRePut(JobTriggerDto jobTriggerDto) {
+    private void removeHeadAndRePut(JobTriggerDto jobTriggerDto, IJobTriggerStoreContext context) {
         try {
             JobTriggerDto jobTriggerDtoOld = this.queue.take();
             LOG.debug("移除队首元素 {}", jobTriggerDtoOld);
 
-            long nextTime = jobTriggerDto.getNextTime() + 1000;
-            jobTriggerDto.setNextTime(nextTime);
-            LOG.debug("重新放入元素 {}", jobTriggerDto);
-            this.queue.put(jobTriggerDto);
+            // 重新放入队列
+            InnerJobTriggerHelper.rePutJobTrigger(jobTriggerDto, this,
+                    context);
         } catch (InterruptedException e) {
             LOG.warn("异常", e);
             throw new SandGlassException(e);

@@ -316,6 +316,19 @@ public class ScheduleMainThreadLoop extends Thread {
                     continue;
                 }
 
+                //2. 处理暂停的情况
+                String jobStatus = jobDetailDto.getStatus();
+                String triggerStatus = triggerDetailDto.getStatus();
+                if(JobStatusEnum.PAUSE.getCode().equals(jobStatus)
+                    || TriggerStatusEnum.PAUSE.getCode().equals(triggerStatus)) {
+                    LOG.warn("任务 job {}, trigger {} 对应的状态为暂停，重新放入队列。", jobId, triggerId);
+                    // 重新放入队列
+                    InnerJobTriggerHelper.rePutJobTrigger(jobTriggerDto, jobTriggerStore,
+                            jobTriggerStoreContext);
+
+                    continue;
+                }
+
                 //3. 获取 trigger 对应的 job。更新 trigger 的执行状态。获取 nextTime 到 queue 中
                 //3.1 更新 trigger & job 的状态
                 // 构建初始化日志
