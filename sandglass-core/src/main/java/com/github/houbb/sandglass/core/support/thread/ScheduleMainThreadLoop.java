@@ -2,6 +2,7 @@ package com.github.houbb.sandglass.core.support.thread;
 
 import com.github.houbb.heaven.util.common.ArgUtil;
 import com.github.houbb.heaven.util.util.DateUtil;
+import com.github.houbb.heaven.util.util.TimeUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
@@ -148,6 +149,17 @@ public class ScheduleMainThreadLoop extends Thread {
      * @since 1.3.0
      */
     private int machinePort;
+
+    /**
+     * 任务调度获取间隔
+     * @since 1.5.0
+     */
+    private long scheduleTakeIntervalMills;
+
+    public ScheduleMainThreadLoop scheduleTakeIntervalMills(long scheduleTakeIntervalMills) {
+        this.scheduleTakeIntervalMills = scheduleTakeIntervalMills;
+        return this;
+    }
 
     public ScheduleMainThreadLoop startFlag(boolean startFlag) {
         this.startFlag = startFlag;
@@ -296,6 +308,13 @@ public class ScheduleMainThreadLoop extends Thread {
                 if(jobTriggerDto == null) {
                     LOG.info("jobTriggerDto 信息为空");
                     this.triggerLock.unlock(triggerLockKey);
+
+                    // 如果信息为空，则进行 loop 等待，避免过滤频繁地访问 store
+                    if(scheduleTakeIntervalMills > 0) {
+                        LOG.info("服务端信息为空，开始进入等待 {}mills", scheduleTakeIntervalMills);
+                        TimeUtil.sleep(scheduleTakeIntervalMills);
+                        LOG.info("服务端信息为空，完成等待");
+                    }
                     continue;
                 }
                 // 释放锁

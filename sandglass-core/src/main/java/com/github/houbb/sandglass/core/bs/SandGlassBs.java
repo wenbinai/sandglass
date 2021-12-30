@@ -1,13 +1,12 @@
 package com.github.houbb.sandglass.core.bs;
 
-import com.github.houbb.heaven.support.tuple.impl.Pair;
 import com.github.houbb.heaven.util.common.ArgUtil;
-import com.github.houbb.heaven.util.net.NetUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.lock.redis.core.Locks;
-import com.github.houbb.sandglass.api.api.*;
-import com.github.houbb.sandglass.api.dto.JobDetailDto;
-import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
+import com.github.houbb.sandglass.api.api.IJob;
+import com.github.houbb.sandglass.api.api.IScheduler;
+import com.github.houbb.sandglass.api.api.ITrigger;
+import com.github.houbb.sandglass.api.api.IWorkerThreadPool;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
@@ -25,10 +24,6 @@ import com.github.houbb.sandglass.core.support.thread.ScheduleMainThreadLoop;
 import com.github.houbb.sandglass.core.support.thread.WorkerThreadPool;
 import com.github.houbb.timer.api.ITimer;
 import com.github.houbb.timer.core.timer.SystemTimer;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * 引导类
@@ -171,6 +166,18 @@ public final class SandGlassBs {
      * @since 1.4.0
      */
     private IJobTriggerMappingStore jobTriggerMappingStore = new JobTriggerMappingStore();
+
+    /**
+     * 任务调度获取间隔（只有获取数据不存在时，才会进入等待）
+     * @since 1.5.0
+     */
+    private long scheduleTakeIntervalMills = 1000;
+//
+//    /**
+//     * 任务调度获取大小
+//     * @since 1.5.0
+//     */
+//    private long scheduleTakeSize = 1;
 
     public SandGlassBs appName(String appName) {
         ArgUtil.notEmpty(appName, "appName");
@@ -399,6 +406,15 @@ public final class SandGlassBs {
         return jobTriggerMappingStore;
     }
 
+    public long scheduleTakeIntervalMills() {
+        return scheduleTakeIntervalMills;
+    }
+
+    public SandGlassBs scheduleTakeIntervalMills(long scheduleTakeIntervalMills) {
+        this.scheduleTakeIntervalMills = scheduleTakeIntervalMills;
+        return this;
+    }
+
     /**
      * 线程启动
      * @return this
@@ -440,7 +456,8 @@ public final class SandGlassBs {
                 .appName(appName)
                 .envName(envName)
                 .machineIp(machineIp)
-                .machinePort(machinePort);
+                .machinePort(machinePort)
+                .scheduleTakeIntervalMills(scheduleTakeIntervalMills);
 
         //调度类
         schedulerContext.jobDetailStore(jobDetailStore)

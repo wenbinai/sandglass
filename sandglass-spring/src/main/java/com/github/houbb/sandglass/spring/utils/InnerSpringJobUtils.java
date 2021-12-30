@@ -1,5 +1,6 @@
 package com.github.houbb.sandglass.spring.utils;
 
+import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.IJobContext;
 import com.github.houbb.sandglass.api.constant.JobTypeEnum;
@@ -67,7 +68,8 @@ public final class InnerSpringJobUtils {
      * @since 0.0.5
      */
     private static String buildJobId(String className, String methodName) {
-        return className + "#" + methodName;
+//        return className + "#" + methodName;
+        return IdHelper.uuid32();
     }
 
 }

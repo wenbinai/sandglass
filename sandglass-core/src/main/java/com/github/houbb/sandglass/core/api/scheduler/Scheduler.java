@@ -2,6 +2,7 @@ package com.github.houbb.sandglass.core.api.scheduler;
 
 import com.github.houbb.heaven.annotation.NotThreadSafe;
 import com.github.houbb.heaven.util.common.ArgUtil;
+import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.*;
@@ -111,7 +112,7 @@ public class Scheduler implements IScheduler {
     private JobDetailDto buildJobDetail(IJob job) {
         String classFullName = job.getClass().getName();
         JobDetailDto detailDto = new JobDetailDto();
-        detailDto.setJobId(classFullName);
+        detailDto.setJobId(IdHelper.uuid32());
         detailDto.setClassFullName(classFullName);
         return detailDto;
     }

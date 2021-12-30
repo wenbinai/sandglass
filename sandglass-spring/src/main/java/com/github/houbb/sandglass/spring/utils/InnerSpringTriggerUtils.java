@@ -1,5 +1,6 @@
 package com.github.houbb.sandglass.spring.utils;
 
+import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.sandglass.api.api.ITrigger;
 import com.github.houbb.sandglass.api.constant.TriggerTypeEnum;
 import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
@@ -88,7 +89,8 @@ public final class InnerSpringTriggerUtils {
      * @since 0.0.5
      */
     private static String buildTriggerId(String className, String methodName) {
-        return className + "#" + methodName;
+//        return className + "#" + methodName;
+        return IdHelper.uuid32();
     }
 
 }
