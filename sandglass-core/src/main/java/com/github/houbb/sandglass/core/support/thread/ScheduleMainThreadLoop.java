@@ -150,17 +150,6 @@ public class ScheduleMainThreadLoop extends Thread {
      */
     private int machinePort;
 
-    /**
-     * 任务调度获取间隔
-     * @since 1.5.0
-     */
-    private long scheduleTakeIntervalMills;
-
-    public ScheduleMainThreadLoop scheduleTakeIntervalMills(long scheduleTakeIntervalMills) {
-        this.scheduleTakeIntervalMills = scheduleTakeIntervalMills;
-        return this;
-    }
-
     public ScheduleMainThreadLoop startFlag(boolean startFlag) {
         this.startFlag = startFlag;
         return this;
@@ -282,14 +271,47 @@ public class ScheduleMainThreadLoop extends Thread {
         return this;
     }
 
+
+    /**
+     * 本地循环等待，直到触发的时间
+     * 1. 避免无效请求
+     * 2. 避免服务端压力过大
+     *
+     * TODO: 后续将结合服务端的数据变化通知，调整客户端的触发时机。
+     * @since 1.5.0
+     */
+    private void clientLoopUntilTakeTime() {
+        long nextTakeTime = jobTriggerStore.nextTakeTime();
+        long currentTime = timer.time();
+        if(currentTime >= nextTakeTime) {
+            return;
+        }
+
+        LOG.debug("client 开始进入等待 nextTakeTime: {}, currentTime: {}", nextTakeTime, currentTime);
+        while (currentTime < nextTakeTime) {
+            //1. 沉睡 10ms
+            TimeUtil.sleep(10);
+
+            //2. 更新 nextTime（避免中间时间发生了变化，错过执行的时机）
+            nextTakeTime = jobTriggerStore.nextTakeTime();
+
+            //3. 更新 currentTime
+            currentTime = timer.time();
+        }
+        LOG.debug("client 完成等待 nextTakeTime: {}, currentTime: {}", nextTakeTime, currentTime);
+    }
+
     @Override
     public void run() {
         this.startFlag = true;
         while (startFlag) {
             String triggerLockKey = buildTriggerLockKey();
             try {
+                // 本地 loop，直到到达可以获取信息的时候
+                clientLoopUntilTakeTime();
+
                 //0. 获取 trigger lock，便于后期分布式拓展
-                boolean triggerLock = this.triggerLock.tryLock(60, TimeUnit.SECONDS,triggerLockKey);
+                boolean triggerLock = this.triggerLock.tryLock(30, TimeUnit.SECONDS,triggerLockKey);
                 if(!triggerLock) {
                     LOG.info("trigger lock 获取失败");
                     // 获取锁失败
@@ -305,18 +327,15 @@ public class ScheduleMainThreadLoop extends Thread {
                         .jobDetailStore(jobDetailStore);
 
                 JobTriggerDto jobTriggerDto = this.jobTriggerStore.take(jobTriggerStoreContext);
-                if(jobTriggerDto == null) {
-                    LOG.info("jobTriggerDto 信息为空");
-                    this.triggerLock.unlock(triggerLockKey);
+                // 触发监听器
+                jobTriggerStoreContext.listener().take(jobTriggerDto);
 
-                    // 如果信息为空，则进行 loop 等待，避免过滤频繁地访问 store
-                    if(scheduleTakeIntervalMills > 0) {
-                        LOG.info("服务端信息为空，开始进入等待 {}mills", scheduleTakeIntervalMills);
-                        TimeUtil.sleep(scheduleTakeIntervalMills);
-                        LOG.info("服务端信息为空，完成等待");
-                    }
+                if(jobTriggerDto == null) {
+                    LOG.info("jobTriggerDto 信息为空，结束本次循环。");
+                    this.triggerLock.unlock(triggerLockKey);
                     continue;
                 }
+
                 // 释放锁
                 this.triggerLock.unlock(triggerLockKey);
 

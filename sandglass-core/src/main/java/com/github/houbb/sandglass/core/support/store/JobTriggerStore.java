@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  * @author binbin.hou
  * @since 0.0.2
  */
-public class JobTriggerStore implements IJobTriggerStore {
+public class JobTriggerStore extends AbstractJobTriggerStore {
 
     private static final Log LOG = LogFactory.getLog(JobTriggerStore.class);
 
@@ -39,31 +39,29 @@ public class JobTriggerStore implements IJobTriggerStore {
     }
 
     @Override
-    public IJobTriggerStore put(JobTriggerDto dto, IJobTriggerStoreContext context) {
+    public IJobTriggerStore doPut(JobTriggerDto dto, IJobTriggerStoreContext context) {
         queue.put(dto);
 
-        context.listener().put(dto);
         return this;
     }
 
     @Override
-    public JobTriggerDto take(IJobTriggerStoreContext context) {
+    public JobTriggerDto doTake(IJobTriggerStoreContext context) {
         try {
             // 这里应该首先得到第一个，查看执行时间是否为将要执行的，如果不是，就则返回 null。
             // 原因：避免获取第一个，loop 循环等待，导致后续加入的快要执行的被阻塞。
-            JobTriggerDto peekDto = queue.peek();
+            JobTriggerDto peekDto = this.peek(context);
 
             //1.1 如果是暂停的任务，继续执行
             //1.2 如果还未到等待时间，继续执行
             while (isPausedJobOrTrigger(peekDto, context)
                     || !isAroundTheLoopTime(peekDto, context.timer())) {
                 TimeUnit.MILLISECONDS.sleep(1);
-                peekDto = queue.peek();
+                peekDto = this.peek(context);
             }
 
             JobTriggerDto dto = queue.take();
-
-            context.listener().take(dto);
+            // 根据
             return dto;
         } catch (InterruptedException e) {
             throw new SandGlassException(e);
@@ -150,6 +148,11 @@ public class JobTriggerStore implements IJobTriggerStore {
             LOG.warn("异常", e);
             throw new SandGlassException(e);
         }
+    }
+
+    @Override
+    public JobTriggerDto peek(IJobTriggerStoreContext context) {
+        return queue.peek();
     }
 
 }

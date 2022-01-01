@@ -132,6 +132,8 @@ public class InnerJobTriggerHelper {
                 .listener(context.jobTriggerStoreListener());
 
         jobTriggerStore.put(newDto, jobTriggerStoreContext);
+        // 触发监听器
+        jobTriggerStoreContext.listener().put(newDto);
     }
 
     /**
@@ -170,6 +172,8 @@ public class InnerJobTriggerHelper {
         jobTriggerDto.setNextTime(nextTime);
         LOG.debug("重新放入元素 {}", jobTriggerDto);
         jobTriggerStore.put(jobTriggerDto, jobTriggerStoreContext);
+        // 触发监听器
+        jobTriggerStoreContext.listener().put(jobTriggerDto);
     }
 
 }

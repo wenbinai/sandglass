@@ -261,6 +261,9 @@ public class Scheduler implements IScheduler {
                 .timer(timer)
                 .listener(schedulerContext.jobTriggerStoreListener());
         jobTriggerStore.put(triggerDto, jobTriggerStoreContext);
+
+        // 触发监听器
+        jobTriggerStoreContext.listener().put(triggerDto);
     }
 
 }

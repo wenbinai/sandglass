@@ -167,11 +167,6 @@ public final class SandGlassBs {
      */
     private IJobTriggerMappingStore jobTriggerMappingStore = new JobTriggerMappingStore();
 
-    /**
-     * 任务调度获取间隔（只有获取数据不存在时，才会进入等待）
-     * @since 1.5.0
-     */
-    private long scheduleTakeIntervalMills = 1000;
 //
 //    /**
 //     * 任务调度获取大小
@@ -406,15 +401,6 @@ public final class SandGlassBs {
         return jobTriggerMappingStore;
     }
 
-    public long scheduleTakeIntervalMills() {
-        return scheduleTakeIntervalMills;
-    }
-
-    public SandGlassBs scheduleTakeIntervalMills(long scheduleTakeIntervalMills) {
-        this.scheduleTakeIntervalMills = scheduleTakeIntervalMills;
-        return this;
-    }
-
     /**
      * 线程启动
      * @return this
@@ -457,7 +443,7 @@ public final class SandGlassBs {
                 .envName(envName)
                 .machineIp(machineIp)
                 .machinePort(machinePort)
-                .scheduleTakeIntervalMills(scheduleTakeIntervalMills);
+                ;
 
         //调度类
         schedulerContext.jobDetailStore(jobDetailStore)

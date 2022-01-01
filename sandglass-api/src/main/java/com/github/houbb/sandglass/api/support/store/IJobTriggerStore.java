@@ -29,4 +29,21 @@ public interface IJobTriggerStore {
      */
     JobTriggerDto take(IJobTriggerStoreContext context);
 
+
+    /**
+     * 获取最近的一个，但是不做原始的删除
+     *
+     * @param context 上下文
+     * @return 结果
+     * @since 1.5.0
+     */
+    JobTriggerDto peek(IJobTriggerStoreContext context);
+
+    /**
+     * 获取下一次的获取时间
+     * @return 时间
+     * @since 1.5.0
+     */
+    long nextTakeTime();
+
 }
