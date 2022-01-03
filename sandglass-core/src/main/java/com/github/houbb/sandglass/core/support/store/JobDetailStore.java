@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ *
  * @author binbin.hou
  * @since 0.0.2
  */
@@ -40,6 +41,11 @@ public class JobDetailStore extends AbstractJobDetailStore {
     @Override
     public JobDetailDto detail(String id) {
         return map.get(id);
+    }
+
+    @Override
+    public Collection<JobDetailDto> list() {
+        return map.values();
     }
 
 }
