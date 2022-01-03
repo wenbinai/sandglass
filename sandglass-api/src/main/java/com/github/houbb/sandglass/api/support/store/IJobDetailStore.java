@@ -68,11 +68,4 @@ public interface IJobDetailStore {
      */
     JobDetailDto resume(String id);
 
-    /**
-     * 列表
-     * @return 列表
-     * @since 1.4.2
-     */
-    Collection<JobDetailDto> list();
-
 }

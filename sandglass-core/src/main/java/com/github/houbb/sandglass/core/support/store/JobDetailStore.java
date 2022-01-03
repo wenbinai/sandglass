@@ -42,9 +42,4 @@ public class JobDetailStore extends AbstractJobDetailStore {
         return map.get(id);
     }
 
-    @Override
-    public Collection<JobDetailDto> list() {
-        return map.values();
-    }
-
 }
