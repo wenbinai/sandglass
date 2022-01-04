@@ -329,6 +329,7 @@ public class ScheduleMainThreadLoop extends Thread {
 
         // 更新对应的时间信息
         jobTriggerNextTakeTimeStore.updatePreviousNextTakeTime(nextTakeTime);
+        jobTriggerNextTakeTimeStore.updateMinNextTime(nextTakeTime);
 
         return nextTakeTime;
     }

@@ -33,24 +33,14 @@ public class JobTriggerNextTakeTimeStore implements IJobTriggerNextTakeTimeStore
             return true;
         }
 
-        // 判断二者的大小，如果上一次的获取时间大于等于，则需要进行查询
-        // 等于是否需要?
-        return previousNextTakeTime >= minNextTime;
+        // 判断二者的大小，如果上一次的获取时间大于，则需要进行查询
+        return previousNextTakeTime > minNextTime;
     }
 
     @Override
     public synchronized void updateMinNextTime(long nextTime) {
-        // 小于的时候，进行更新。
-        if(this.minNextTime == null) {
-            this.minNextTime = nextTime;
-            return;
-        }
-
-        if(nextTime < this.minNextTime) {
-            this.minNextTime = nextTime;
-        }
-
-        //ps: 这里是否存在逻辑问题？
+        // 同时更新最小的时间，避免多次查询
+        this.minNextTime = nextTime;
     }
 
     @Override
