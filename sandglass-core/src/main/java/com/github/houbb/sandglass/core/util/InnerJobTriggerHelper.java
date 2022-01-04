@@ -129,11 +129,11 @@ public class InnerJobTriggerHelper {
                 .jobDetailStore(jobDetailStore)
                 .triggerDetailStore(triggerDetailStore)
                 .timer(timer)
-                .listener(context.jobTriggerStoreListener());
+                .listener(context.jobTriggerStoreListener())
+                .jobTriggerNextTakeTimeStore(context.jobTriggerNextTakeTimeStore());
 
-        jobTriggerStore.put(newDto, jobTriggerStoreContext);
-        // 触发监听器
-        jobTriggerStoreContext.listener().put(newDto);
+        // 放入集合中
+        putJobAndTrigger(jobTriggerStore, newDto, jobTriggerStoreContext);
     }
 
     /**
@@ -171,9 +171,33 @@ public class InnerJobTriggerHelper {
         long nextTime = jobTriggerDto.getNextTime() + 10000;
         jobTriggerDto.setNextTime(nextTime);
         LOG.debug("重新放入元素 {}", jobTriggerDto);
+
+        // 放入持久化类
+        putJobAndTrigger(jobTriggerStore, jobTriggerDto, jobTriggerStoreContext);
+    }
+
+    /**
+     * 放入元素
+     * @param jobTriggerStore 持久化类
+     * @param jobTriggerDto 临时对象
+     * @param jobTriggerStoreContext 上下文
+     * @since 1.6.0
+     */
+    public static void putJobAndTrigger(IJobTriggerStore jobTriggerStore,
+                                        JobTriggerDto jobTriggerDto,
+                                        IJobTriggerStoreContext jobTriggerStoreContext) {
+        // 放入元素
         jobTriggerStore.put(jobTriggerDto, jobTriggerStoreContext);
+
         // 触发监听器
         jobTriggerStoreContext.listener().put(jobTriggerDto);
+
+        // 更新对应的 nextTakeTimeStore 信息
+        long nextTime = jobTriggerDto.getNextTime();
+        jobTriggerStoreContext.jobTriggerNextTakeTimeStore().updateMinNextTime(nextTime);
     }
 
 }
+
+
+

@@ -141,4 +141,11 @@ public @interface EnableSandGlass {
      */
     String jobTriggerMappingStore() default "sandglass-jobTriggerMappingStore";
 
+    /**
+     * 任务触发的下一次获取时间持久化策略
+     * @return bean 名称
+     * @since 1.6.0
+     */
+    String jobTriggerNextTakeTimeStore() default "sandglass-jobTriggerNextTakeTimeStore";
+
 }

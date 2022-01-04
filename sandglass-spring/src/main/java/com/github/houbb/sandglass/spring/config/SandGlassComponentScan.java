@@ -106,13 +106,33 @@ public class SandGlassComponentScan {
 
 
     /**
-     * 任务详情持久化
+     * 触发器详情持久化
      * @return 过期策略
      * @since 0.0.8
      */
     @Bean("sandglass-triggerDetailStore")
     public ITriggerDetailStore triggerDetailStore() {
         return  new TriggerDetailStore();
+    }
+
+    /**
+     * 任务和触发器的映射关系
+     * @return 过期策略
+     * @since 1.4.2
+     */
+    @Bean("sandglass-jobTriggerMappingStore")
+    public IJobTriggerMappingStore jobTriggerMappingStore() {
+        return new JobTriggerMappingStore();
+    }
+
+    /**
+     * 下一次的触发器策略
+     * @return 过期策略
+     * @since 1.6.0
+     */
+    @Bean("sandglass-jobTriggerNextTakeTimeStore")
+    public IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore() {
+        return new JobTriggerNextTakeTimeStore();
     }
 
 }

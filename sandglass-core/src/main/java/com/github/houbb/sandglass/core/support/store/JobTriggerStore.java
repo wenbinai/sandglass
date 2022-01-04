@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  * @author binbin.hou
  * @since 0.0.2
  */
-public class JobTriggerStore extends AbstractJobTriggerStore {
+public class JobTriggerStore implements IJobTriggerStore {
 
     private static final Log LOG = LogFactory.getLog(JobTriggerStore.class);
 
@@ -36,36 +36,6 @@ public class JobTriggerStore extends AbstractJobTriggerStore {
 
     public JobTriggerStore() {
         this.queue = new PriorityBlockingQueue<>(64);
-    }
-
-    @Override
-    public IJobTriggerStore doPut(JobTriggerDto dto, IJobTriggerStoreContext context) {
-        queue.put(dto);
-
-        return this;
-    }
-
-    @Override
-    public JobTriggerDto doTake(IJobTriggerStoreContext context) {
-        try {
-            // 这里应该首先得到第一个，查看执行时间是否为将要执行的，如果不是，就则返回 null。
-            // 原因：避免获取第一个，loop 循环等待，导致后续加入的快要执行的被阻塞。
-            JobTriggerDto peekDto = this.peek(context);
-
-            //1.1 如果是暂停的任务，继续执行
-            //1.2 如果还未到等待时间，继续执行
-            while (isPausedJobOrTrigger(peekDto, context)
-                    || !isAroundTheLoopTime(peekDto, context.timer())) {
-                TimeUnit.MILLISECONDS.sleep(1);
-                peekDto = this.peek(context);
-            }
-
-            JobTriggerDto dto = queue.take();
-            // 根据
-            return dto;
-        } catch (InterruptedException e) {
-            throw new SandGlassException(e);
-        }
     }
 
     /**
@@ -151,8 +121,55 @@ public class JobTriggerStore extends AbstractJobTriggerStore {
     }
 
     @Override
+    public IJobTriggerStore put(JobTriggerDto dto, IJobTriggerStoreContext context) {
+        queue.put(dto);
+        return this;
+    }
+
+    @Override
+    public JobTriggerDto take(IJobTriggerStoreContext context) {
+        try {
+            // 这里应该首先得到第一个，查看执行时间是否为将要执行的，如果不是，就则返回 null。
+            // 原因：避免获取第一个，loop 循环等待，导致后续加入的快要执行的被阻塞。
+            JobTriggerDto peekDto = this.peek(context);
+
+            //1.1 如果是暂停的任务，继续执行
+            //1.2 如果还未到等待时间，继续执行
+            while (isPausedJobOrTrigger(peekDto, context)
+                    || !isAroundTheLoopTime(peekDto, context.timer())) {
+                TimeUnit.MILLISECONDS.sleep(1);
+                peekDto = this.peek(context);
+            }
+
+            // 根据
+            return queue.take();
+        } catch (InterruptedException e) {
+            throw new SandGlassException(e);
+        }
+    }
+
+    @Override
     public JobTriggerDto peek(IJobTriggerStoreContext context) {
         return queue.peek();
+    }
+
+    @Override
+    public long nextTakeTime(final IJobTriggerStoreContext context) {
+        Long nextTakeTime = null;
+
+        //1. peek 第一个元素
+        JobTriggerDto dto = peek(context);
+        if(dto != null) {
+            nextTakeTime = dto.getNextTime();
+        } else {
+            final ITimer timer = context.timer();
+            // 不存在（延迟 1S 之后继续处理）
+            // 单机本地这个时间是完全可以接受的
+            // 因为结合了下次获取策略的优化
+            nextTakeTime = timer.time() + 1000;
+        }
+
+        return nextTakeTime;
     }
 
 }

@@ -85,6 +85,12 @@ public class WorkerThreadPoolContext implements IWorkerThreadPoolContext {
      */
     private IJobTriggerStoreListener jobTriggerStoreListener;
 
+    /**
+     * 下一次获取时间的持久化类
+     * @since 1.6.0
+     */
+    private IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore;
+
     public static WorkerThreadPoolContext newInstance() {
         return new WorkerThreadPoolContext();
     }
@@ -210,6 +216,16 @@ public class WorkerThreadPoolContext implements IWorkerThreadPoolContext {
     }
 
     @Override
+    public IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore() {
+        return jobTriggerNextTakeTimeStore;
+    }
+
+    public WorkerThreadPoolContext jobTriggerNextTakeTimeStore(IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore) {
+        this.jobTriggerNextTakeTimeStore = jobTriggerNextTakeTimeStore;
+        return this;
+    }
+
+    @Override
     public String toString() {
         return "WorkerThreadPoolContext{" +
                 "triggerContext=" + triggerContext +
@@ -224,6 +240,7 @@ public class WorkerThreadPoolContext implements IWorkerThreadPoolContext {
                 ", triggerDetailStore=" + triggerDetailStore +
                 ", jobDetailStore=" + jobDetailStore +
                 ", jobTriggerStoreListener=" + jobTriggerStoreListener +
+                ", jobTriggerNextTakeTimeStore=" + jobTriggerNextTakeTimeStore +
                 '}';
     }
 

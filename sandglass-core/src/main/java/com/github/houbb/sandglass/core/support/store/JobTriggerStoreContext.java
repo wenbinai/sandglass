@@ -1,9 +1,6 @@
 package com.github.houbb.sandglass.core.support.store;
 
-import com.github.houbb.sandglass.api.support.store.IJobDetailStore;
-import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreContext;
-import com.github.houbb.sandglass.api.support.store.IJobTriggerStoreListener;
-import com.github.houbb.sandglass.api.support.store.ITriggerDetailStore;
+import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.timer.api.ITimer;
 
 /**
@@ -35,6 +32,12 @@ public class JobTriggerStoreContext implements IJobTriggerStoreContext {
      * 触发器详情初始化
      */
     private ITriggerDetailStore triggerDetailStore;
+
+    /**
+     * 下一次获取时间的持久化策略
+     * @since 1.6.0
+     */
+    private IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore;
 
     public static JobTriggerStoreContext newInstance() {
         return new JobTriggerStoreContext();
@@ -77,6 +80,16 @@ public class JobTriggerStoreContext implements IJobTriggerStoreContext {
 
     public JobTriggerStoreContext triggerDetailStore(ITriggerDetailStore triggerDetailStore) {
         this.triggerDetailStore = triggerDetailStore;
+        return this;
+    }
+
+    @Override
+    public IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore() {
+        return jobTriggerNextTakeTimeStore;
+    }
+
+    public JobTriggerStoreContext jobTriggerNextTakeTimeStore(IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore) {
+        this.jobTriggerNextTakeTimeStore = jobTriggerNextTakeTimeStore;
         return this;
     }
 }

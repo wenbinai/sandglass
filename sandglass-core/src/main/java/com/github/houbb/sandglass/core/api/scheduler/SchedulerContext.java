@@ -95,6 +95,12 @@ public class SchedulerContext implements ISchedulerContext {
      */
     private IJobTriggerMappingStore jobTriggerMappingStore;
 
+    /**
+     * 下一次获取时间的持久化策略
+     * @since 1.6.0
+     */
+    private IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore;
+
     @Override
     public Runnable mainThreadLoop() {
         return mainThreadLoop;
@@ -232,6 +238,16 @@ public class SchedulerContext implements ISchedulerContext {
 
     public SchedulerContext jobTriggerMappingStore(IJobTriggerMappingStore jobTriggerMappingStore) {
         this.jobTriggerMappingStore = jobTriggerMappingStore;
+        return this;
+    }
+
+    @Override
+    public IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore() {
+        return jobTriggerNextTakeTimeStore;
+    }
+
+    public SchedulerContext jobTriggerNextTakeTimeStore(IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore) {
+        this.jobTriggerNextTakeTimeStore = jobTriggerNextTakeTimeStore;
         return this;
     }
 }

@@ -167,12 +167,11 @@ public final class SandGlassBs {
      */
     private IJobTriggerMappingStore jobTriggerMappingStore = new JobTriggerMappingStore();
 
-//
-//    /**
-//     * 任务调度获取大小
-//     * @since 1.5.0
-//     */
-//    private long scheduleTakeSize = 1;
+    /**
+     * 下一次执行时间的持久化类
+     * @since 1.6.0
+     */
+    private IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore = new JobTriggerNextTakeTimeStore();
 
     public SandGlassBs appName(String appName) {
         ArgUtil.notEmpty(appName, "appName");
@@ -315,6 +314,17 @@ public final class SandGlassBs {
         return this;
     }
 
+    public IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore() {
+        return jobTriggerNextTakeTimeStore;
+    }
+
+    public SandGlassBs jobTriggerNextTakeTimeStore(IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore) {
+        ArgUtil.notNull(jobTriggerNextTakeTimeStore, "jobTriggerNextTakeTimeStore");
+
+        this.jobTriggerNextTakeTimeStore = jobTriggerNextTakeTimeStore;
+        return this;
+    }
+
     public IScheduler scheduler() {
         return scheduler;
     }
@@ -443,6 +453,7 @@ public final class SandGlassBs {
                 .envName(envName)
                 .machineIp(machineIp)
                 .machinePort(machinePort)
+                .jobTriggerNextTakeTimeStore(jobTriggerNextTakeTimeStore)
                 ;
 
         //调度类
@@ -459,7 +470,8 @@ public final class SandGlassBs {
                 .envName(envName)
                 .machineIp(machineIp)
                 .machinePort(machinePort)
-                .jobTriggerMappingStore(jobTriggerMappingStore);
+                .jobTriggerMappingStore(jobTriggerMappingStore)
+                .jobTriggerNextTakeTimeStore(jobTriggerNextTakeTimeStore);
 
         return this;
     }

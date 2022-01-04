@@ -98,4 +98,11 @@ public interface IWorkerThreadPoolContext {
      */
     IJobTriggerStoreListener jobTriggerStoreListener();
 
+    /**
+     * 下一次获取时间的持久化类
+     * @return 实现
+     * @since 1.6.0
+     */
+    IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore();
+
 }

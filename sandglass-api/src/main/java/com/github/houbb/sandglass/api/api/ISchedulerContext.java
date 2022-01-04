@@ -51,12 +51,14 @@ public interface ISchedulerContext {
     Runnable mainThreadLoop();
 
     /**
+     * 任务管理类
      * @return 任务管理类
      * @since 0.0.2
      */
     IJobStore jobStore();
 
     /**
+     * 触发器管理类
      * @return 触发器管理类
      * @since 0.0.2
      */
@@ -138,5 +140,12 @@ public interface ISchedulerContext {
      * @since 1.4.0
      */
     IJobTriggerMappingStore jobTriggerMappingStore();
+
+    /**
+     * 下一次获取时间的持久化类
+     * @return 实现
+     * @since 1.6.0
+     */
+    IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore();
 
 }

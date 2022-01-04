@@ -150,6 +150,19 @@ public class ScheduleMainThreadLoop extends Thread {
      */
     private int machinePort;
 
+    /**
+     * 下一次执行时间的持久化类
+     * @since 1.6.0
+     */
+    private IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore;
+
+    public ScheduleMainThreadLoop jobTriggerNextTakeTimeStore(IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore) {
+        ArgUtil.notNull(jobTriggerNextTakeTimeStore, "jobTriggerNextTakeTimeStore");
+
+        this.jobTriggerNextTakeTimeStore = jobTriggerNextTakeTimeStore;
+        return this;
+    }
+
     public ScheduleMainThreadLoop startFlag(boolean startFlag) {
         this.startFlag = startFlag;
         return this;
@@ -277,11 +290,11 @@ public class ScheduleMainThreadLoop extends Thread {
      * 1. 避免无效请求
      * 2. 避免服务端压力过大
      *
-     * TODO: 后续将结合服务端的数据变化通知，调整客户端的触发时机。
      * @since 1.5.0
      */
     private void clientLoopUntilTakeTime() {
-        long nextTakeTime = jobTriggerStore.nextTakeTime();
+        // 每次开始不做判断，直接查询
+        long nextTakeTime = this.queryNextTakeTime();
         long currentTime = timer.time();
         if(currentTime >= nextTakeTime) {
             return;
@@ -293,12 +306,45 @@ public class ScheduleMainThreadLoop extends Thread {
             TimeUtil.sleep(10);
 
             //2. 更新 nextTime（避免中间时间发生了变化，错过执行的时机）
-            nextTakeTime = jobTriggerStore.nextTakeTime();
+            // 这里需要添加是否需要查询的判断，避免过多无效查询。
+            if(jobTriggerNextTakeTimeStore.needQueryNextTakeTime()) {
+                nextTakeTime = this.queryNextTakeTime();
+            }
 
             //3. 更新 currentTime
             currentTime = timer.time();
         }
         LOG.debug("client 完成等待 nextTakeTime: {}, currentTime: {}", nextTakeTime, currentTime);
+    }
+
+
+    /**
+     * 查询下一次的 take time
+     * @return 时间
+     * @since 1.6.0
+     */
+    private long queryNextTakeTime() {
+        IJobTriggerStoreContext jobTriggerStoreContext = createJobTriggerStoreContext();
+        long nextTakeTime = jobTriggerStore.nextTakeTime(jobTriggerStoreContext);
+
+        // 更新对应的时间信息
+        jobTriggerNextTakeTimeStore.updatePreviousNextTakeTime(nextTakeTime);
+
+        return nextTakeTime;
+    }
+
+    /**
+     * 构建上下文
+     * @return 上下文
+     * @since 1.5.1
+     */
+    private IJobTriggerStoreContext createJobTriggerStoreContext() {
+        return JobTriggerStoreContext.newInstance()
+                .listener(jobTriggerStoreListener)
+                .timer(timer)
+                .triggerDetailStore(triggerDetailStore)
+                .jobDetailStore(jobDetailStore)
+                .jobTriggerNextTakeTimeStore(jobTriggerNextTakeTimeStore);
     }
 
     @Override
@@ -320,12 +366,7 @@ public class ScheduleMainThreadLoop extends Thread {
 
                 //1. 如果 acquireLock 成功，从 trigger queue 中获取最新的一个
                 // 上下文
-                IJobTriggerStoreContext jobTriggerStoreContext = JobTriggerStoreContext.newInstance()
-                        .listener(jobTriggerStoreListener)
-                        .timer(timer)
-                        .triggerDetailStore(triggerDetailStore)
-                        .jobDetailStore(jobDetailStore);
-
+                IJobTriggerStoreContext jobTriggerStoreContext = createJobTriggerStoreContext();
                 JobTriggerDto jobTriggerDto = this.jobTriggerStore.take(jobTriggerStoreContext);
                 // 触发监听器
                 jobTriggerStoreContext.listener().take(jobTriggerDto);
@@ -372,20 +413,8 @@ public class ScheduleMainThreadLoop extends Thread {
                 // 构建初始化日志
                 TaskLogDto taskLogDto = buildInitTaskLogDto(jobTriggerDto,
                         jobDetailDto);
-
-                WorkerThreadPoolContext workerThreadPoolContext = WorkerThreadPoolContext
-                        .newInstance()
-                        .preJobTriggerDto(jobTriggerDto)
-                        .jobTriggerStore(this.jobTriggerStore)
-                        .jobStore(jobStore)
-                        .triggerStore(triggerStore)
-                        .timer(timer)
-                        .jobListener(jobListener)
-                        .taskLogDto(taskLogDto)
-                        .taskLogStore(taskLogStore)
-                        .jobDetailStore(jobDetailStore)
-                        .triggerDetailStore(triggerDetailStore)
-                        .jobTriggerStoreListener(jobTriggerStoreListener);
+                // 构建工作线程上下文
+                WorkerThreadPoolContext workerThreadPoolContext = buildWorkerThreadPoolContext(jobTriggerDto, taskLogDto);
 
                 //3.2 任务并发处理的判断
                 boolean allowConcurrentExecute = jobDetailDto.isAllowConcurrentExecute();
@@ -430,6 +459,30 @@ public class ScheduleMainThreadLoop extends Thread {
                 scheduleListener.exception(e);
             }
         }
+    }
+
+    /**
+     * 构建任务线程的执行上下文
+     * @param jobTriggerDto 触发任务信息
+     * @param taskLogDto 任务执行日志
+     * @return 结果
+     * @since 1.6.0
+     */
+    private WorkerThreadPoolContext buildWorkerThreadPoolContext(final JobTriggerDto jobTriggerDto, TaskLogDto taskLogDto) {
+        return WorkerThreadPoolContext
+                .newInstance()
+                .preJobTriggerDto(jobTriggerDto)
+                .taskLogDto(taskLogDto)
+                .jobTriggerStore(this.jobTriggerStore)
+                .jobStore(jobStore)
+                .triggerStore(triggerStore)
+                .timer(timer)
+                .jobListener(jobListener)
+                .taskLogStore(taskLogStore)
+                .jobDetailStore(jobDetailStore)
+                .triggerDetailStore(triggerDetailStore)
+                .jobTriggerStoreListener(jobTriggerStoreListener)
+                .jobTriggerNextTakeTimeStore(jobTriggerNextTakeTimeStore);
     }
 
     /**
