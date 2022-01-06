@@ -8,6 +8,7 @@ import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.constant.JobStatusEnum;
 import com.github.houbb.sandglass.api.constant.TriggerStatusEnum;
+import com.github.houbb.sandglass.api.constant.TriggerTypeEnum;
 import com.github.houbb.sandglass.api.dto.JobDetailDto;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
@@ -78,7 +79,7 @@ public class Scheduler implements IScheduler {
         JobDetailDto jobDetailDto = buildJobDetail(job);
         TriggerDetailDto triggerDetailDto = buildTriggerDetailDto(jobDetailDto.getJobId(), trigger);
 
-        this.addJobAndTrigger(job, trigger, jobDetailDto, triggerDetailDto, context);
+        this.schedule(job, trigger, jobDetailDto, triggerDetailDto, context);
     }
 
     private TriggerDetailDto buildTriggerDetailDto(String jobId, ITrigger trigger) {
@@ -92,9 +93,11 @@ public class Scheduler implements IScheduler {
             dto.setInitialDelay(periodTrigger.initialDelay());
             dto.setTriggerPeriod(periodTrigger.period());
             dto.setTimeUint(periodTrigger.timeUnit());
+            dto.setTriggerType(TriggerTypeEnum.PERIOD.code());
         } else if(trigger instanceof CronTrigger) {
             CronTrigger cronTrigger = (CronTrigger) trigger;
             dto.setCron(cronTrigger.cronExpressionString());
+            dto.setTriggerType(TriggerTypeEnum.CRON.code());
         } else {
             // 抛出异常
             throw new SandGlassException("默认调度模式不支持的 trigger 类型!");
