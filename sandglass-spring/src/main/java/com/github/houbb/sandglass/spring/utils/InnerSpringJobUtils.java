@@ -1,6 +1,5 @@
 package com.github.houbb.sandglass.spring.utils;
 
-import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.sandglass.api.api.IJob;
 import com.github.houbb.sandglass.api.api.IJobContext;
 import com.github.houbb.sandglass.api.constant.JobTypeEnum;
@@ -36,10 +35,8 @@ public final class InnerSpringJobUtils {
         String className = bean.getClass().getName();
         String methodName = method.getName();
 
-        final String jobId = buildJobId(className, methodName);
         JobDetailDto jobDetailDto = new JobDetailDto();
         jobDetailDto.setAllowConcurrentExecute(allowConcurrentExecuteVal);
-        jobDetailDto.setJobId(jobId);
         jobDetailDto.setJobType(JobTypeEnum.SPRING.code());
         jobDetailDto.setClassFullName(className);
         jobDetailDto.setSpringBeanName(beanName);
@@ -57,19 +54,10 @@ public final class InnerSpringJobUtils {
         };
 
         // 构建结果
-        return JobAndDetailDto.of(job, jobDetailDto);
-    }
-
-    /**
-     * 构建任务的标识
-     * @param className 类名称
-     * @param methodName 方法名称
-     * @return 结果
-     * @since 0.0.5
-     */
-    private static String buildJobId(String className, String methodName) {
-//        return className + "#" + methodName;
-        return IdHelper.uuid32();
+        JobAndDetailDto jobAndDetailDto = JobAndDetailDto.of(job, jobDetailDto);
+        jobAndDetailDto.setBean(bean);
+        jobAndDetailDto.setMethod(method);
+        return jobAndDetailDto;
     }
 
 }

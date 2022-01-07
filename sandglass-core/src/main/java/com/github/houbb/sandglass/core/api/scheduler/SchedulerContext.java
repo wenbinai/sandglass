@@ -1,8 +1,10 @@
 package com.github.houbb.sandglass.core.api.scheduler;
 
+import com.github.houbb.sandglass.api.api.IIdGenerator;
 import com.github.houbb.sandglass.api.api.ISchedulerContext;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.store.*;
+import com.github.houbb.sandglass.core.support.id.IdGenerators;
 import com.github.houbb.timer.api.ITimer;
 
 /**
@@ -100,6 +102,18 @@ public class SchedulerContext implements ISchedulerContext {
      * @since 1.6.0
      */
     private IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore;
+
+    /**
+     * 任务标识生成策略
+     * @since 1.7.0
+     */
+    private IIdGenerator jobIdGenerator;
+
+    /**
+     * 触发器标识生成策略
+     * @since 1.7.0
+     */
+    private IIdGenerator triggerIdGenerator;
 
     @Override
     public Runnable mainThreadLoop() {
@@ -248,6 +262,26 @@ public class SchedulerContext implements ISchedulerContext {
 
     public SchedulerContext jobTriggerNextTakeTimeStore(IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore) {
         this.jobTriggerNextTakeTimeStore = jobTriggerNextTakeTimeStore;
+        return this;
+    }
+
+    @Override
+    public IIdGenerator jobIdGenerator() {
+        return jobIdGenerator;
+    }
+
+    public SchedulerContext jobIdGenerator(IIdGenerator jobIdGenerator) {
+        this.jobIdGenerator = jobIdGenerator;
+        return this;
+    }
+
+    @Override
+    public IIdGenerator triggerIdGenerator() {
+        return triggerIdGenerator;
+    }
+
+    public SchedulerContext triggerIdGenerator(IIdGenerator triggerIdGenerator) {
+        this.triggerIdGenerator = triggerIdGenerator;
         return this;
     }
 }

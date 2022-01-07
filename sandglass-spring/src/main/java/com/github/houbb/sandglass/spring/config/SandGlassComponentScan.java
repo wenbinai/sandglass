@@ -2,11 +2,13 @@ package com.github.houbb.sandglass.spring.config;
 
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.lock.redis.core.Locks;
+import com.github.houbb.sandglass.api.api.IIdGenerator;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
 import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
 import com.github.houbb.sandglass.api.support.store.*;
+import com.github.houbb.sandglass.core.support.id.IdGenerators;
 import com.github.houbb.sandglass.core.support.listener.JobListener;
 import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
 import com.github.houbb.sandglass.core.support.listener.TriggerListener;
@@ -133,6 +135,26 @@ public class SandGlassComponentScan {
     @Bean("sandglass-jobTriggerNextTakeTimeStore")
     public IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore() {
         return new JobTriggerNextTakeTimeStore();
+    }
+
+    /**
+     * jobId 策略
+     * @return 过期策略
+     * @since 1.7.0
+     */
+    @Bean("sandglass-jobIdGenerator")
+    public IIdGenerator jobIdGenerator() {
+        return IdGenerators.classSlim();
+    }
+
+    /**
+     * triggerId 策略
+     * @return 过期策略
+     * @since 1.7.0
+     */
+    @Bean("sandglass-triggerIdGenerator")
+    public IIdGenerator triggerIdGenerator() {
+        return IdGenerators.classSlim();
     }
 
 }

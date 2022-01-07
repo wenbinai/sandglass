@@ -3,10 +3,7 @@ package com.github.houbb.sandglass.core.bs;
 import com.github.houbb.heaven.util.common.ArgUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.lock.redis.core.Locks;
-import com.github.houbb.sandglass.api.api.IJob;
-import com.github.houbb.sandglass.api.api.IScheduler;
-import com.github.houbb.sandglass.api.api.ITrigger;
-import com.github.houbb.sandglass.api.api.IWorkerThreadPool;
+import com.github.houbb.sandglass.api.api.*;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
@@ -15,6 +12,7 @@ import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
 import com.github.houbb.sandglass.core.api.scheduler.SchedulerContext;
 import com.github.houbb.sandglass.core.constant.SandGlassConst;
+import com.github.houbb.sandglass.core.support.id.IdGenerators;
 import com.github.houbb.sandglass.core.support.listener.JobListener;
 import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
 import com.github.houbb.sandglass.core.support.listener.TriggerListener;
@@ -173,6 +171,18 @@ public final class SandGlassBs {
      */
     private IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore = new JobTriggerNextTakeTimeStore();
 
+    /**
+     * 任务标识生成策略
+     * @since 1.7.0
+     */
+    private IIdGenerator jobIdGenerator = IdGenerators.classSlim();
+
+    /**
+     * 触发器标识生成策略
+     * @since 1.7.0
+     */
+    private IIdGenerator triggerIdGenerator = IdGenerators.classSlim();
+
     public SandGlassBs appName(String appName) {
         ArgUtil.notEmpty(appName, "appName");
 
@@ -325,6 +335,28 @@ public final class SandGlassBs {
         return this;
     }
 
+    public IIdGenerator jobIdGenerator() {
+        return jobIdGenerator;
+    }
+
+    public SandGlassBs jobIdGenerator(IIdGenerator jobIdGenerator) {
+        ArgUtil.notNull(jobIdGenerator, "jobIdGenerator");
+
+        this.jobIdGenerator = jobIdGenerator;
+        return this;
+    }
+
+    public IIdGenerator triggerIdGenerator() {
+        return triggerIdGenerator;
+    }
+
+    public SandGlassBs triggerIdGenerator(IIdGenerator triggerIdGenerator) {
+        ArgUtil.notNull(triggerIdGenerator, "triggerIdGenerator");
+
+        this.triggerIdGenerator = triggerIdGenerator;
+        return this;
+    }
+
     public IScheduler scheduler() {
         return scheduler;
     }
@@ -471,7 +503,9 @@ public final class SandGlassBs {
                 .machineIp(machineIp)
                 .machinePort(machinePort)
                 .jobTriggerMappingStore(jobTriggerMappingStore)
-                .jobTriggerNextTakeTimeStore(jobTriggerNextTakeTimeStore);
+                .jobTriggerNextTakeTimeStore(jobTriggerNextTakeTimeStore)
+                .jobIdGenerator(jobIdGenerator)
+                .triggerIdGenerator(triggerIdGenerator);
 
         return this;
     }

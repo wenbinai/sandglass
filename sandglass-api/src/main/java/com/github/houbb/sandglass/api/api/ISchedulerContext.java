@@ -148,4 +148,18 @@ public interface ISchedulerContext {
      */
     IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore();
 
+    /**
+     * 任务标识生成策略
+     * @since 1.7.0
+     * @return 策略
+     */
+    IIdGenerator jobIdGenerator();
+
+    /**
+     * 触发器标识生成策略
+     * @since 1.7.0
+     * @return 策略
+     */
+    IIdGenerator triggerIdGenerator();
+
 }

@@ -27,4 +27,11 @@ public @interface CronSchedule {
      */
     boolean allowConcurrentExecute() default true;
 
+    /**
+     * 备注
+     * @since 1.7.0
+     * @return 备注
+     */
+    String remark() default "";
+
 }

@@ -5,8 +5,12 @@ import com.github.houbb.heaven.util.lang.reflect.ClassUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
+import com.github.houbb.sandglass.api.api.IIdGenerator;
+import com.github.houbb.sandglass.api.api.IIdGeneratorContext;
 import com.github.houbb.sandglass.api.api.IScheduler;
 import com.github.houbb.sandglass.api.api.ISchedulerContext;
+import com.github.houbb.sandglass.api.dto.JobDetailDto;
+import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
 import com.github.houbb.sandglass.api.dto.mixed.JobAndDetailDto;
 import com.github.houbb.sandglass.api.dto.mixed.TriggerAndDetailDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
@@ -16,6 +20,7 @@ import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
 import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.bs.SandGlassBs;
 import com.github.houbb.sandglass.core.constant.SandGlassConst;
+import com.github.houbb.sandglass.core.support.id.IdGeneratorContext;
 import com.github.houbb.sandglass.spring.annotation.CronSchedule;
 import com.github.houbb.sandglass.spring.annotation.EnableSandGlass;
 import com.github.houbb.sandglass.spring.annotation.PeriodSchedule;
@@ -125,6 +130,9 @@ public class EnableSandGlassConfig implements ImportAware,
 
         IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore = beanFactory.getBean(enableSandGlassAttributes.getString("jobTriggerNextTakeTimeStore"), IJobTriggerNextTakeTimeStore.class);
 
+        IIdGenerator jobIdGenerator = beanFactory.getBean(enableSandGlassAttributes.getString("jobIdGenerator"), IIdGenerator.class);
+        IIdGenerator triggerIdGenerator = beanFactory.getBean(enableSandGlassAttributes.getString("triggerIdGenerator"), IIdGenerator.class);
+
         this.sandGlassBs = SandGlassBs.newInstance()
                 .workPoolSize(workPoolSize)
                 .jobStore(jobStore)
@@ -146,6 +154,8 @@ public class EnableSandGlassConfig implements ImportAware,
                 .machinePort(Integer.parseInt(machinePort))
                 .jobTriggerMappingStore(jobTriggerMappingStore)
                 .jobTriggerNextTakeTimeStore(jobTriggerNextTakeTimeStore)
+                .jobIdGenerator(jobIdGenerator)
+                .triggerIdGenerator(triggerIdGenerator)
                 ;
 
         sandGlassBs.init();
@@ -223,13 +233,30 @@ public class EnableSandGlassConfig implements ImportAware,
         final IScheduler scheduler = sandGlassBs.scheduler();
         final ISchedulerContext schedulerContext = sandGlassBs.schedulerContext();
 
+        // 标识策略
+        final IIdGenerator jobIdGenerator = sandGlassBs.jobIdGenerator();
+        final IIdGenerator triggerIdGenerator = sandGlassBs.triggerIdGenerator();
+
         // 加载所有的调度方法
         for (Pair<JobAndDetailDto, TriggerAndDetailDto> entry : triggerAndJobList) {
             JobAndDetailDto jobAndDetailDto = entry.getValueOne();
             TriggerAndDetailDto triggerAndDetailDto = entry.getValueTwo();
 
+            JobDetailDto jobDetailDto = jobAndDetailDto.getJobDetailDto();
+            TriggerDetailDto triggerDetailDto = triggerAndDetailDto.getTriggerDetailDto();
+
+            // 设置标识
+            IIdGeneratorContext idGeneratorContext = IdGeneratorContext.newInstance()
+                    .jobClass(jobAndDetailDto.getBean().getClass())
+                    .jobMethodName(jobAndDetailDto.getMethod().getName())
+                    .triggerClass(triggerAndDetailDto.getTrigger().getClass());
+            String jobId = jobIdGenerator.id(idGeneratorContext);
+            String triggerId = triggerIdGenerator.id(idGeneratorContext);
+            jobDetailDto.setJobId(jobId);
+            triggerDetailDto.setTriggerId(triggerId);
+
             scheduler.schedule(jobAndDetailDto.getJob(), triggerAndDetailDto.getTrigger(),
-                    jobAndDetailDto.getJobDetailDto(), triggerAndDetailDto.getTriggerDetailDto(),
+                    jobDetailDto, triggerDetailDto,
                     schedulerContext);
         }
 

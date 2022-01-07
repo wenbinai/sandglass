@@ -14,6 +14,7 @@ import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
 import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.exception.SandGlassException;
+import com.github.houbb.sandglass.core.support.id.IdGeneratorContext;
 import com.github.houbb.sandglass.core.support.store.JobTriggerStoreContext;
 import com.github.houbb.sandglass.core.support.thread.NamedThreadFactory;
 import com.github.houbb.sandglass.core.support.trigger.CronTrigger;
@@ -77,15 +78,27 @@ public class Scheduler implements IScheduler {
     @Override
     public void schedule(IJob job, ITrigger trigger, final ISchedulerContext context) {
         JobDetailDto jobDetailDto = buildJobDetail(job);
-        TriggerDetailDto triggerDetailDto = buildTriggerDetailDto(jobDetailDto.getJobId(), trigger);
+        TriggerDetailDto triggerDetailDto = buildTriggerDetailDto(trigger);
 
+        // 补全标识信息
+        IIdGeneratorContext idGeneratorContext = IdGeneratorContext.newInstance()
+                .jobClass(job.getClass())
+                .jobMethodName("")
+                .triggerClass(trigger.getClass());
+
+        final IIdGenerator jobIdGenerator = context.jobIdGenerator();
+        final IIdGenerator triggerIdGenerator = context.triggerIdGenerator();
+        String jobId = jobIdGenerator.id(idGeneratorContext);
+        String triggerId = triggerIdGenerator.id(idGeneratorContext);
+        jobDetailDto.setJobId(jobId);
+        triggerDetailDto.setTriggerId(triggerId);
+
+        // 执行调度
         this.schedule(job, trigger, jobDetailDto, triggerDetailDto, context);
     }
 
-    private TriggerDetailDto buildTriggerDetailDto(String jobId, ITrigger trigger) {
+    private TriggerDetailDto buildTriggerDetailDto(ITrigger trigger) {
         TriggerDetailDto dto = new TriggerDetailDto();
-        // 此处任务触发器和任务绑定，使用同一个标识
-        dto.setTriggerId(jobId);
 
         if(trigger instanceof PeriodTrigger) {
             PeriodTrigger periodTrigger = (PeriodTrigger) trigger;
@@ -115,7 +128,6 @@ public class Scheduler implements IScheduler {
     private JobDetailDto buildJobDetail(IJob job) {
         String classFullName = job.getClass().getName();
         JobDetailDto detailDto = new JobDetailDto();
-        detailDto.setJobId(IdHelper.uuid32());
         detailDto.setClassFullName(classFullName);
         return detailDto;
     }

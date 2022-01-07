@@ -148,4 +148,18 @@ public @interface EnableSandGlass {
      */
     String jobTriggerNextTakeTimeStore() default "sandglass-jobTriggerNextTakeTimeStore";
 
+    /**
+     * 任务标识生成策略
+     * @return 策略
+     * @since 1.7.0
+     */
+    String jobIdGenerator() default "sandglass-jobIdGenerator";
+
+    /**
+     * 触发器标识生成策略
+     * @return 策略
+     * @since 1.7.0
+     */
+    String triggerIdGenerator() default "sandglass-triggerIdGenerator";
+
 }
