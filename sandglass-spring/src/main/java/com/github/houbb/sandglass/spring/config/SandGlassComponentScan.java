@@ -2,16 +2,18 @@ package com.github.houbb.sandglass.spring.config;
 
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.lock.redis.core.Locks;
-import com.github.houbb.sandglass.api.api.IIdGenerator;
+import com.github.houbb.sandglass.api.support.id.IIdGenerator;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
+import com.github.houbb.sandglass.api.support.lock.ITriggerLockKeyGenerator;
 import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
 import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.support.id.IdGenerators;
 import com.github.houbb.sandglass.core.support.listener.JobListener;
 import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
 import com.github.houbb.sandglass.core.support.listener.TriggerListener;
+import com.github.houbb.sandglass.core.support.lock.TriggerLockKeyGenerator;
 import com.github.houbb.sandglass.core.support.outOfDate.OutOfDateStrategyFireNow;
 import com.github.houbb.sandglass.core.support.store.*;
 import com.github.houbb.timer.api.ITimer;
@@ -155,6 +157,16 @@ public class SandGlassComponentScan {
     @Bean("sandglass-triggerIdGenerator")
     public IIdGenerator triggerIdGenerator() {
         return IdGenerators.classSlim();
+    }
+
+    /**
+     * trigger lock key 生成策略
+     * @return 策略
+     * @since 1.7.1
+     */
+    @Bean("sandglass-triggerLockKeyGenerator")
+    public ITriggerLockKeyGenerator triggerLockKeyGenerator() {
+        return new TriggerLockKeyGenerator();
     }
 
 }

@@ -4,9 +4,11 @@ import com.github.houbb.heaven.util.common.ArgUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.lock.redis.core.Locks;
 import com.github.houbb.sandglass.api.api.*;
+import com.github.houbb.sandglass.api.support.id.IIdGenerator;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
+import com.github.houbb.sandglass.api.support.lock.ITriggerLockKeyGenerator;
 import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
 import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
@@ -16,6 +18,7 @@ import com.github.houbb.sandglass.core.support.id.IdGenerators;
 import com.github.houbb.sandglass.core.support.listener.JobListener;
 import com.github.houbb.sandglass.core.support.listener.ScheduleListener;
 import com.github.houbb.sandglass.core.support.listener.TriggerListener;
+import com.github.houbb.sandglass.core.support.lock.TriggerLockKeyGenerator;
 import com.github.houbb.sandglass.core.support.outOfDate.OutOfDateStrategies;
 import com.github.houbb.sandglass.core.support.store.*;
 import com.github.houbb.sandglass.core.support.thread.ScheduleMainThreadLoop;
@@ -182,6 +185,28 @@ public final class SandGlassBs {
      * @since 1.7.0
      */
     private IIdGenerator triggerIdGenerator = IdGenerators.classSlim();
+
+    /**
+     * 等待 takeTime 时，每一次循环的暂停时间
+     * 不能太大：会导致执行任务延迟，整体执行的效率也会降低。
+     * 不能太小：会导致查询压力较大
+     * 单位：毫秒
+     * @since 1.7.1
+     */
+    private long waitTakeTimeSleepMills = SandGlassConst.WAIT_TAKE_TIME_SLEEP_MILLS;
+
+    /**
+     * trigger 锁尝试获取时间
+     * 单位：毫秒
+     * @since 1.7.1
+     */
+    private long triggerLockTryMills = SandGlassConst.TRIGGER_LOCK_TRY_MILLS;
+
+    /**
+     * 锁 key 生成策略
+     * @since 1.7.1
+     */
+    private ITriggerLockKeyGenerator triggerLockKeyGenerator = new TriggerLockKeyGenerator();
 
     public SandGlassBs appName(String appName) {
         ArgUtil.notEmpty(appName, "appName");
@@ -357,6 +382,35 @@ public final class SandGlassBs {
         return this;
     }
 
+    public long waitTakeTimeSleepMills() {
+        return waitTakeTimeSleepMills;
+    }
+
+    public SandGlassBs waitTakeTimeSleepMills(long waitTakeTimeSleepMills) {
+        this.waitTakeTimeSleepMills = waitTakeTimeSleepMills;
+        return this;
+    }
+
+    public long triggerLockTryMills() {
+        return triggerLockTryMills;
+    }
+
+    public SandGlassBs triggerLockTryMills(long triggerLockTryMills) {
+        this.triggerLockTryMills = triggerLockTryMills;
+        return this;
+    }
+
+    public ITriggerLockKeyGenerator triggerLockKeyGenerator() {
+        return triggerLockKeyGenerator;
+    }
+
+    public SandGlassBs triggerLockKeyGenerator(ITriggerLockKeyGenerator triggerLockKeyGenerator) {
+        ArgUtil.notNull(triggerLockKeyGenerator, "triggerLockKeyGenerator");
+
+        this.triggerLockKeyGenerator = triggerLockKeyGenerator;
+        return this;
+    }
+
     public IScheduler scheduler() {
         return scheduler;
     }
@@ -486,6 +540,9 @@ public final class SandGlassBs {
                 .machineIp(machineIp)
                 .machinePort(machinePort)
                 .jobTriggerNextTakeTimeStore(jobTriggerNextTakeTimeStore)
+                .triggerLockTryMills(triggerLockTryMills)
+                .waitTakeTimeSleepMills(waitTakeTimeSleepMills)
+                .triggerLockKeyGenerator(triggerLockKeyGenerator)
                 ;
 
         //调度类

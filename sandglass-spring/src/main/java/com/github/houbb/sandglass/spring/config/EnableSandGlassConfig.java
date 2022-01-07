@@ -5,17 +5,18 @@ import com.github.houbb.heaven.util.lang.reflect.ClassUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
-import com.github.houbb.sandglass.api.api.IIdGenerator;
-import com.github.houbb.sandglass.api.api.IIdGeneratorContext;
 import com.github.houbb.sandglass.api.api.IScheduler;
 import com.github.houbb.sandglass.api.api.ISchedulerContext;
 import com.github.houbb.sandglass.api.dto.JobDetailDto;
 import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
 import com.github.houbb.sandglass.api.dto.mixed.JobAndDetailDto;
 import com.github.houbb.sandglass.api.dto.mixed.TriggerAndDetailDto;
+import com.github.houbb.sandglass.api.support.id.IIdGenerator;
+import com.github.houbb.sandglass.api.support.id.IIdGeneratorContext;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
+import com.github.houbb.sandglass.api.support.lock.ITriggerLockKeyGenerator;
 import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
 import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.bs.SandGlassBs;
@@ -133,6 +134,10 @@ public class EnableSandGlassConfig implements ImportAware,
         IIdGenerator jobIdGenerator = beanFactory.getBean(enableSandGlassAttributes.getString("jobIdGenerator"), IIdGenerator.class);
         IIdGenerator triggerIdGenerator = beanFactory.getBean(enableSandGlassAttributes.getString("triggerIdGenerator"), IIdGenerator.class);
 
+        ITriggerLockKeyGenerator triggerLockKeyGenerator = beanFactory.getBean(enableSandGlassAttributes.getString("triggerLockKeyGenerator"), ITriggerLockKeyGenerator.class);
+        long triggerLockTryMills = Long.parseLong(enableSandGlassAttributes.getString("enableSandGlassAttributes"));
+        long waitTakeTimeSleepMills = Long.parseLong(enableSandGlassAttributes.getString("waitTakeTimeSleepMills"));
+
         this.sandGlassBs = SandGlassBs.newInstance()
                 .workPoolSize(workPoolSize)
                 .jobStore(jobStore)
@@ -156,6 +161,9 @@ public class EnableSandGlassConfig implements ImportAware,
                 .jobTriggerNextTakeTimeStore(jobTriggerNextTakeTimeStore)
                 .jobIdGenerator(jobIdGenerator)
                 .triggerIdGenerator(triggerIdGenerator)
+                .triggerLockTryMills(triggerLockTryMills)
+                .waitTakeTimeSleepMills(waitTakeTimeSleepMills)
+                .triggerLockKeyGenerator(triggerLockKeyGenerator)
                 ;
 
         sandGlassBs.init();

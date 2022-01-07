@@ -1,6 +1,8 @@
 package com.github.houbb.sandglass.api.api;
 
+import com.github.houbb.sandglass.api.support.id.IIdGenerator;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
+import com.github.houbb.sandglass.api.support.lock.ITriggerLockKeyGenerator;
 import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.timer.api.ITimer;
 
@@ -45,6 +47,7 @@ import com.github.houbb.timer.api.ITimer;
 public interface ISchedulerContext {
 
     /**
+     * 调度主线程
      * @return 调度主线程
      * @since 0.0.2
      */
@@ -161,5 +164,12 @@ public interface ISchedulerContext {
      * @return 策略
      */
     IIdGenerator triggerIdGenerator();
+
+    /**
+     * 触发锁生成
+     * @return 策略
+     * @since 1.7.1
+     */
+    ITriggerLockKeyGenerator triggerLockKeyGenerator();
 
 }

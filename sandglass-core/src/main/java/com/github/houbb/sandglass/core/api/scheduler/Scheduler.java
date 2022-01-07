@@ -2,7 +2,6 @@ package com.github.houbb.sandglass.core.api.scheduler;
 
 import com.github.houbb.heaven.annotation.NotThreadSafe;
 import com.github.houbb.heaven.util.common.ArgUtil;
-import com.github.houbb.id.core.util.IdHelper;
 import com.github.houbb.log.integration.core.Log;
 import com.github.houbb.log.integration.core.LogFactory;
 import com.github.houbb.sandglass.api.api.*;
@@ -12,6 +11,8 @@ import com.github.houbb.sandglass.api.constant.TriggerTypeEnum;
 import com.github.houbb.sandglass.api.dto.JobDetailDto;
 import com.github.houbb.sandglass.api.dto.JobTriggerDto;
 import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
+import com.github.houbb.sandglass.api.support.id.IIdGenerator;
+import com.github.houbb.sandglass.api.support.id.IIdGeneratorContext;
 import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.exception.SandGlassException;
 import com.github.houbb.sandglass.core.support.id.IdGeneratorContext;

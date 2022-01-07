@@ -1,7 +1,7 @@
 package com.github.houbb.sandglass.core.support.id;
 
 import com.github.houbb.heaven.support.metadata.util.PackageUtil;
-import com.github.houbb.sandglass.api.api.IIdGeneratorContext;
+import com.github.houbb.sandglass.api.support.id.IIdGeneratorContext;
 
 /**
  * uuid32 策略

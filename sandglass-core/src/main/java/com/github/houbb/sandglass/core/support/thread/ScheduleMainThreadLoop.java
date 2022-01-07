@@ -1,7 +1,6 @@
 package com.github.houbb.sandglass.core.support.thread;
 
 import com.github.houbb.heaven.util.common.ArgUtil;
-import com.github.houbb.heaven.util.util.DateUtil;
 import com.github.houbb.heaven.util.util.TimeUtil;
 import com.github.houbb.lock.api.core.ILock;
 import com.github.houbb.log.integration.core.Log;
@@ -19,9 +18,12 @@ import com.github.houbb.sandglass.api.dto.TriggerDetailDto;
 import com.github.houbb.sandglass.api.support.listener.IJobListener;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
 import com.github.houbb.sandglass.api.support.listener.ITriggerListener;
+import com.github.houbb.sandglass.api.support.lock.ITriggerLockKeyGenerator;
+import com.github.houbb.sandglass.api.support.lock.ITriggerLockKeyGeneratorContext;
 import com.github.houbb.sandglass.api.support.outOfDate.IOutOfDateStrategy;
 import com.github.houbb.sandglass.api.support.store.*;
 import com.github.houbb.sandglass.core.api.scheduler.Scheduler;
+import com.github.houbb.sandglass.core.support.lock.TriggerLockKeyGeneratorContext;
 import com.github.houbb.sandglass.core.support.store.JobTriggerStoreContext;
 import com.github.houbb.sandglass.core.util.InnerJobTriggerHelper;
 import com.github.houbb.timer.api.ITimer;
@@ -156,6 +158,24 @@ public class ScheduleMainThreadLoop extends Thread {
      */
     private IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore;
 
+    /**
+     * 等待 takeTime 时，每一次循环的暂停时间
+     * @since 1.7.1
+     */
+    private long waitTakeTimeSleepMills;
+
+    /**
+     * trigger 锁尝试获取时间
+     * @since 1.7.1
+     */
+    private long triggerLockTryMills;
+
+    /**
+     * 锁 key 生成策略
+     * @since 1.7.1
+     */
+    private ITriggerLockKeyGenerator triggerLockKeyGenerator;
+
     public ScheduleMainThreadLoop jobTriggerNextTakeTimeStore(IJobTriggerNextTakeTimeStore jobTriggerNextTakeTimeStore) {
         ArgUtil.notNull(jobTriggerNextTakeTimeStore, "jobTriggerNextTakeTimeStore");
 
@@ -284,6 +304,22 @@ public class ScheduleMainThreadLoop extends Thread {
         return this;
     }
 
+    public ScheduleMainThreadLoop waitTakeTimeSleepMills(long waitTakeTimeSleepMills) {
+        this.waitTakeTimeSleepMills = waitTakeTimeSleepMills;
+        return this;
+    }
+
+    public ScheduleMainThreadLoop triggerLockTryMills(long triggerLockTryMills) {
+        this.triggerLockTryMills = triggerLockTryMills;
+        return this;
+    }
+
+    public ScheduleMainThreadLoop triggerLockKeyGenerator(ITriggerLockKeyGenerator triggerLockKeyGenerator) {
+        ArgUtil.notNull(triggerLockKeyGenerator, "triggerLockKeyGenerator");
+
+        this.triggerLockKeyGenerator = triggerLockKeyGenerator;
+        return this;
+    }
 
     /**
      * 本地循环等待，直到触发的时间
@@ -303,7 +339,7 @@ public class ScheduleMainThreadLoop extends Thread {
         LOG.debug("client 开始进入等待 nextTakeTime: {}, currentTime: {}", nextTakeTime, currentTime);
         while (currentTime < nextTakeTime) {
             //1. 沉睡 10ms
-            TimeUtil.sleep(10);
+            TimeUtil.sleep(waitTakeTimeSleepMills);
 
             //2. 更新 nextTime（避免中间时间发生了变化，错过执行的时机）
             // 这里需要添加是否需要查询的判断，避免过多无效查询。
@@ -348,17 +384,34 @@ public class ScheduleMainThreadLoop extends Thread {
                 .jobTriggerNextTakeTimeStore(jobTriggerNextTakeTimeStore);
     }
 
+    /**
+     * 生成对应的锁信息
+     * @return 锁
+     * @since 1.7.1
+     */
+    private String genTriggerLockKey() {
+        // 生成对应的 key
+        ITriggerLockKeyGeneratorContext lockKeyGeneratorContext = TriggerLockKeyGeneratorContext.newInstance()
+                .appName(appName)
+                .envName(envName)
+                .machineIp(machineIp)
+                .machinePort(machinePort);
+
+        return this.triggerLockKeyGenerator.key(lockKeyGeneratorContext);
+    }
+
     @Override
     public void run() {
         this.startFlag = true;
         while (startFlag) {
-            String triggerLockKey = buildTriggerLockKey();
+            // 锁
+            String triggerLockKey = genTriggerLockKey();
             try {
                 // 本地 loop，直到到达可以获取信息的时候
                 clientLoopUntilTakeTime();
 
                 //0. 获取 trigger lock，便于后期分布式拓展
-                boolean triggerLock = this.triggerLock.tryLock(30, TimeUnit.SECONDS,triggerLockKey);
+                boolean triggerLock = this.triggerLock.tryLock(triggerLockTryMills, TimeUnit.MILLISECONDS, triggerLockKey);
                 if(!triggerLock) {
                     LOG.info("trigger lock 获取失败");
                     // 获取锁失败
@@ -535,15 +588,6 @@ public class ScheduleMainThreadLoop extends Thread {
 
             scheduleListener.exception(e);
         }
-    }
-
-    /**
-     * 构建 trigger 锁对应的 key
-     * @return 结果
-     * @since 0.0.2
-     */
-    protected String buildTriggerLockKey() {
-        return "trigger-lock-" + DateUtil.getCurrentTimeStampStr();
     }
 
 }

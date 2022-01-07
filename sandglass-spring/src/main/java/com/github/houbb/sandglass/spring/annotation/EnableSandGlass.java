@@ -162,4 +162,26 @@ public @interface EnableSandGlass {
      */
     String triggerIdGenerator() default "sandglass-triggerIdGenerator";
 
+    /**
+     * trigger 锁尝试获取时间
+     * @since 1.7.1
+     * @return 锁尝试获取时间
+     */
+    long triggerLockTryMills() default SandGlassConst.TRIGGER_LOCK_TRY_MILLS;
+
+    /**
+     *
+     * 等待 takeTime 时，每一次循环的暂停时间
+     * @return 循环的暂停时间
+     * @since 1.7.1
+     */
+    long waitTakeTimeSleepMills() default SandGlassConst.WAIT_TAKE_TIME_SLEEP_MILLS;
+
+    /**
+     * 锁生成策略
+     * @return 策略
+     * @since 1.7.1
+     */
+    String triggerLockKeyGenerator() default "sandglass-triggerLockKeyGenerator";
+
 }

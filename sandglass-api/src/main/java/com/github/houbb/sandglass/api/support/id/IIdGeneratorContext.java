@@ -1,4 +1,4 @@
-package com.github.houbb.sandglass.api.api;
+package com.github.houbb.sandglass.api.support.id;
 
 /**
  * 指定 id 生成策略上下文

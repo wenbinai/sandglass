@@ -1,6 +1,6 @@
 package com.github.houbb.sandglass.core.support.id;
 
-import com.github.houbb.sandglass.api.api.IIdGenerator;
+import com.github.houbb.sandglass.api.support.id.IIdGenerator;
 
 /**
  * id 策略工具类

@@ -1,10 +1,10 @@
 package com.github.houbb.sandglass.core.api.scheduler;
 
-import com.github.houbb.sandglass.api.api.IIdGenerator;
 import com.github.houbb.sandglass.api.api.ISchedulerContext;
+import com.github.houbb.sandglass.api.support.id.IIdGenerator;
 import com.github.houbb.sandglass.api.support.listener.IScheduleListener;
+import com.github.houbb.sandglass.api.support.lock.ITriggerLockKeyGenerator;
 import com.github.houbb.sandglass.api.support.store.*;
-import com.github.houbb.sandglass.core.support.id.IdGenerators;
 import com.github.houbb.timer.api.ITimer;
 
 /**
@@ -114,6 +114,12 @@ public class SchedulerContext implements ISchedulerContext {
      * @since 1.7.0
      */
     private IIdGenerator triggerIdGenerator;
+
+    /**
+     * 触发锁生成实现
+     * @since 1.7.1
+     */
+    private ITriggerLockKeyGenerator triggerLockKeyGenerator;
 
     @Override
     public Runnable mainThreadLoop() {
@@ -282,6 +288,16 @@ public class SchedulerContext implements ISchedulerContext {
 
     public SchedulerContext triggerIdGenerator(IIdGenerator triggerIdGenerator) {
         this.triggerIdGenerator = triggerIdGenerator;
+        return this;
+    }
+
+    @Override
+    public ITriggerLockKeyGenerator triggerLockKeyGenerator() {
+        return triggerLockKeyGenerator;
+    }
+
+    public SchedulerContext triggerLockKeyGenerator(ITriggerLockKeyGenerator triggerLockKeyGenerator) {
+        this.triggerLockKeyGenerator = triggerLockKeyGenerator;
         return this;
     }
 }
