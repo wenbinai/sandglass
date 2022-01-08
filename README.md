@@ -9,6 +9,66 @@
 
 > [变更日志](https://github.com/houbb/sandglass/blob/master/CHANGELOG.md)
 
+## 创作目的
+
+定时任务是业务需求中非常常见的
+
+比如：
+
+（1）每天给自己女友发晚安
+
+什么你还是单身？，那看完本篇文章就有了。
+
+（2）每个月通知自己要还信用卡
+
+可能还有其他的手机费、生活费之类的，反正又是一个没钱的一个月。
+
+（3）每个月 14 日都是情人节
+
+这个扯远了……
+
+有了场景，那我们如何实现呢？
+
+java 已有的实现任务调度的主流工具如下：
+
+| 名称 | 多线程执行 | cron 表达式 | 使用难度 | 可独立 spring 运行 | 任务执行等持久化 | 分布式支持 |
+|:----|:----|:----|:----|:----|:----|:----|
+| Timer | 否 | 否 | 简单 | 是 | 需自己实现 | 否 |
+| ScheduledExecutor | 是 | 否 | 一般 | 是 | 需自己实现 | 否 |
+| Quartz | 是 | 是 | 麻烦 | 是 | 是 | 较差 |
+| Spring Schedule | 是 | 是 | 简单 | 否 | 否 | 否 |
+| Sandglass | 是 | 是 | 简单 | 是 | 是 | 是 |
+
+为什么需要重新实现一个任务调度框架呢？
+
+老马的日常开发中，简单的调度任务会使用 jdk 中的 ScheduledExecutor 实现。
+
+当涉及到 cron 表达式时，一般会使用 quartz，毕竟老牌调度框架，功能非常完善。
+
+但是对比 spring schedule，quartz 的使用就显得有些麻烦，需要开发者指定较多的配置。
+
+那直接使用 spring schedule 不就好了吗？
+
+spring schedule 的缺点也很明显，不支持数据的持久化，不支持分布式调度。
+
+那直接引入一个分布式任务调度系统呢？
+
+有时候就显得杀鸡用牛刀，而且维护成本比较高。
+
+读到这里，肯定会有聪明的小伙伴们发问了：“难道就不能写一个可以独立于 spring 使用，又可以整合 spring 使用，可以单机调度，又可以分布式调度的任务调度工具吗？”
+
+是的，**sandglass 就是一个渐进式，满足上面各种应用场景的任务调度工具**。
+
+## sandglass 的一点改进
+
+- sandglass 拥有 quartz 的强大功能，spring schedule 的使用便捷性。
+
+- sandglass 的实现简洁，便于系统学习调度系统的原理。
+
+- sandglass 基于分布式理念设计，便于作为分布式调度系统的实现基石。
+
+- sandglass 所有实现都是基于接口，用户可以自定义实现自己的策略。
+
 ## 特性
 
 - 高性能任务调度
@@ -29,28 +89,6 @@
 
 - 从零开始纯自研调度框架，便于用户学习原理
 
-# 创作目的
-
-定时任务是业务需求中非常常见的，比如在 [为了吃瓜通宵7天写了一个网站](https://mp.weixin.qq.com/s/lYtxWur2-WJhbOKYx98pBA) 中，
-每天定时的邮件推送就是使用的 sandglass 实现。
-
-为什么需要重新实现一个任务调度框架呢？
-
-java 已有的实现任务调度的主流工具如下：
-
-| 名称 | 多线程执行 | cron 表达式 | 使用难度 | 可独立 spring 运行 | 任务执行等持久化 | 分布式支持 |
-|:----|:----|:----|:----|:----|:----|:----|
-| Timer | 否 | 否 | 简单 | 是 | 需自己实现 | 否 |
-| ScheduledExecutor | 是 | 否 | 一般 | 是 | 需自己实现 | 否 |
-| Quartz | 是 | 是 | 麻烦 | 是 | 是 | 较差 |
-| Spring Schedule | 是 | 是 | 简单 | 否 | 否 | 否 |
-| Sandglass | 是 | 是 | 简单 | 是 | 是 | 是 |
-
-- sandglass 拥有 quartz 的强大功能，spring schedule 的使用便捷性。
-
-- sandglass 的实现简洁，便于系统学习调度系统的原理。
-
-- sandglass 基于分布式理念设计，便于作为分布式调度系统的实现基石。
 
 # 快速开始
 
@@ -60,7 +98,7 @@ java 已有的实现任务调度的主流工具如下：
 <dependency>
     <groupId>com.github.houbb</groupId>
     <artifactId>sandglass-core</artifactId>
-    <version>${最新版本}</version>
+    <version>1.7.1</version>
 </dependency>
 ```
 
@@ -117,46 +155,69 @@ Triggers.period(long period, TimeUnit timeUnit);
 
 ## 说明
 
-和其他的开源工具一样，为了便于用户自定义。
-
-SandGlass 也支持引导类自定义。
+SandGlass 也支持引导类自定义，默认配置等价于：
 
 ```java
 SandGlassBs.newInstance()
-      .workPoolSize(10)
-      .jobStore(new JobStore())
-      .jobListener(new JobListener())
-      .jobTriggerStoreListener(new JobTriggerStoreListener())
-      .jobTriggerStore(new JobTriggerStore())
-      .triggerListener(new TriggerListener())
-      .triggerLock(Locks.none())
-      .triggerStore(new TriggerStore())
-      .timer(SystemTimer.getInstance())
-      .scheduleListener(new ScheduleListener())
-      .start();
+        .appName(SandGlassConst.DEFAULT_APP_NAME)
+        .envName(SandGlassConst.DEFAULT_ENV_NAME)
+        .machineIp(SandGlassConst.DEFAULT_MACHINE_IP)
+        .machinePort(SandGlassConst.DEFAULT_MACHINE_PORT)
+        .workPoolSize(SandGlassConst.DEFAULT_WORKER_POOL_SIZE)
+        .waitTakeTimeSleepMills(SandGlassConst.WAIT_TAKE_TIME_SLEEP_MILLS)
+        .triggerLockTryMills(SandGlassConst.TRIGGER_LOCK_TRY_MILLS)
+        .triggerStore(new TriggerStore())
+        .triggerDetailStore(new TriggerDetailStore())
+        .triggerListener(new TriggerListener())
+        .triggerLock(Locks.none())
+        .triggerIdGenerator(IdGenerators.classSlim())
+        .triggerLockKeyGenerator(new TriggerLockKeyGenerator())
+        .jobStore(new JobStore())
+        .jobDetailStore(new JobDetailStore())
+        .jobListener(new JobListener())
+        .jobTriggerStore(new JobTriggerStore())
+        .jobTriggerStoreListener(new JobTriggerStoreListener())
+        .jobTriggerMappingStore(new JobTriggerMappingStore())
+        .jobTriggerNextTakeTimeStore(new JobTriggerNextTakeTimeStore())
+        .jobIdGenerator(IdGenerators.classSlim())
+        .taskLogStore(new TaskLogStore())
+        .timer(SystemTimer.getInstance())
+        .scheduleListener(new ScheduleListener())
+        .start();
 ```
 
-## 属性说明
+所有实现都是基于接口，用于可以根据实际业务进行调整。
 
-所有属性都是基于接口的，允许用户自定义定义。
+## 属性说明
 
 可配置的属性列表如下：
 
 | 属性 | 说明 | 默认值 |
 |:---|:---|:---|
-| workPoolSize | 工作线程池大小 | 10 |
-| jobStore | 任务持久化 |  |
+| appName | 应用名称 |  |
+| envName | 环境名称 |  |
+| machineIp | 机器IP | |
+| machinePort | 机器端口 |  |
+| workPoolSize | 工作线程池大小 |  |
+| waitTakeTimeSleepMills | 等待 takeTime 时，每一次循环的暂停时间 |  |
+| triggerLockTryMills | trigger 锁尝试获取时间 |  |
 | triggerStore | 触发器持久化 |  |
+| triggerDetailStore | 触发器详情信息持久化 |  |
+| triggerListener | 触发器监听器 |  |
+| triggerLock | 触发器锁 |  |
+| triggerLockKeyGenerator | 触发调度锁 key 生成策略 |  |
+| triggerIdGenerator | 触发器标识生成策略 |  |
+| jobStore | 任务持久化 |  |
+| jobDetailStore | 任务详情持久化 |  |
+| jobListener | 任务执行监听器 |  |
+| jobIdGenerator | 任务标识生成策略 |  |
 | jobTriggerStore | 任务触发器持久化 |  |
 | jobTriggerStoreListener | 任务出发持久化监听器 |  |
+| jobTriggerMappingStore | 任务触发器映射关系持久化 |  |
+| jobTriggerNextTakeTimeStore | 任务触发下一次获取时间持久化 |  |
+| taskLogStore | 任务执行日志持久化 |  |
 | timer | 时间策略 |  |
-| triggerLock | 触发器锁 |  |
 | scheduleListener | 任务调度监听器 |  |
-| jobListener | 任务执行监听器 |  |
-| triggerListener | 触发器监听器 |  |
-| jobDetailStore | 任务详情持久化 |  |
-| triggerDetailStore | 触发器详情详情持久化 |  |
-
 
 # spring 整合
 
@@ -166,7 +227,7 @@ SandGlassBs.newInstance()
 <dependency>
     <groupId>com.github.houbb</groupId>
     <artifactId>sandglass-spring</artifactId>
-    <version>${最新版本}</version>
+    <version>1.7.1</version>
 </dependency>
 ```
 
@@ -193,6 +254,33 @@ public class MyJobService {
 
 `@PeriodSchedule` 用于指定 period 执行的任务，`@CronSchedule` 用于指定 cron 表达式对应的任务。
 
+### @PeriodSchedule 注解
+
+用于指定基于 period 执行的任务方法。
+
+可配置属性列表如下：
+
+| 属性 | 说明 | 类型 | 默认值 |
+|:---|:---|:---|:----|
+| value | 调度间隔 | long | - |
+| timeUnit | 调度间隔时间单位 | TimeUnit | TimeUnit.MILLISECONDS |
+| initialDelay | 初始化延迟时间 | long | 0 |
+| fixedRate | 是否固定速率 | boolean | false |
+| allowConcurrentExecute | 是否允许并发执行 | boolean | true |
+| remark | 备注 | String | 空 |
+
+### @CronSchedule 注解
+
+用于指定基于 cron 表达式 执行的任务方法。
+
+可配置属性列表如下：
+
+| 属性 | 说明 | 类型 | 默认值 |
+|:---|:---|:---|:----|
+| value | cron 表达式 | String | - |
+| allowConcurrentExecute | 是否允许并发执行 | boolean | true |
+| remark | 备注 | String | 空 |
+
 ## 定时任务启用
 
 直接指定 `@EnableSandGlass` 注解即可，无需额外配置。
@@ -213,20 +301,39 @@ public class SpringConfig {
 
 | 属性 | 说明 | 默认值 |
 |:---|:---|:---|
-| workPoolSize | 工作线程池大小 | 10 |
-| jobStore | 任务持久化 |  |
+| appName | 应用名称 |  |
+| workPoolSize | 工作线程池大小 |  |
+| waitTakeTimeSleepMills | 等待 takeTime 时，每一次循环的暂停时间 |  |
+| triggerLockTryMills | trigger 锁尝试获取时间 |  |
 | triggerStore | 触发器持久化 |  |
+| triggerDetailStore | 触发器详情信息持久化 |  |
+| triggerListener | 触发器监听器 |  |
+| triggerLock | 触发器锁 |  |
+| triggerLockKeyGenerator | 触发调度锁 key 生成策略 |  |
+| triggerIdGenerator | 触发器标识生成策略 |  |
+| jobStore | 任务持久化 |  |
+| jobDetailStore | 任务详情持久化 |  |
+| jobListener | 任务执行监听器 |  |
+| jobIdGenerator | 任务标识生成策略 |  |
 | jobTriggerStore | 任务触发器持久化 |  |
 | jobTriggerStoreListener | 任务出发持久化监听器 |  |
+| jobTriggerMappingStore | 任务触发器映射关系持久化 |  |
+| jobTriggerNextTakeTimeStore | 任务触发下一次获取时间持久化 |  |
+| taskLogStore | 任务执行日志持久化 |  |
 | timer | 时间策略 |  |
-| triggerLock | 触发器锁 |  |
 | scheduleListener | 任务调度监听器 |  |
-| jobListener | 任务执行监听器 |  |
-| triggerListener | 触发器监听器 |  |
-| jobDetailStore | 任务详情持久化 |  |
-| triggerDetailStore | 触发器详情详情持久化 |  |
+
+默认的策略和 SandglassBs 引导类保持一致。
 
 自定义方式：实现对应接口，在注解中对应对应的 bean 名称即可。
+
+说明：下面 3 个属性和业务无关，只和执行的环境的配置有关，所以不支持注解指定。可以通过配置自定义。
+
+| 属性 | 配置属性名称 | 说明 |
+|:---|:---|:---|
+| envName | `sandglass-envName` |  配置指定环境信息 |
+| machineIp | `sandglass-machineIp` |  配置指定机器IP信息 |
+| machinePort | `sandglass-machinePort` |  配置指定机器端口信息 |
 
 # springboot 整合
 
@@ -236,7 +343,7 @@ public class SpringConfig {
 <dependency>
     <groupId>com.github.houbb</groupId>
     <artifactId>sandglass-springboot-starter</artifactId>
-    <version>${最新版本}</version>
+    <version>1.7.1</version>
 </dependency>
 ```
 
@@ -245,14 +352,6 @@ public class SpringConfig {
 ## 方法定义
 
 同 spring 整合
-
-# 开源地址
-
-为了便于大家共同学习，开源地址如下：
-
-> [https://github.com/houbb/sandglass](https://github.com/houbb/sandglass) 
-
-> [https://gitee.com/houbinbin/sandglass](https://gitee.com/houbinbin/sandglass)
 
 # 模块介绍
 
@@ -274,12 +373,40 @@ sandglass 共计 5 个子模块：
 
 ## 产品矩阵
 
+常言道，独木不成林。
+
+sandglass 作为一个任务调度核心实现，只是分布式任务调度的基石。
+
+若要实现一个完整的分布式调度系统，还需要如下的工具支撑。
+
 | 名称 | 说明 | 状态 |
 |:---|:---|:---|
 | sandglass | 核心实现 | 已开源 |
-| sandglass-web | 任务调度控台 | 开发中 |
-| sandglass-client | 任务调度客户端 | 开发中 |
-| sandglass-socket | 底层通讯协议 | 开发中 |
+| sandglass-socket | 底层通讯协议 | 未开源 |
+| sandglass-client | 任务调度客户端 | 未开源 |
+| sandglass-web | 任务调度控台 | 未开源 |
+
+目前经历几十个迭代和几十个不眠的夜晚，基本功能实现完成，后续考虑陆续开源。
+
+# 拓展阅读
+
+# 开源地址
+
+为了便于大家共同学习，开源地址如下：
+
+> [https://github.com/houbb/sandglass](https://github.com/houbb/sandglass)
+
+> [https://gitee.com/houbinbin/sandglass](https://gitee.com/houbinbin/sandglass)
+
+## 文章
+
+[为了吃瓜通宵7天写了一个网站](https://mp.weixin.qq.com/s/lYtxWur2-WJhbOKYx98pBA)
+
+## 公众号
+
+更多资讯，可以关注公众号
+
+![wechat](wechat.png)
 
 # Road-Map
 
@@ -303,8 +430,6 @@ sandglass 共计 5 个子模块：
 
 - [x] thread-Factory 线程命名优化
 
-~~- [ ] 兼容 spring schedule~~
-
 - [x] MIS-FIRE 处理
 
 - [x] 并发执行问题
@@ -323,14 +448,14 @@ RAM 最多只保存 100 条
 
 添加静默间隔处理，避免消息丢失，导致的任务错过执行（时间间隔可配置，默认为 5min）
 
-- [ ] jobId/triggerId 标识生成策略的抽象
+- [x] jobId/triggerId 标识生成策略的抽象
 
 允许用户自定义，避免过长，同时避免每次都变化。（最好有业务含义）
 
-- [ ] 配置的灵活性
+- [x] 配置的灵活性
 
 基本内置的配置，全部允许自定义，包括 socket 配置
 
-- [ ] remark 的注解指定？
+- [ ] 整合兼容 spring-schedule？
 
 - [ ] DAG 有向图任务编排
